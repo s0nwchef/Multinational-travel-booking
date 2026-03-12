@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PlaneTakeoff, Menu, Search, Heart, Bell, LogOut } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 
 export default function Header({ onOpenAuth, onOpenWishlist, onOpenNotifications }) {
   const [user, setUser] = useState(null);
@@ -25,6 +25,11 @@ export default function Header({ onOpenAuth, onOpenWishlist, onOpenNotifications
     window.dispatchEvent(new Event('auth-change'));
   };
 
+  const navLinkClass = ({ isActive }) =>
+      `px-6 py-2.5 rounded-full text-sm font-bold text-primary transition-all ${
+          isActive ? 'bg-orange-50/50 shadow-inner' : 'hover:bg-orange-50'
+      }`;
+
   return (
       <nav className="w-full bg-[#E5E5E5] dark:bg-surface-dark rounded-full shadow-sm px-6 py-3 flex items-center justify-between relative">
         {/* Logo */}
@@ -37,11 +42,11 @@ export default function Header({ onOpenAuth, onOpenWishlist, onOpenNotifications
 
         {/* Nav Links - Center Pill (Locked in center) */}
         <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-1 bg-white dark:bg-gray-800/50 p-1 rounded-full shadow-sm z-10">
-          <a className="px-6 py-2.5 rounded-full text-sm font-bold text-primary bg-orange-50/50 transition-all" href="#">Destination</a>
-          <a className="px-6 py-2.5 rounded-full text-sm font-bold text-primary hover:bg-orange-50 transition-all" href="#">Tours</a>
-          <a className="px-6 py-2.5 rounded-full text-sm font-bold text-primary hover:bg-orange-50 transition-all" href="#">Hotels</a>
-          <a className="px-6 py-2.5 rounded-full text-sm font-bold text-primary hover:bg-orange-50 transition-all" href="#">Help</a>
-          <a className="px-6 py-2.5 rounded-full text-sm font-bold text-primary hover:bg-orange-50 transition-all" href="#">Blog</a>
+          <NavLink to="/destinations" className={navLinkClass}>Destination</NavLink>
+          <NavLink to="/tours" className={navLinkClass}>Tours</NavLink>
+          <NavLink to="/hotels" className={navLinkClass}>Hotels</NavLink>
+          <NavLink to="/help" className={navLinkClass}>Help</NavLink>
+          <NavLink to="/blog" className={navLinkClass}>Blog</NavLink>
         </div>
 
         {/* Right Actions */}

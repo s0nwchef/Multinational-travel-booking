@@ -4,12 +4,18 @@ import MainLayout from '../layouts/MainLayout';
 import HomePage from '../pages/HomePage';
 import Notifications from '../pages/Notifications';
 
+
 export default function AppRoutes() {
     return (
         <Routes>
             <Route path="/" element={<MainLayout />}>
                 <Route index element={<HomePage />} />
                 <Route path="notifications" element={<Notifications />} />
+                {/*<Route path="destinations" element={} />*/}
+                {/*<Route path="tours" element={} />*/}
+                {/*<Route path="hotels" element={} />*/}
+                {/*<Route path="help" element={} />*/}
+                {/*<Route path="blog" element={} />*/}
             </Route>
         </Routes>
     );

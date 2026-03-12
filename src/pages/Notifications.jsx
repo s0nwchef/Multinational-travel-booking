@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
     Bell,
-    CheckCircle2,
     Flame,
     Clock,
     ShieldCheck,
@@ -11,7 +10,6 @@ import {
     Tag,
     User,
     Check,
-    ChevronRight,
     Search
 } from 'lucide-react';
 import { motion } from 'motion/react';
