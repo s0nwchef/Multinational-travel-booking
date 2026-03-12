@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PlaneTakeoff, Menu, Search, Heart, Bell, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export default function Header({ onOpenAuth }) {
+export default function Header({ onOpenAuth, onOpenWishlist }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -50,7 +50,10 @@ export default function Header({ onOpenAuth }) {
             <button className="p-2 text-primary hover:scale-110 transition-transform">
               <Search className="w-6 h-6" />
             </button>
-            <button className="p-2 text-primary hover:scale-110 transition-transform relative">
+            <button
+                onClick={onOpenWishlist}
+                className="p-2 text-primary hover:scale-110 transition-transform relative"
+            >
               <Heart className="w-6 h-6" />
               <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-black rounded-full border-2 border-white"></span>
             </button>
