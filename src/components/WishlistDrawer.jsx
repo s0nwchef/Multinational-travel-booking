@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ArrowRight, LogOut, Check } from 'lucide-react';
+import { X, ArrowRight, Check } from 'lucide-react';
 
 const WishlistItem = ({ item, isSelected, onToggle }) => (
     <div className="flex gap-4 py-4 border-b border-gray-100 last:border-0 group items-center">

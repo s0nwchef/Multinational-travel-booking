@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Bell, CheckCircle2, Flame, Clock, ShieldCheck, Plane, PiggyBank, ExternalLink } from 'lucide-react';
+import { X, Bell, Flame, Clock, ShieldCheck, Plane, PiggyBank, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const NotificationItem = ({ item }) => {

@@ -144,121 +144,123 @@ export default function AuthModal({ isOpen, onClose }) {
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-        <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="relative w-full max-w-4xl h-[620px] bg-white rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col items-center"
-        >
-          <TravelBackground />
+      <AnimatePresence>
+        {isOpen && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+              <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="relative w-full max-w-4xl h-[620px] bg-white rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col items-center"
+              >
+                <TravelBackground />
 
-          {/* Close Button */}
-          <button
-              onClick={onClose}
-              className="absolute top-6 right-6 z-50 p-2 text-orange-400 hover:text-orange-600 transition-colors"
-          >
-            <X size={24} />
-          </button>
+                {/* Close Button */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-6 right-6 z-50 p-2 text-orange-400 hover:text-orange-600 transition-colors"
+                >
+                  <X size={24} />
+                </button>
 
-          {/* Form Content */}
-          <div className="relative z-10 w-full max-w-md mt-10 px-8 flex flex-col items-center">
-            <motion.h2
-                key={isRegister ? 'reg' : 'log'}
-                initial={{ y: -20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                className="font-script text-6xl text-orange-500 mb-1"
-            >
-              {isRegister ? 'Join Us' : 'Welcome'}
-            </motion.h2>
-            <p className="text-orange-400 text-xs font-bold mb-6 uppercase tracking-widest">
-              {isRegister ? 'Start Your Summer Adventure' : 'Login to Your Journey'}
-            </p>
+                {/* Form Content */}
+                <div className="relative z-10 w-full max-w-md mt-10 px-8 flex flex-col items-center">
+                  <motion.h2
+                      key={isRegister ? 'reg' : 'log'}
+                      initial={{ y: -20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      className="font-script text-6xl text-orange-500 mb-1"
+                  >
+                    {isRegister ? 'Join Us' : 'Welcome'}
+                  </motion.h2>
+                  <p className="text-orange-400 text-xs font-bold mb-6 uppercase tracking-widest">
+                    {isRegister ? 'Start Your Summer Adventure' : 'Login to Your Journey'}
+                  </p>
 
-            <form className="w-full space-y-1" onSubmit={handleAuth}>
-              {isRegister && (
-                  <CustomInput
-                      label="Full Name"
-                      icon={User}
-                      name="name"
-                      placeholder="John Doe"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                  />
-              )}
-              <CustomInput
-                  label="Email Id"
-                  icon={Mail}
-                  name="email"
-                  placeholder="wanderer@travel.com"
-                  value={formData.email}
-                  onChange={handleInputChange}
-              />
-              <CustomInput
-                  label="Password"
-                  icon={Lock}
-                  name="password"
-                  type="password"
-                  placeholder="••••••••••••"
-                  value={formData.password}
-                  onChange={handleInputChange}
-              />
+                  <form className="w-full space-y-1" onSubmit={handleAuth}>
+                    {isRegister && (
+                        <CustomInput
+                            label="Full Name"
+                            icon={User}
+                            name="name"
+                            placeholder="John Doe"
+                            value={formData.name}
+                            onChange={handleInputChange}
+                        />
+                    )}
+                    <CustomInput
+                        label="Email Id"
+                        icon={Mail}
+                        name="email"
+                        placeholder="wanderer@travel.com"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                    />
+                    <CustomInput
+                        label="Password"
+                        icon={Lock}
+                        name="password"
+                        type="password"
+                        placeholder="••••••••••••"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                    />
 
-              {!isRegister && (
-                  <div className="flex justify-end mt-1">
-                    <button type="button" className="text-[10px] text-orange-500 font-bold hover:underline">
-                      Forgot your password?
-                    </button>
+                    {!isRegister && (
+                        <div className="flex justify-end mt-1">
+                          <button type="button" className="text-[10px] text-orange-500 font-bold hover:underline">
+                            Forgot your password?
+                          </button>
+                        </div>
+                    )}
+
+                    <div className="flex justify-center mt-6">
+                      <button
+                          type="submit"
+                          className="bg-[#FF5B00] hover:bg-[#D64D00] text-white font-black py-3 px-14 rounded-xl shadow-[0_10px_20px_rgba(255,91,0,0.3)] transition-all uppercase text-sm tracking-widest"
+                      >
+                        {isRegister ? 'Register' : 'Login'}
+                      </button>
+                    </div>
+                  </form>
+
+                  {/* OR Separator */}
+                  <div className="w-full flex items-center gap-4 my-6">
+                    <div className="flex-1 h-[1px] bg-orange-100" />
+                    <span className="text-[10px] font-black text-orange-300">OR</span>
+                    <div className="flex-1 h-[1px] bg-orange-100" />
                   </div>
-              )}
 
-              <div className="flex justify-center mt-6">
-                <button
-                    type="submit"
-                    className="bg-[#FF5B00] hover:bg-[#D64D00] text-white font-black py-3 px-14 rounded-xl shadow-[0_10px_20px_rgba(255,91,0,0.3)] transition-all uppercase text-sm tracking-widest"
-                >
-                  {isRegister ? 'Register' : 'Login'}
-                </button>
-              </div>
-            </form>
+                  {/* Social Login */}
+                  <div className="flex gap-4">
+                    {[
+                      { icon: "https://www.svgrepo.com/show/355037/google.svg", name: "Google" },
+                      { icon: "https://www.svgrepo.com/show/303114/facebook-3.svg", name: "Facebook" },
+                      { icon: "https://www.svgrepo.com/show/303108/apple-black.svg", name: "Apple" }
+                    ].map((social) => (
+                        <button key={social.name} className="w-12 h-10 bg-white rounded-xl shadow-sm border border-orange-50 flex items-center justify-center hover:shadow-md hover:border-orange-200 transition-all">
+                          <img src={social.icon} alt={social.name} className="w-5 h-5" />
+                        </button>
+                    ))}
+                  </div>
 
-            {/* OR Separator */}
-            <div className="w-full flex items-center gap-4 my-6">
-              <div className="flex-1 h-[1px] bg-orange-100" />
-              <span className="text-[10px] font-black text-orange-300">OR</span>
-              <div className="flex-1 h-[1px] bg-orange-100" />
+                  {/* Footer Link */}
+                  <div className="mt-8">
+                    <p className="text-xs font-bold text-gray-700">
+                      {isRegister ? 'Already an explorer?' : "New to the journey?"}{' '}
+                      <button
+                          onClick={() => setIsRegister(!isRegister)}
+                          className="text-orange-600 hover:underline font-black"
+                      >
+                        {isRegister ? 'Login Now' : 'Register Now'}
+                      </button>
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
             </div>
-
-            {/* Social Login */}
-            <div className="flex gap-4">
-              {[
-                { icon: "https://www.svgrepo.com/show/355037/google.svg", name: "Google" },
-                { icon: "https://www.svgrepo.com/show/303114/facebook-3.svg", name: "Facebook" },
-                { icon: "https://www.svgrepo.com/show/303108/apple-black.svg", name: "Apple" }
-              ].map((social) => (
-                  <button key={social.name} className="w-12 h-10 bg-white rounded-xl shadow-sm border border-orange-50 flex items-center justify-center hover:shadow-md hover:border-orange-200 transition-all">
-                    <img src={social.icon} alt={social.name} className="w-5 h-5" />
-                  </button>
-              ))}
-            </div>
-
-            {/* Footer Link */}
-            <div className="mt-8">
-              <p className="text-xs font-bold text-gray-700">
-                {isRegister ? 'Already an explorer?' : "New to the journey?"}{' '}
-                <button
-                    onClick={() => setIsRegister(!isRegister)}
-                    className="text-orange-600 hover:underline font-black"
-                >
-                  {isRegister ? 'Login Now' : 'Register Now'}
-                </button>
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      </div>
+        )}
+      </AnimatePresence>
   );
 }
