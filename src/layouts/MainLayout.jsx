@@ -4,10 +4,12 @@ import Header from './Header';
 import Footer from './Footer';
 import AuthModal from '../components/AuthModal';
 import WishlistDrawer from '../components/WishlistDrawer';
+import NotificationDrawer from '../components/NotificationDrawer';
 
 export default function MainLayout() {
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+    const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
     return (
         <div className="bg-white dark:bg-black text-text-primary-light dark:text-text-primary-dark transition-colors duration-300 min-h-screen flex flex-col font-body">
@@ -15,6 +17,7 @@ export default function MainLayout() {
                 <Header
                     onOpenAuth={() => setIsAuthModalOpen(true)}
                     onOpenWishlist={() => setIsWishlistOpen(true)}
+                    onOpenNotifications={() => setIsNotificationOpen(true)}
                 />
             </header>
             <main className="flex-grow flex flex-col gap-4 p-4 pt-2">
@@ -25,6 +28,7 @@ export default function MainLayout() {
             </div>
             <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
             <WishlistDrawer isOpen={isWishlistOpen} onClose={() => setIsWishlistOpen(false)} />
+            <NotificationDrawer isOpen={isNotificationOpen} onClose={() => setIsNotificationOpen(false)} />
         </div>
     );
 }
