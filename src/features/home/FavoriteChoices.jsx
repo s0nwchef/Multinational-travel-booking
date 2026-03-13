@@ -63,7 +63,7 @@ const GLOBAL_DESTINATIONS = [
   { name: 'Istanbul, Turkey', lat: 41.0082, lon: 28.9784 }
 ];
 
-export default function FavoriteChoices() {
+const FavoriteChoices = () => {
   const [choices, setChoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -71,7 +71,7 @@ export default function FavoriteChoices() {
   const [currentCity, setCurrentCity] = useState('Global');
 
   // Access API key from environment
-  const API_KEY = "5ae2e3f221c38a28845f05b6f041fe371aa04c2e20cf1df520955b17";
+  const API_KEY = import.meta.env.VITE_OPENTRIPMAP_API_KEY;
 
   const fetchOpenTripMapData = useCallback(async () => {
     if (!API_KEY) {
@@ -274,4 +274,6 @@ export default function FavoriteChoices() {
         </div>
       </section>
   );
-}
+};
+
+export default FavoriteChoices;

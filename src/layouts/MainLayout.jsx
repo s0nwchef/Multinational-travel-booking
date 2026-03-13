@@ -6,7 +6,7 @@ import AuthModal from '../components/AuthModal';
 import WishlistDrawer from '../components/WishlistDrawer';
 import NotificationDrawer from '../components/NotificationDrawer';
 
-export default function MainLayout() {
+const MainLayout = () => {
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [isWishlistOpen, setIsWishlistOpen] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -31,4 +31,6 @@ export default function MainLayout() {
             <NotificationDrawer isOpen={isNotificationOpen} onClose={() => setIsNotificationOpen(false)} />
         </div>
     );
-}
+};
+
+export default MainLayout;
