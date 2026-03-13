@@ -3,6 +3,10 @@ import { Routes, Route } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import HomePage from '../pages/HomePage';
 import Notifications from '../pages/Notifications';
+import TourDetailPage from '../pages/TourDetailPage';
+import CheckoutPage from '../pages/CheckoutPage';
+import WriteReviewPage from '../pages/WriteReviewPage';
+import HelpPage from '../pages/HelpPage';
 
 
 export default function AppRoutes() {
@@ -11,10 +15,13 @@ export default function AppRoutes() {
             <Route path="/" element={<MainLayout />}>
                 <Route index element={<HomePage />} />
                 <Route path="notifications" element={<Notifications />} />
+                <Route path="tour/:tourId" element={<TourDetailPage />} />
+                <Route path="checkout/:tourId" element={<CheckoutPage />} />
+                <Route path="review/:tourId" element={<WriteReviewPage />} />
+                <Route path="help" element={<HelpPage />} />
                 {/*<Route path="destinations" element={} />*/}
                 {/*<Route path="tours" element={} />*/}
                 {/*<Route path="hotels" element={} />*/}
-                {/*<Route path="help" element={} />*/}
                 {/*<Route path="blog" element={} />*/}
             </Route>
         </Routes>
