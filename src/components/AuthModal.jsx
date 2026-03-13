@@ -27,7 +27,6 @@ const TravelBackground = () => (
         <div className="w-24 h-24 bg-yellow-300 rounded-full border-4 border-yellow-200/50" />
       </motion.div>
 
-      {/* Clouds */}
       {[...Array(4)].map((_, i) => (
           <motion.div
               key={i}
@@ -43,7 +42,6 @@ const TravelBackground = () => (
           />
       ))}
 
-      {/* Summer Ground */}
       <div className="absolute bottom-0 left-0 right-0 h-48 overflow-hidden">
         <div className="absolute bottom-[-220px] left-[-10%] right-[-10%] h-[400px] bg-[#FFE082] rounded-[100%] border-t-8 border-[#FFD54F] shadow-[inset_0_20px_50px_rgba(0,0,0,0.05)]">
 
@@ -68,8 +66,6 @@ const TravelBackground = () => (
               <div className="w-full h-2 bg-white -rotate-45 absolute" />
             </div>
           </SummerElement>
-
-          {/* Waves effect at the bottom */}
           <div className="absolute bottom-[180px] w-full flex justify-center opacity-30">
             <Waves className="text-blue-400 w-full h-12" />
           </div>
@@ -225,7 +221,6 @@ export default function AuthModal({ isOpen, onClose }) {
                     </div>
                   </form>
 
-                  {/* OR Separator */}
                   <div className="w-full flex items-center gap-4 my-6">
                     <div className="flex-1 h-[1px] bg-orange-100" />
                     <span className="text-[10px] font-black text-orange-300">OR</span>
