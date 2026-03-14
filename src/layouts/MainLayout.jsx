@@ -1,20 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
-import Sidebar from "./Sidebar.jsx";
+import AuthModal from '../components/AuthModal';
+import WishlistDrawer from '../components/WishlistDrawer';
+import NotificationDrawer from '../components/NotificationDrawer';
 
-export default function MainLayout() {
-  return (
-      <div className="bg-white dark:bg-black text-text-primary-light dark:text-text-primary-dark transition-colors duration-300 min-h-screen flex flex-col font-body">
-          <Header />
-          <div className="flex flex-1">
-              <Sidebar />
-              <main className="flex-1 p-4">
-                  <Outlet />
-              </main>
-          </div>
-          <Footer />
-      </div>
-  );
-}
+const MainLayout = () => {
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+    const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
+    return (
+        <div className="bg-white dark:bg-black text-text-primary-light dark:text-text-primary-dark transition-colors duration-300 min-h-screen flex flex-col font-body">
+            <header className="sticky top-0 z-50 px-4 pt-2 pb-2 bg-white/80 dark:bg-black/80 backdrop-blur-md">
+                <Header
+                    onOpenAuth={() => setIsAuthModalOpen(true)}
+                    onOpenWishlist={() => setIsWishlistOpen(true)}
+                    onOpenNotifications={() => setIsNotificationOpen(true)}
+                />
+            </header>
+            <main className="flex-grow flex flex-col gap-4 p-4 pt-2">
+                <Outlet />
+            </main>
+            <div className="p-4 pt-0">
+                <Footer />
+            </div>
+            <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+            <WishlistDrawer isOpen={isWishlistOpen} onClose={() => setIsWishlistOpen(false)} />
+            <NotificationDrawer isOpen={isNotificationOpen} onClose={() => setIsNotificationOpen(false)} />
+        </div>
+    );
+};
+
+export default MainLayout;
