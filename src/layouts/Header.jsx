@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   PlaneTakeoff,
   Menu,
@@ -27,6 +27,43 @@ export default function Header({
   const navigate = useNavigate(); // Thêm dòng này
   const [isSearching, setIsSearching] = useState(false); // Thêm dòng này
   const [searchVal, setSearchVal] = useState(""); // Thêm dòng này
+  const [isOverlapping, setIsOverlapping] = useState(false);
+  const navRef = useRef(null);
+  const searchRef = useRef(null);
+
+  // Kiểm tra va chạm giữa thanh tìm kiếm và thanh điều hướng
+  useEffect(() => {
+    const checkOverlap = () => {
+      // Nếu không tìm kiếm, reset trạng thái va chạm
+      if (!isSearching) {
+        setIsOverlapping(false);
+        return;
+      }
+
+      // Nếu đã bị va chạm rồi (đang ở view 3 thẻ), không cần xét kích thước nữa
+      // Điều này giúp giữ nguyên view 3 thẻ cho đến khi tắt tìm kiếm
+      if (isOverlapping) return;
+
+      if (!navRef.current || !searchRef.current) return;
+
+      const navRect = navRef.current.getBoundingClientRect();
+      const searchRect = searchRef.current.getBoundingClientRect();
+
+      // Kiểm tra xem thanh tìm kiếm có chạm vào thanh điều hướng (đang đầy đủ 5 thẻ) không
+      if (searchRect.left < navRect.right + 25) {
+        setIsOverlapping(true);
+      }
+    };
+
+    checkOverlap();
+    window.addEventListener("resize", checkOverlap);
+    const interval = setInterval(checkOverlap, 100);
+    
+    return () => {
+      window.removeEventListener("resize", checkOverlap);
+      clearInterval(interval);
+    };
+  }, [isSearching, isOverlapping]);
 
   useEffect(() => {
     const checkUser = () => {
@@ -84,10 +121,17 @@ export default function Header({
             </Link>
           </div>
           <div
-            className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-1 bg-white dark:bg-gray-800/50 p-1 rounded-full shadow-sm z-10"
+            ref={navRef}
+            className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-1 bg-white dark:bg-gray-800/50 p-1 rounded-full shadow-sm z-10 transition-all duration-300"
             onMouseLeave={() => setHoveredPath(null)}
           >
-            {navLinks.map((link) => {
+            {navLinks
+              .filter(
+                (link) =>
+                  !(isSearching && isOverlapping) ||
+                  (link.label !== "Help" && link.label !== "Blog")
+              )
+              .map((link) => {
               const isIndicatorActive = activeIndicatorPath === link.path;
               const isActive = location.pathname === link.path;
               const isHovered = hoveredPath === link.path;
@@ -143,6 +187,7 @@ export default function Header({
             <div className="hidden lg:flex items-center gap-2">
               {/* Thêm đoạn search này */}
               <div
+                ref={searchRef}
                 className={`
     flex items-center transition-all duration-300 border-2
     ${
@@ -196,24 +241,20 @@ export default function Header({
                   )}
                 </motion.button>
               </div>
-              <motion.button
-                whileHover={{ scale: 1.1, y: -2 }}
-                whileTap={{ scale: 0.9 }}
+              <button
                 onClick={onOpenWishlist}
-                className="p-2 text-primary transition-transform relative"
+                className="p-2 text-primary relative transition-all duration-200 hover:scale-110 active:scale-95"
               >
                 <Heart className="w-6 h-6" />
                 <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-black rounded-full border-2 border-white"></span>
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1, y: -2 }}
-                whileTap={{ scale: 0.9 }}
+              </button>
+              <button
                 onClick={onOpenNotifications}
-                className="p-2 text-primary transition-transform relative"
+                className="p-2 text-primary relative transition-all duration-200 hover:scale-110 active:scale-95"
               >
                 <Bell className="w-6 h-6" />
                 <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-orange-500 rounded-full border-2 border-white"></span>
-              </motion.button>
+              </button>
             </div>
             <div className="hidden lg:block">
               {user ? (
