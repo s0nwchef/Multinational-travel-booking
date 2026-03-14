@@ -32,8 +32,8 @@ export default function TourFilters({ filters, onFilterChange }) {
   };
 
   return (
-    <aside className="w-full lg:w-1/4 flex flex-col gap-6 sticky top-4">
-      {/* 1. Bản đồ giả lập */}
+    <aside className="w-full lg:w-[400px] shrink-0 flex flex-col gap-6 sticky top-4">
+      {/* 1. Bản đồ*/}
       <motion.div
         whileHover={{ scale: 1.02 }}
         className="relative group cursor-pointer overflow-hidden rounded-[2.5rem] h-32 border-4 border-white shadow-xl shadow-orange-100/50"
