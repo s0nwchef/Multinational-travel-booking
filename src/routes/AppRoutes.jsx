@@ -18,8 +18,10 @@ import { Sidebar } from "lucide-react";
 import RightSidebar from "../pages/payment/sections/RightSidebar.jsx";
 import { div } from "motion/react-client";
 import Dashboard from "../pages/DashboardPage.jsx";
+import WishlistPage from "../pages/WishlistPage.jsx";
+import CancelBookingModal from "../pages/Modal/CancelBookingModal.jsx";
+import RefundStatusPage from "../pages/RefundStatusPage.jsx";
 
-// import Dashboard from "../pages/DashboardPage.jsx";
 // import Sidebar from "../layouts/Sidebar.jsx";
 
 export default function AppRoutes() {
@@ -27,7 +29,7 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/" element={<MainLayout />}>
         {/* Homepage */}
-        <Route index element={<Dashboard />} />
+        <Route index element={<HomePage />} />
 
         {/* Destination */}
         <Route path="/region/:regionName" element={<RegionDetail />} />
@@ -48,6 +50,18 @@ export default function AppRoutes() {
         {/* Other */}
         <Route path="notifications" element={<Notifications />} />
         <Route path="help" element={<HelpPage />} />
+
+        {/* Dashboard */}
+        <Route path="dashboard" element={<Dashboard />} />
+
+        {/* Wishlist */}
+        <Route path="wishlist" element={<WishlistPage />} />
+
+        {/* CancellModal */}
+        <Route path="cancel-booking" element={<CancelBookingModal />} />
+
+        {/* RefundStatusPage */}
+        <Route path="refund-status" element={<RefundStatusPage />} />
       </Route>
     </Routes>
   );

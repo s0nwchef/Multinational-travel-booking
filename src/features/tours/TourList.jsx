@@ -251,7 +251,6 @@ export default function TourList() {
     return matchesSearch && matchesPrice && matchesCategory && matchesRatings;
   });
 
-  // Tính toán dữ liệu cho trang hiện tại
   const totalPages = Math.ceil(filteredTours.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -271,7 +270,6 @@ export default function TourList() {
 
   return (
     <div className="w-full max-w-none px-4 md:px-10 py-8">
-      {/*HEADER*/}
       <header className="mb-10">
         <nav className="flex items-center gap-2 text-[12px] text-gray-400 mb-3">
           <span>Tours</span> <span className="text-[10px]">/</span>
@@ -293,7 +291,6 @@ export default function TourList() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Sort Dropdown */}
             <div className="bg-white border border-gray-100 px-4 py-2 rounded-xl shadow-sm flex items-center gap-8 cursor-pointer hover:bg-gray-50 transition-colors">
               <div className="flex flex-col">
                 <span className="text-[9px] text-gray-400 uppercase font-black tracking-tighter">
@@ -306,7 +303,6 @@ export default function TourList() {
               <ChevronDown size={14} className="text-gray-400" />
             </div>
 
-            {/* View Mode Toggle */}
             <div className="flex bg-white border border-gray-100 p-1 rounded-xl shadow-sm">
               <button
                 onClick={() => setViewMode("list")}
@@ -322,7 +318,6 @@ export default function TourList() {
               </button>
             </div>
 
-            {/* Map View Button */}
             <button
               onClick={() => setShowMap(true)}
               className="bg-white border border-gray-100 px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 text-[13px] font-black text-gray-800 hover:bg-gray-50 transition-all active:scale-95 shadow-orange-50"
@@ -338,14 +333,11 @@ export default function TourList() {
         </div>
       </header>
 
-      {/* 2. BODY CONTENT */}
       <div className="flex flex-col lg:flex-row gap-12 w-full items-start">
-        {/* Cột trái*/}
         <div className="w-full lg:w-[400px] shrink-0">
           <TourFilters filters={filters} onFilterChange={handleFilterChange} />
         </div>
 
-        {/* Cột phải*/}
         <div className="flex-1 min-w-0">
           {searchQuery && (
             <div className="mb-6 text-xl text-gray-700 font-medium">
@@ -355,7 +347,6 @@ export default function TourList() {
               </span>
             </div>
           )}
-          {/* Categories Tabs */}
           <div className="flex flex-wrap gap-2 mb-8">
             {[
               "All Tours",
