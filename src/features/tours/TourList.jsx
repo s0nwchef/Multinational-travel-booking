@@ -55,7 +55,7 @@ export const toursData = [
     badge: "SMALL GROUP",
     badgeType: "purple",
     image:
-      "https://images.unsplash.com/photo-1531012278483-fa597e70f22f?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&q=80&w=800",
     title: "Tuscany Day Trip from Florence with Chianti Wine Tasting",
     location: "FLORENCE",
     type: "DAY TRIP",
