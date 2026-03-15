@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 export default function EmptyState({ searchTerm = "your location", onReset }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 px-4">
-      {/* Hình minh họa - Bạn có thể thay bằng SVG hoặc Image từ folder public */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
