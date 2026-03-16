@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import RatingDistribution from './RatingDistribution';
 import TravelerPhotos from './TravelerPhotos';
 import ReviewCard from './ReviewCard';
 import { MessageSquare } from 'lucide-react';
 
 const ReviewsSection = ({ tour }) => {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('all');
   const [sortBy, setSortBy] = useState('highest');
   const [showMoreReviews, setShowMoreReviews] = useState(false);
+
+  const handleWriteReview = () => {
+    navigate(`/review/${tour.id}`);
+  };
 
   // Mock review data
   const mockReviews = [
@@ -101,7 +107,9 @@ const ReviewsSection = ({ tour }) => {
               See what our global community has to say about their adventures on the {tour.title}.
             </p>
           </div>
-          <button className="flex items-center gap-2 bg-[#FF5B00] hover:bg-[#D64D00] text-white px-6 py-3 rounded-full font-semibold transition whitespace-nowrap">
+          <button 
+            onClick={handleWriteReview}
+            className="flex items-center gap-2 bg-[#FF5B00] hover:bg-[#D64D00] text-white px-6 py-3 rounded-full font-semibold transition whitespace-nowrap">
             <MessageSquare size={20} />
             Write a Review
           </button>

@@ -44,7 +44,7 @@ export default function AppRoutes() {
         {/* Tours */}
         <Route path="tours" element={<ToursPage />} />
         <Route path="tour/:tourId" element={<TourDetailPage />} />
-        <Route path="checkout/:tourId" element={<CheckoutPage />} />
+        <Route path="checkout" element={<CheckoutPage />} />
         <Route path="review/:tourId" element={<WriteReviewPage />} />
 
         {/* Other */}

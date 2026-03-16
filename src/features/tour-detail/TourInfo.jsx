@@ -1,7 +1,14 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MapPin, Calendar, Users, DollarSign, Clock, CheckCircle } from 'lucide-react';
 
 export default function TourInfo({ tour }) {
+  const navigate = useNavigate();
+
+  const handleBookNow = () => {
+    navigate(`/checkout`);
+  };
+
   return (
     <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-8 px-4 py-8">
       {/* Main Content */}
@@ -92,7 +99,9 @@ export default function TourInfo({ tour }) {
             </div>
           </div>
 
-          <button className="w-full bg-primary text-white font-bold py-4 rounded-2xl hover:bg-primary-dark transition-colors mb-3">
+          <button 
+            onClick={handleBookNow}
+            className="w-full bg-primary text-white font-bold py-4 rounded-2xl hover:bg-primary-dark transition-colors mb-3">
             Book Now
           </button>
           <button className="w-full border-2 border-primary text-primary font-bold py-4 rounded-2xl hover:bg-primary/5 transition-colors">
