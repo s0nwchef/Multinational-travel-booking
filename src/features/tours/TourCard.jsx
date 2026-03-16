@@ -13,6 +13,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const IconComponent = ({ name }) => {
   const icons = {
@@ -26,6 +27,7 @@ const IconComponent = ({ name }) => {
 
 export default function TourCard({ tour }) {
   const [isFavorite, setIsFavorite] = useState(false);
+  const navigate = useNavigate();
   const FALLBACK_IMAGE =
     "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=800&auto=format&fit=crop";
 
@@ -157,6 +159,7 @@ export default function TourCard({ tour }) {
 
           <motion.button
             whileTap={{ scale: 0.95 }}
+            onClick={() => navigate(`/tour/${tour.id}`)}
             className="bg-orange-500 text-white px-8 py-3.5 rounded-[1.2rem] font-black text-sm flex items-center gap-2 hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20"
           >
             View Details
