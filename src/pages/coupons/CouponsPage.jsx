@@ -1,4 +1,5 @@
 import React from 'react';
+import Sidebar from "../../layouts/Sidebar.jsx";
 import LoyaltyStatus from './components/LoyaltyStatus';
 import CouponTabs from './components/CouponTabs';
 import CouponGrid from './components/CouponGrid';
@@ -18,11 +19,19 @@ const CouponsPage = () => {
   ];
 
   return (
-    <div className="container mx-auto p-6 bg-[#F6F7F8]">
-      <LoyaltyStatus />
-      <CouponTabs />
-      <CouponGrid coupons={coupons} />
-      <ReferFriendBanner />
+    <div className="flex min-h-screen bg-[#F8F9FA]">
+      <div className="fixed inset-y-0 left-0 z-50">
+        <Sidebar />
+      </div>
+
+      <main className="flex-1 ml-64 p-8">
+        <div className="max-w-[1400px] mx-auto">
+          <LoyaltyStatus />
+          <CouponTabs />
+          <CouponGrid coupons={coupons} />
+          <ReferFriendBanner />
+        </div>
+      </main>
     </div>
   );
 };
