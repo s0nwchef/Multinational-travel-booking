@@ -24,45 +24,50 @@ import RefundStatusPage from "../pages/RefundStatusPage.jsx";
 
 // import Sidebar from "../layouts/Sidebar.jsx";
 
+import LandingPage from "../pages/LandingPage.jsx";
+
 export default function AppRoutes() {
   return (
-    <Routes>
-      <Route path="/" element={<MainLayout />}>
-        {/* Homepage */}
-        <Route index element={<HomePage />} />
+      <Routes>
+        {/* Landing Page */}
+        <Route path="/" element={<LandingPage />} />
 
-        {/* Destination */}
-        <Route path="/region/:regionName" element={<RegionDetail />} />
+        <Route element={<MainLayout />}>
+          {/* Homepage */}
+          <Route path="/home" element={<HomePage />} />
 
-        {/* Coupons & User */}
-        <Route path="/coupons" element={<CouponsPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/payment" element={<PaymentPage />} />
-        <Route path="/transactions" element={<TransactionPage />} />
-        <Route path="/destination" element={<Destination />} />
+          {/* Destination */}
+          <Route path="/region/:regionName" element={<RegionDetail />} />
 
-        {/* Tours */}
-        <Route path="tours" element={<ToursPage />} />
-        <Route path="tour/:tourId" element={<TourDetailPage />} />
-        <Route path="checkout" element={<CheckoutPage />} />
-        <Route path="review/:tourId" element={<WriteReviewPage />} />
+          {/* Coupons & User */}
+          <Route path="/coupons" element={<CouponsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/payment" element={<PaymentPage />} />
+          <Route path="/transactions" element={<TransactionPage />} />
+          <Route path="/destination" element={<Destination />} />
 
-        {/* Other */}
-        <Route path="notifications" element={<Notifications />} />
-        <Route path="help" element={<HelpPage />} />
+          {/* Tours */}
+          <Route path="tours" element={<ToursPage />} />
+          <Route path="tour/:tourId" element={<TourDetailPage />} />
+          <Route path="checkout" element={<CheckoutPage />} />
+          <Route path="review/:tourId" element={<WriteReviewPage />} />
 
-        {/* Dashboard */}
-        <Route path="dashboard" element={<Dashboard />} />
+          {/* Other */}
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="help" element={<HelpPage />} />
 
-        {/* Wishlist */}
-        <Route path="wishlist" element={<WishlistPage />} />
+          {/* Dashboard */}
+          <Route path="dashboard" element={<Dashboard />} />
 
-        {/* CancellModal */}
-        <Route path="cancel-booking" element={<CancelBookingModal />} />
+          {/* Wishlist */}
+          <Route path="wishlist" element={<WishlistPage />} />
 
-        {/* RefundStatusPage */}
-        <Route path="refund-status" element={<RefundStatusPage />} />
-      </Route>
-    </Routes>
+          {/* CancellModal */}
+          <Route path="cancel-booking" element={<CancelBookingModal />} />
+
+          {/* RefundStatusPage */}
+          <Route path="refund-status" element={<RefundStatusPage />} />
+        </Route>
+      </Routes>
   );
 }
