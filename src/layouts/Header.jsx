@@ -258,7 +258,10 @@ export default function Header({
             </div>
             <div className="hidden lg:block">
               {user ? (
-                <div className="flex items-center gap-3 bg-primary text-white pl-6 pr-1.5 py-1.5 rounded-full shadow-lg group relative cursor-pointer">
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-3 bg-primary text-white pl-6 pr-1.5 py-1.5 rounded-full shadow-lg group relative cursor-pointer"
+                >
                   <div className="flex flex-col items-start -space-y-0.5">
                     <span className="text-sm font-black leading-tight">
                       {user.name}
@@ -277,14 +280,18 @@ export default function Header({
 
                   <div className="absolute top-full right-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[60]">
                     <button
-                      onClick={handleLogout}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleLogout();
+                      }}
                       className="bg-white text-primary text-xs font-bold px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-2 border border-orange-100 hover:bg-orange-50 whitespace-nowrap"
                     >
                       <LogOut className="w-4 h-4" />
                       Logout Account
                     </button>
                   </div>
-                </div>
+                </Link>
               ) : (
                 <button
                   onClick={onOpenAuth}
