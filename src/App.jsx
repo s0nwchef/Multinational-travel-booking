@@ -5,7 +5,7 @@ import AppRoutes from "./routes/AppRoutes";
 const App = () => {
   useEffect(() => {
     const darkModeMediaQuery = window.matchMedia(
-      "(prefers-color-scheme: dark)",
+        "(prefers-color-scheme: dark)",
     );
     const handleThemeChange = (e) => {
       if (e.matches) {
@@ -17,12 +17,13 @@ const App = () => {
     handleThemeChange(darkModeMediaQuery);
     darkModeMediaQuery.addEventListener("change", handleThemeChange);
     return () =>
-      darkModeMediaQuery.removeEventListener("change", handleThemeChange);
+        darkModeMediaQuery.removeEventListener("change", handleThemeChange);
   }, []);
+
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
   );
 };
 

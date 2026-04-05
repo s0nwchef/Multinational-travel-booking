@@ -1,12 +1,15 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { motion } from "motion/react";
 import Globe from "./globe";
 import { cn } from "../../lib/utils";
+import { ChevronDown } from "lucide-react";
 
 const defaultGlobeConfig = {
   positions: [
+    { top: "50%", left: "50%", scale: 0 },    // Intro: Hidden
     { top: "50%", left: "75%", scale: 1.4 },  // Hero: Right side, balanced
     { top: "25%", left: "50%", scale: 0.9 },  // Innovation: Top side, subtle
-    { top: "15%", left: "90%", scale: 2 },  // Discovery: Left side, medium
+    { top: "15%", left: "90%", scale: 2 },    // Discovery: Left side, medium
     { top: "50%", left: "50%", scale: 1.8 },  // Future: Center, large backdrop
   ]
 };
@@ -14,13 +17,19 @@ const defaultGlobeConfig = {
 // Parse percentage string to number
 const parsePercent = (str) => parseFloat(str.replace('%', ''));
 
-function ScrollGlobe({ sections, globeConfig = defaultGlobeConfig, className }) {
+function ScrollGlobe({ sections, globeConfig = defaultGlobeConfig, className, onSectionChange }) {
   const [activeSection, setActiveSection] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [globeTransform, setGlobeTransform] = useState("");
   const containerRef = useRef(null);
   const sectionRefs = useRef([]);
   const animationFrameId = useRef();
+
+  useEffect(() => {
+    if (onSectionChange) {
+      onSectionChange(activeSection);
+    }
+  }, [activeSection, onSectionChange]);
 
   // Pre-calculate positions for performance
   const calculatedPositions = useMemo(() => {
@@ -117,14 +126,42 @@ function ScrollGlobe({ sections, globeConfig = defaultGlobeConfig, className }) 
                       activeSection === index ? "opacity-100" : "opacity-0"
                   )}
                   style={{
-                    backgroundImage: `url('${section.backgroundImage}')`,
+                    backgroundImage: section.backgroundImage ? `url('${section.backgroundImage}')` : 'none',
                     filter: 'contrast(1.05)'
                   }}
-              />
+              >
+                {section.video && (
+                    <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+                      {section.video.includes("youtube.com") || section.video.includes("youtu.be") ? (
+                          <div className="absolute top-1/2 left-1/2 w-full h-full -translate-x-1/2 -translate-y-1/2 aspect-video min-w-full min-h-full">
+                            <iframe
+                                src={`https://www.youtube.com/embed/${section.video.split("v=")[1]?.split("&")[0] || section.video.split("/").pop()}?autoplay=1&mute=1&loop=1&playlist=${section.video.split("v=")[1]?.split("&")[0] || section.video.split("/").pop()}&controls=0&showinfo=0&rel=0&enablejsapi=1&modestbranding=1&iv_load_policy=3&vq=hd1080`}
+                                className="absolute top-0 left-0 w-full h-full border-none"
+                                allow="autoplay; encrypted-media"
+                                allowFullScreen
+                            />
+                          </div>
+                      ) : (
+                          <video
+                              autoPlay
+                              muted
+                              loop
+                              playsInline
+                              className="absolute inset-0 w-full h-full object-cover"
+                          >
+                            <source src={section.video} type="video/mp4" />
+                          </video>
+                      )}
+                    </div>
+                )}
+              </div>
           ))}
           {/* Minimal Overlay for text readability only */}
-          <div className="absolute inset-0 bg-black/10" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
+          <div className={cn(
+              "absolute inset-0 transition-opacity duration-1000",
+              activeSection === 0 ? "bg-black/40" : "bg-black/20"
+          )} />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
         </div>
 
         {/* Progress Bar */}
@@ -200,87 +237,108 @@ function ScrollGlobe({ sections, globeConfig = defaultGlobeConfig, className }) 
                 ref={(el) => (sectionRefs.current[index] = el)}
                 className={cn(
                     "relative min-h-screen flex flex-col justify-center px-4 sm:px-6 md:px-8 lg:px-12 z-20 py-12 sm:py-16 lg:py-20",
-                    section.align === 'center' && "items-center text-center",
-                    section.align === 'right' && "items-end text-right",
-                    section.align !== 'center' && section.align !== 'right' && "items-start text-left"
+                    section.isIntro ? "items-center text-center" : (
+                        section.align === 'center' ? "items-center text-center" :
+                            section.align === 'right' ? "items-end text-right" :
+                                "items-start text-left"
+                    )
                 )}
             >
-              <div className="w-full max-w-sm sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-5xl">
+              {section.isIntro ? (
+                  <div className="flex flex-col items-center justify-center w-full">
+                    <motion.h1
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1, delay: 0.5 }}
+                        className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-tight leading-tight"
+                        style={{ fontFamily: "'Beverage', 'Dancing Script', cursive" }}
+                    >
+                      Wanna Travel? <br />
+                      <span className="text-orange-500">Let's do it</span>
+                    </motion.h1>
 
-                <h1 className={cn(
-                    "font-bold mb-6 sm:mb-8 leading-[1.1] tracking-tight",
-                    index === 0
-                        ? "text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl"
-                        : "text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl"
-                )}>
-                  {section.subtitle ? (
-                      <div className="space-y-1 sm:space-y-2">
-                        <div className="text-white">
-                          {section.title}
-                        </div>
-                        <div className="text-orange-500 text-[0.6em] sm:text-[0.7em] font-black uppercase tracking-widest">
-                          {section.subtitle}
-                        </div>
-                      </div>
-                  ) : (
-                      <div className="text-white">
-                        {section.title}
-                      </div>
-                  )}
-                </h1>
-
-                <div className={cn(
-                    "text-white/80 leading-relaxed mb-8 sm:mb-10 text-base sm:text-lg lg:text-xl font-light",
-                    section.align === 'center' ? "max-w-full mx-auto text-center" : "max-w-full"
-                )}>
-                  <p className="mb-3 sm:mb-4">{section.description}</p>
-                </div>
-
-                {/* Features */}
-                {section.features && (
-                    <div className="grid gap-3 sm:gap-4 mb-8 sm:mb-10">
-                      {section.features.map((feature) => (
-                          <div
-                              key={feature.title}
-                              className="group p-4 sm:p-5 lg:p-6 rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 hover:border-orange-500/30"
-                          >
-                            <div className="flex items-start gap-3 sm:gap-4">
-                              <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-orange-500 mt-1.5 sm:mt-2" />
-                              <div className="flex-1 space-y-1.5 sm:space-y-2">
-                                <h3 className="font-bold text-white text-base sm:text-lg">{feature.title}</h3>
-                                <p className="text-white/60 leading-relaxed text-sm sm:text-base">{feature.description}</p>
-                              </div>
+                    <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce cursor-pointer opacity-80 hover:opacity-100 transition-opacity">
+                      <span className="text-white text-[10px] uppercase tracking-[0.3em] font-bold">Cuộn để tiếp tục</span>
+                      <ChevronDown className="text-white w-5 h-5" />
+                    </div>
+                  </div>
+              ) : (
+                  <div className="w-full max-w-sm sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-5xl">
+                    <h1 className={cn(
+                        "font-bold mb-6 sm:mb-8 leading-[1.1] tracking-tight",
+                        index === 1 // Adjusted for intro section
+                            ? "text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl"
+                            : "text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl"
+                    )}>
+                      {section.subtitle ? (
+                          <div className="space-y-1 sm:space-y-2">
+                            <div className="text-white">
+                              {section.title}
+                            </div>
+                            <div className="text-orange-500 text-[0.6em] sm:text-[0.7em] font-black uppercase tracking-widest">
+                              {section.subtitle}
                             </div>
                           </div>
-                      ))}
-                    </div>
-                )}
+                      ) : (
+                          <div className="text-white">
+                            {section.title}
+                          </div>
+                      )}
+                    </h1>
 
-                {/* Actions */}
-                {section.actions && (
                     <div className={cn(
-                        "flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4",
-                        section.align === 'center' && "justify-center",
-                        section.align === 'right' && "justify-end",
-                        (!section.align || section.align === 'left') && "justify-start"
+                        "text-white/80 leading-relaxed mb-8 sm:mb-10 text-base sm:text-lg lg:text-xl font-light",
+                        section.align === 'center' ? "max-w-full mx-auto text-center" : "max-w-full"
                     )}>
-                      {section.actions.map((action) => (
-                          <button
-                              key={action.label}
-                              onClick={action.onClick}
-                              className={cn(
-                                  "px-8 py-4 rounded-[32px] font-black transition-all duration-300 hover:scale-[1.05] active:scale-[0.95] text-sm sm:text-base w-full sm:w-auto",
-                                  action.variant === 'primary'
-                                      ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20 hover:bg-orange-600"
-                                      : "border-2 border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white/10 text-white"
-                              )}
-                          >
-                            {action.label}
-                          </button>
-                      ))}
+                      <p className="mb-3 sm:mb-4">{section.description}</p>
                     </div>
-                )}
-              </div>
+
+                    {/* Features */}
+                    {section.features && (
+                        <div className="grid gap-3 sm:gap-4 mb-8 sm:mb-10">
+                          {section.features.map((feature) => (
+                              <div
+                                  key={feature.title}
+                                  className="group p-4 sm:p-5 lg:p-6 rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 hover:border-orange-500/30"
+                              >
+                                <div className="flex items-start gap-3 sm:gap-4">
+                                  <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-orange-500 mt-1.5 sm:mt-2" />
+                                  <div className="flex-1 space-y-1.5 sm:space-y-2">
+                                    <h3 className="font-bold text-white text-base sm:text-lg">{feature.title}</h3>
+                                    <p className="text-white/60 leading-relaxed text-sm sm:text-base">{feature.description}</p>
+                                  </div>
+                                </div>
+                              </div>
+                          ))}
+                        </div>
+                    )}
+
+                    {/* Actions */}
+                    {section.actions && (
+                        <div className={cn(
+                            "flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4",
+                            section.align === 'center' && "justify-center",
+                            section.align === 'right' && "justify-end",
+                            (!section.align || section.align === 'left') && "justify-start"
+                        )}>
+                          {section.actions.map((action) => (
+                              <button
+                                  key={action.label}
+                                  onClick={action.onClick}
+                                  className={cn(
+                                      "px-8 py-4 rounded-[32px] font-black transition-all duration-300 hover:scale-[1.05] active:scale-[0.95] text-sm sm:text-base w-full sm:w-auto",
+                                      action.variant === 'primary'
+                                          ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20 hover:bg-orange-600"
+                                          : "border-2 border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white/10 text-white"
+                                  )}
+                              >
+                                {action.label}
+                              </button>
+                          ))}
+                        </div>
+                    )}
+                  </div>
+              )}
             </section>
         ))}
       </div>
@@ -288,8 +346,14 @@ function ScrollGlobe({ sections, globeConfig = defaultGlobeConfig, className }) 
 }
 
 // Demo component showcasing the ScrollGlobe
-export default function GlobeScrollDemo() {
+export default function GlobeScrollDemo({ onSectionChange }) {
   const demoSections = [
+    {
+      id: "intro",
+      isIntro: true,
+      video: "https://www.youtube.com/watch?v=V6Lw19Kg3Bs",
+      badge: "Welcome",
+    },
     {
       id: "hero",
       badge: "Logo",
@@ -347,6 +411,7 @@ export default function GlobeScrollDemo() {
   return (
       <ScrollGlobe
           sections={demoSections}
+          onSectionChange={onSectionChange}
       />
   );
 }
