@@ -6,7 +6,7 @@ import train from '../img/train.png'
 const ServiceBadge = ({ service }) => {
   const icons = {
     Flight: plane,
-    Hotel: hotel,
+    Tour: hotel,
     Train: train,
   };
   const Icon = icons[service];

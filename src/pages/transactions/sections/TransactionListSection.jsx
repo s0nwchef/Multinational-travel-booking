@@ -14,7 +14,7 @@ const TransactionListSection = () => {
     {
       date: 'Oct 22, 2023',
       orderId: '#HTL-4412',
-      service: 'Hotel',
+      service: 'Tour',
       paymentMethod: 'Mastercard',
       amount: '$450.00',
     },
