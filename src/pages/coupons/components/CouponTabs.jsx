@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 
 const CouponTabs = () => {
     const [activeTab, setActiveTab] = useState('All');
-    const tabs = ['All', 'Flights', 'Hotels'];
+    const tabs = ['All', 'Flights', 'Tours'];
 
     return (
         <div className="flex items-center justify-between mb-6">

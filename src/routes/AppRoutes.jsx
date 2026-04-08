@@ -8,6 +8,9 @@ import CheckoutPage from "../pages/CheckoutPage";
 import WriteReviewPage from "../pages/WriteReviewPage";
 import HelpPage from "../pages/HelpPage";
 import ToursPage from "../pages/ToursPage";
+import FlightsPage from "../pages/FlightsPage";
+import FlightSearchPage from "../pages/flights/FlightSearchPage";
+import SeatSelectionPage from "../pages/flights/SeatSelectionPage";
 import Destination from "../pages/Destination/layout/Destination.jsx";
 import RegionDetail from "../pages/RegionDetail/layout/RegionDetail.jsx";
 import CouponsPage from "../pages/coupons/CouponsPage";
@@ -46,8 +49,11 @@ export default function AppRoutes() {
           <Route path="/transactions" element={<TransactionPage />} />
           <Route path="/destination" element={<Destination />} />
 
-          {/* Tours */}
+          {/* Tours & Flights */}
           <Route path="tours" element={<ToursPage />} />
+          <Route path="flights" element={<FlightsPage />} />
+          <Route path="flights/search" element={<FlightSearchPage />} />
+          <Route path="flights/:flightId/seats" element={<SeatSelectionPage />} />
           <Route path="tour/:tourId" element={<TourDetailPage />} />
           <Route path="checkout" element={<CheckoutPage />} />
           <Route path="review/:tourId" element={<WriteReviewPage />} />

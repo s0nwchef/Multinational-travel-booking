@@ -133,10 +133,10 @@ function ScrollGlobe({ sections, globeConfig = defaultGlobeConfig, className, on
                 {section.video && (
                     <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
                       {section.video.includes("youtube.com") || section.video.includes("youtu.be") ? (
-                          <div className="absolute top-1/2 left-1/2 w-full h-full -translate-x-1/2 -translate-y-1/2 aspect-video min-w-full min-h-full">
+                          <div className="absolute top-1/2 left-1/2 w-[100vw] h-[56.25vw] min-h-[100vh] min-w-[177.77vh] -translate-x-1/2 -translate-y-1/2">
                             <iframe
                                 src={`https://www.youtube.com/embed/${section.video.split("v=")[1]?.split("&")[0] || section.video.split("/").pop()}?autoplay=1&mute=1&loop=1&playlist=${section.video.split("v=")[1]?.split("&")[0] || section.video.split("/").pop()}&controls=0&showinfo=0&rel=0&enablejsapi=1&modestbranding=1&iv_load_policy=3&vq=hd1080`}
-                                className="absolute top-0 left-0 w-full h-full border-none"
+                                className="absolute top-0 left-0 w-full h-full border-none pointer-events-none"
                                 allow="autoplay; encrypted-media"
                                 allowFullScreen
                             />

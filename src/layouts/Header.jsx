@@ -93,7 +93,7 @@ export default function Header({
   const navLinks = [
     { path: "/destination", label: "Destination" },
     { path: "/tours", label: "Tours" },
-    { path: "/hotels", label: "Hotels" },
+    { path: "/flights", label: "Flights" },
     { path: "/help", label: "Help" },
     { path: "/blog", label: "Blog" },
   ];

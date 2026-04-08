@@ -15,7 +15,7 @@ const ActivityCard = () => {
       <div className="space-y-2 p-4 text-black">
           <p className='text-[#64748B]'>RECENT CHARGES</p>
         <ActivityItem merchant="Kenya Safari" amount="$1,250.00" icon={plane}/>
-        <ActivityItem merchant="Hilton Hotel" amount="$450.00" icon={bed}/>
+        <ActivityItem merchant="City Tour" amount="$450.00" icon={bed}/>
       </div>
         <div className="flex mx-auto text-orange-600 font-bold p-4">
             <a href="">View Full Statement</a>
