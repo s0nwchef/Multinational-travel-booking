@@ -20,6 +20,21 @@ const App = () => {
         darkModeMediaQuery.removeEventListener("change", handleThemeChange);
   }, []);
 
+  useEffect(() => {
+    fetch("/api/health")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.dbConnected) {
+          console.log("MongoDB connected:", data);
+        } else {
+          console.warn("MongoDB not connected:", data);
+        }
+      })
+      .catch((error) => {
+        console.error("Cannot reach /api/health:", error);
+      });
+  }, []);
+
   return (
       <BrowserRouter>
         <AppRoutes />
