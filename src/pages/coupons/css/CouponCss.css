@@ -1,0 +1,46 @@
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.3);
+}
+.card-hover {
+    transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+.coupon-card {
+    position: relative;
+    border: 2px dashed #e5e7eb;
+}
+
+.coupon-card::before,
+.coupon-card::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #F8F9FA;
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.coupon-card::before { left: -10px; }
+.coupon-card::after { right: -10px; }
+.glass-card:active {
+    transform: scale(0.98);
+}
+.copy-btn {
+    transition: transform 0.2s ease;
+}
+
+.copy-btn:hover {
+    transform: scale(1.1);
+}
+
+.copy-btn:active {
+    transform: scale(0.9);
+}
