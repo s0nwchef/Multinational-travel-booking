@@ -1,6 +1,14 @@
-import React from 'react';
-import { FiGrid, FiBookOpen, FiHeart, FiTag, FiFileText, FiSettings, FiLogOut } from 'react-icons/fi';
-import { NavLink, useNavigate } from 'react-router-dom';
+import React from "react";
+import {
+  FiGrid,
+  FiBookOpen,
+  FiHeart,
+  FiTag,
+  FiFileText,
+  FiSettings,
+  FiLogOut,
+} from "react-icons/fi";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -13,12 +21,12 @@ const Sidebar = () => {
   };
 
   const menuItems = [
-    { name: 'Dashboard', icon: FiGrid, path: '/dashboard' },
-    { name: 'My Bookings', icon: FiBookOpen, path: '/dashboard' },
-    { name: 'Wishlist', icon: FiHeart, path: '/wishlist' },
-    { name: 'Coupons & Rewards', icon: FiTag, path: '/coupons' },
-    { name: 'Transactions', icon: FiFileText, path: '/transactions' },
-    { name: 'Settings', icon: FiSettings, path: '/settings' },
+    { name: "Dashboard", icon: FiGrid, path: "/dashboard" },
+    { name: "My Bookings", icon: FiBookOpen, path: "/my-bookings" },
+    { name: "Wishlist", icon: FiHeart, path: "/wishlist" },
+    { name: "Coupons & Rewards", icon: FiTag, path: "/coupons" },
+    { name: "Transactions", icon: FiFileText, path: "/transactions" },
+    { name: "Settings", icon: FiSettings, path: "/settings" },
   ];
 
   return (
@@ -26,10 +34,16 @@ const Sidebar = () => {
       {/* User Profile */}
       <div className="flex flex-col items-center mb-8">
         <div className="w-16 h-16 bg-gray-300 rounded-full mb-2 overflow-hidden">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="User" className="w-full h-full object-cover" />
+          <img
+            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex"
+            alt="User"
+            className="w-full h-full object-cover"
+          />
         </div>
         <h3 className="text-lg font-semibold">Alex Johnson</h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400">Member since 2021</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Member since 2021
+        </p>
       </div>
 
       {/* Navigation Menu */}
@@ -41,9 +55,11 @@ const Sidebar = () => {
                 to={item.path}
                 className={({ isActive }) => `
                   flex items-center p-3 rounded-lg transition-all
-                  ${isActive
-                    ? 'bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-400 border-l-4 border-orange-500'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}
+                  ${
+                    isActive
+                      ? "bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-400 border-l-4 border-orange-500"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }
                 `}
               >
                 <item.icon className="mr-3" />

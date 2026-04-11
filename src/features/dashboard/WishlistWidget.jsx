@@ -1,48 +1,21 @@
 import React from "react";
-import { Calendar } from "lucide-react";
-
-export const WishlistData = [
-  {
-    id: 1,
-    title: "Tokyo Tower Main Observatory Ticket",
-    startDate: "Oct 24, 2024",
-    endDate: "Oct 24, 2024",
-    price: 28.0,
-    image: "https://picsum.photos/seed/tokyo/200/200",
-    status: "CONFIRMED",
-    adults: 2,
-  },
-  {
-    id: 2,
-    title: "teamLab Planets TOKYO: Digital Art Museum Entrance Ticket",
-    startDate: "Oct 25, 2024",
-    endDate: "Oct 25, 2024",
-    price: 35.5,
-    image: "https://picsum.photos/seed/teamlab/200/200",
-    status: "PENDING",
-    adults: 1,
-  },
-  {
-    id: 3,
-    title: "Tokyo Subway Ticket (24/48/72 Hours) - Unlimited Rides",
-    startDate: "Oct 24, 2024",
-    endDate: "Oct 27, 2024",
-    price: 18.0,
-    image: "https://picsum.photos/seed/subway/200/200",
-    status: "CONFIRMED",
-    adults: 2,
-  },
-];
+import { MapPin } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { WISHLIST_DATA } from "../../data/wishlistData.js";
 
 const WishlistWidget = () => {
-  const displayItems = WishlistData.slice(0, 2);
+  const navigate = useNavigate();
+  const displayItems = WISHLIST_DATA.slice(0, 2);
 
   return (
     <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-50 w-full md:w-[350px]">
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-bold text-lg text-gray-900">Your Wishlist</h3>
-        <button className="text-orange-500 text-xs font-bold hover:underline">
-          See all ({WishlistData.length})
+        <button
+          onClick={() => navigate("/wishlist")}
+          className="text-orange-500 text-xs font-bold hover:underline"
+        >
+          See all ({WISHLIST_DATA.length})
         </button>
       </div>
 
@@ -50,6 +23,7 @@ const WishlistWidget = () => {
         {displayItems.map((item) => (
           <div
             key={item.id}
+            onClick={() => navigate("/wishlist")}
             className="flex items-center gap-4 group cursor-pointer"
           >
             <div className="w-16 h-16 bg-gray-100 rounded-2xl overflow-hidden shrink-0">
@@ -66,9 +40,9 @@ const WishlistWidget = () => {
               </h4>
 
               <div className="flex items-center gap-1.5 mt-1">
-                <Calendar size={12} className="text-gray-400" />
-                <p className="text-[10px] text-gray-400 font-medium">
-                  {item.startDate} - {item.endDate}
+                <MapPin size={12} className="text-orange-500" />
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                  {item.location}
                 </p>
               </div>
 
