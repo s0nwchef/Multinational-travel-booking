@@ -39,17 +39,14 @@ export default function AppRoutes() {
       <Route element={<MainLayout />}>
         {/* Homepage */}
         <Route path="/home" element={<HomePage />} />
-
         {/* Destination */}
         <Route path="/region/:regionName" element={<RegionDetail />} />
-
         {/* Coupons & User */}
         <Route path="/coupons" element={<CouponsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/transactions" element={<TransactionPage />} />
         <Route path="/destination" element={<Destination />} />
-
         {/* Tours & Flights */}
         <Route path="tours" element={<ToursPage />} />
         <Route path="flights" element={<FlightsPage />} />
@@ -58,25 +55,19 @@ export default function AppRoutes() {
         <Route path="tour/:tourId" element={<TourDetailPage />} />
         <Route path="checkout" element={<CheckoutPage />} />
         <Route path="review/:tourId" element={<WriteReviewPage />} />
-
         {/* Other */}
         <Route path="notifications" element={<Notifications />} />
         <Route path="help" element={<HelpPage />} />
-
         {/* Dashboard */}
         <Route path="dashboard" element={<Dashboard />} />
-
         {/* Wishlist */}
         <Route path="wishlist" element={<WishlistPage />} />
-
         {/* CancellModal */}
         <Route path="cancel-booking" element={<CancelBookingModal />} />
-
         {/* RefundStatusPage */}
         <Route path="refund-status" element={<RefundStatusPage />} />
-
         {/* My Bookings */}
-        <Route path="my-bookings" element={<MyBookingsPage />} />
+        <Route path="my-bookings" element={<MyBookingsPage />} />_
       </Route>
     </Routes>
   );
