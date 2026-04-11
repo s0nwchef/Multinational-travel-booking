@@ -25,5 +25,14 @@ export default defineConfig([
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
+
   },
+  {
+    files: ['server.js'], // Chỉ định rõ file chạy môi trường Node
+    languageOptions: {
+      globals: {
+        ...globals.node, // Cấp quyền sử dụng process, __dirname, __filename...
+      },
+    },
+  }
 ])
