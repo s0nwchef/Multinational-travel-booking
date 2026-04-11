@@ -11,109 +11,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const WISHLIST_DATA = [
-  {
-    id: 1,
-    image: "https://picsum.photos/seed/1/800/600",
-    location: "Kyoto, Japan",
-    title: "Kyoto Cherry Blossom Tour",
-    rating: 4.8,
-    reviews: 124,
-    price: 1299,
-    originalPrice: 1650,
-    badge: "20% OFF",
-  },
-  {
-    id: 2,
-    image: "https://picsum.photos/seed/2/800/600",
-    location: "Paris, France",
-    title: "Eiffel Tower Dinner Experience",
-    rating: 4.9,
-    reviews: 850,
-    price: 245,
-    badge: "LUXE",
-  },
-  {
-    id: 3,
-    image: "https://picsum.photos/seed/3/800/600",
-    location: "Bali, Indonesia",
-    title: "Uluwatu Temple Sunset Tour",
-    rating: 4.7,
-    reviews: 2100,
-    price: 45,
-    originalPrice: 60,
-    badge: "BEST SELLER",
-  },
-  {
-    id: 4,
-    image: "https://picsum.photos/seed/4/800/600",
-    location: "Rome, Italy",
-    title: "Colosseum Underground Tour",
-    rating: 4.9,
-    reviews: 3400,
-    price: 89,
-  },
-  {
-    id: 5,
-    image: "https://picsum.photos/seed/5/800/600",
-    location: "New York, USA",
-    title: "Manhattan Helicopter Sightseeing",
-    rating: 4.8,
-    reviews: 560,
-    price: 210,
-    originalPrice: 250,
-    badge: "POPULAR",
-  },
-  {
-    id: 6,
-    image: "https://picsum.photos/seed/6/800/600",
-    location: "Seoul, Korea",
-    title: "Gyeongbokgung Palace Photo Trip",
-    rating: 4.6,
-    reviews: 920,
-    price: 75,
-  },
-  {
-    id: 7,
-    image: "https://picsum.photos/seed/7/800/600",
-    location: "Sydney, Australia",
-    title: "Opera House Guided Backstage Tour",
-    rating: 4.7,
-    reviews: 310,
-    price: 120,
-  },
-  {
-    id: 8,
-    image: "https://picsum.photos/seed/8/800/600",
-    location: "Hanoi, Vietnam",
-    title: "Ha Long Bay 5-Star Cruise",
-    rating: 4.9,
-    reviews: 4500,
-    price: 95,
-    originalPrice: 130,
-    badge: "PROMO",
-  },
-  {
-    id: 9,
-    image: "https://picsum.photos/seed/9/800/600",
-    location: "Cairo, Egypt",
-    title: "Great Pyramids & Sphinx Private Tour",
-    rating: 4.8,
-    reviews: 1800,
-    price: 55,
-  },
-  {
-    id: 10,
-    image: "https://picsum.photos/seed/10/800/600",
-    location: "London, UK",
-    title: "Warner Bros. Studio Tour London",
-    rating: 4.9,
-    reviews: 12000,
-    price: 65,
-    badge: "MUST SEE",
-  },
-];
+import { WISHLIST_DATA } from "../data/wishlistData.js";
 
 const WishlistCard = ({ item }) => (
   <motion.div
@@ -187,7 +85,6 @@ export default function WishlistPage() {
 
   return (
     <div className="flex min-h-screen bg-[#F8F9FA]">
-      {/* SIDEBAR FIXED w-64 */}
       <div className="w-64 fixed inset-y-0 left-0 z-50">
         <Sidebar />
       </div>
