@@ -1,19 +1,18 @@
 import "../css/destination.css"
-function ExperienceCard({ experience }) {
+function ExperienceCard({ experience, className, style }) {
 
-  return (
-    <div className="experience-card">
+    return (
+        <div className={`experience-card ${className || ""}`} style={style}>
 
-      <img src={experience.image} />
+            <img src={experience.image} />
 
-       <div className="experience-text">
-           <p className="experience-title">{experience.title}</p>
-           <p className="experience-p">{experience.description}</p>
-       </div>
+            <div className="experience-text">
+                <p className="experience-title">{experience.title}</p>
+                <p className="experience-p">{experience.description}</p>
+            </div>
 
-
-    </div>
-  );
+        </div>
+    );
 }
 
 export default ExperienceCard;

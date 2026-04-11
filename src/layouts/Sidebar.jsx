@@ -22,7 +22,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-64 h-screen bg-white text-gray-900 dark:text-white flex flex-col justify-between p-4 border-r border-gray-100">
+    <div className="w-64 fixed top-[94px] left-0 h-[calc(100vh-500px)] ml-4  bg-white flex flex-col justify-between p-4 border-r border-gray-100 overflow-y-auto">
       {/* User Profile */}
       <div className="flex flex-col items-center mb-8">
         <div className="w-16 h-16 bg-gray-300 rounded-full mb-2 overflow-hidden">
@@ -42,7 +42,7 @@ const Sidebar = () => {
                 className={({ isActive }) => `
                   flex items-center p-3 rounded-lg transition-all
                   ${isActive
-                    ? 'bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-400 border-l-4 border-orange-500'
+                    ? 'bg-[#FFF7ED] text-orange-600 dark:text-orange-400 border-l-4 border-orange-500'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}
                 `}
               >
