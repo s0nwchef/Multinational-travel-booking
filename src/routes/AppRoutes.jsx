@@ -24,6 +24,7 @@ import Dashboard from "../pages/DashboardPage.jsx";
 import WishlistPage from "../pages/WishlistPage.jsx";
 import CancelBookingModal from "../pages/Modal/CancelBookingModal.jsx";
 import RefundStatusPage from "../pages/RefundStatusPage.jsx";
+import MyBookingsPage from "../pages/MyBookingPage.jsx";
 
 // import Sidebar from "../layouts/Sidebar.jsx";
 
@@ -31,49 +32,52 @@ import LandingPage from "../pages/LandingPage.jsx";
 
 export default function AppRoutes() {
   return (
-      <Routes>
-        {/* Landing Page */}
-        <Route path="/" element={<LandingPage />} />
+    <Routes>
+      {/* Landing Page */}
+      <Route path="/" element={<LandingPage />} />
 
-        <Route element={<MainLayout />}>
-          {/* Homepage */}
-          <Route path="/home" element={<HomePage />} />
+      <Route element={<MainLayout />}>
+        {/* Homepage */}
+        <Route path="/home" element={<HomePage />} />
 
-          {/* Destination */}
-          <Route path="/region/:regionName" element={<RegionDetail />} />
+        {/* Destination */}
+        <Route path="/region/:regionName" element={<RegionDetail />} />
 
-          {/* Coupons & User */}
-          <Route path="/coupons" element={<CouponsPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/payment" element={<PaymentPage />} />
-          <Route path="/transactions" element={<TransactionPage />} />
-          <Route path="/destination" element={<Destination />} />
+        {/* Coupons & User */}
+        <Route path="/coupons" element={<CouponsPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/transactions" element={<TransactionPage />} />
+        <Route path="/destination" element={<Destination />} />
 
-          {/* Tours & Flights */}
-          <Route path="tours" element={<ToursPage />} />
-          <Route path="flights" element={<FlightsPage />} />
-          <Route path="flights/search" element={<FlightSearchPage />} />
-          <Route path="flights/:flightId/seats" element={<SeatSelectionPage />} />
-          <Route path="tour/:tourId" element={<TourDetailPage />} />
-          <Route path="checkout" element={<CheckoutPage />} />
-          <Route path="review/:tourId" element={<WriteReviewPage />} />
+        {/* Tours & Flights */}
+        <Route path="tours" element={<ToursPage />} />
+        <Route path="flights" element={<FlightsPage />} />
+        <Route path="flights/search" element={<FlightSearchPage />} />
+        <Route path="flights/:flightId/seats" element={<SeatSelectionPage />} />
+        <Route path="tour/:tourId" element={<TourDetailPage />} />
+        <Route path="checkout" element={<CheckoutPage />} />
+        <Route path="review/:tourId" element={<WriteReviewPage />} />
 
-          {/* Other */}
-          <Route path="notifications" element={<Notifications />} />
-          <Route path="help" element={<HelpPage />} />
+        {/* Other */}
+        <Route path="notifications" element={<Notifications />} />
+        <Route path="help" element={<HelpPage />} />
 
-          {/* Dashboard */}
-          <Route path="dashboard" element={<Dashboard />} />
+        {/* Dashboard */}
+        <Route path="dashboard" element={<Dashboard />} />
 
-          {/* Wishlist */}
-          <Route path="wishlist" element={<WishlistPage />} />
+        {/* Wishlist */}
+        <Route path="wishlist" element={<WishlistPage />} />
 
-          {/* CancellModal */}
-          <Route path="cancel-booking" element={<CancelBookingModal />} />
+        {/* CancellModal */}
+        <Route path="cancel-booking" element={<CancelBookingModal />} />
 
-          {/* RefundStatusPage */}
-          <Route path="refund-status" element={<RefundStatusPage />} />
-        </Route>
-      </Routes>
+        {/* RefundStatusPage */}
+        <Route path="refund-status" element={<RefundStatusPage />} />
+
+        {/* MyBookingsPage */}
+        <Route path="my-bookings" element={<MyBookingsPage />} />
+      </Route>
+    </Routes>
   );
 }
