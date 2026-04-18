@@ -1,160 +1,53 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { MapPin, Heart, Star, ArrowRight, Loader2, Globe, RefreshCw, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-
-const STATIC_CHOICES = [
-  {
-    id: 'static-1',
-    image: 'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?q=80&w=800&auto=format&fit=crop',
-    location: 'Tokyo, Japan',
-    title: 'Tokyo Skytree Ticket with Tembo Deck & Galleria',
-    rating: '4.7',
-    reviews: '25k+',
-    price: 'US$ 18.50',
-    badge: 'BESTSELLER',
-    badgeColor: 'bg-primary'
-  },
-  {
-    id: 'static-2',
-    image: 'https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?q=80&w=800&auto=format&fit=crop',
-    location: 'Paris, France',
-    title: 'Eiffel Tower Direct Access Tour with Summit',
-    rating: '4.5',
-    reviews: '12k+',
-    price: 'US$ 45.00'
-  },
-  {
-    id: 'static-3',
-    image: 'https://images.unsplash.com/photo-1569288052389-dac9b01c9c05?q=80&w=800&auto=format&fit=crop',
-    location: 'Singapore',
-    title: 'Universal Studios Singapore One-Day Ticket',
-    rating: '4.8',
-    reviews: '30k+',
-    price: 'US$ 62.00',
-    badge: 'INSTANT CONFIRMATION',
-    badgeColor: 'bg-green-500'
-  },
-  {
-    id: 'static-4',
-    image: 'https://images.unsplash.com/photo-1564507592208-027004dc37bf?q=80&w=800&auto=format&fit=crop',
-    location: 'Agra, India',
-    title: 'Taj Mahal Skip-the-Line Ticket with Guide',
-    rating: '4.6',
-    reviews: '8k+',
-    price: 'US$ 15.00'
-  }
-];
-const GLOBAL_DESTINATIONS = [
-  { name: 'Paris, France', lat: 48.8566, lon: 2.3522 },
-  { name: 'Tokyo, Japan', lat: 35.6762, lon: 139.6503 },
-  { name: 'New York, USA', lat: 40.7128, lon: -74.0060 },
-  { name: 'Rome, Italy', lat: 41.9028, lon: 12.4964 },
-  { name: 'Sydney, Australia', lat: -33.8688, lon: 151.2093 },
-  { name: 'Rio de Janeiro, Brazil', lat: -22.9068, lon: -43.1729 },
-  { name: 'Cairo, Egypt', lat: 30.0444, lon: 31.2357 },
-  { name: 'Bangkok, Thailand', lat: 13.7563, lon: 100.5018 },
-  { name: 'Cape Town, South Africa', lat: -33.9249, lon: 18.4241 },
-  { name: 'London, UK', lat: 51.5074, lon: -0.1278 },
-  { name: 'Barcelona, Spain', lat: 41.3851, lon: 2.1734 },
-  { name: 'Seoul, South Korea', lat: 37.5665, lon: 126.9780 },
-  { name: 'Dubai, UAE', lat: 25.2048, lon: 55.2708 },
-  { name: 'Istanbul, Turkey', lat: 41.0082, lon: 28.9784 }
-];
 
 const FavoriteChoices = () => {
   const [choices, setChoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [apiKeyMissing, setApiKeyMissing] = useState(false);
-  const [currentCity, setCurrentCity] = useState('Global');
 
-  const API_KEY = "5ae2e3f221c38a28845f05b6f041fe371aa04c2e20cf1df520955b17";
-
-  const fetchOpenTripMapData = useCallback(async () => {
-    if (!API_KEY) {
-      console.warn('OpenTripMap API Key is missing. Using fallback data.');
-      setApiKeyMissing(true);
-      setChoices(STATIC_CHOICES);
-      setLoading(false);
-      return;
-    }
-
+  const fetchToursData = useCallback(async () => {
     try {
       setLoading(true);
-      setApiKeyMissing(false);
-      const city = GLOBAL_DESTINATIONS[Math.floor(Math.random() * GLOBAL_DESTINATIONS.length)];
-      setCurrentCity(city.name);
-
-      const radiusUrl = `https://api.opentripmap.com/0.1/en/places/radius?radius=15000&lon=${city.lon}&lat=${city.lat}&kinds=cultural,historic,natural,tourist_facilities&format=json&limit=15&apikey=${API_KEY}`;
-      const listResponse = await fetch(radiusUrl);
-
-      if (!listResponse.ok) {
-        let errorMsg = `Failed to fetch places list: ${listResponse.status}`;
-        try {
-          const errorData = await listResponse.json();
-          if (errorData.error) errorMsg += ` - ${errorData.error}`;
-        } catch (e) {
-          // Not JSON
-        }
-        throw new Error(errorMsg);
+      const response = await fetch('/api/tours');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch tours');
       }
 
-      const places = await listResponse.json();
+      const tours = await response.json();
+      
+      // Select 4 random tours to display, or just take the first ones if there are few
+      const selectedTours = [...tours].sort(() => 0.5 - Math.random()).slice(0, 4);
 
-      if (!Array.isArray(places) || places.length === 0) {
-        console.warn(`No places found for ${city.name}, using fallback.`);
-        setChoices(STATIC_CHOICES);
-        setLoading(false);
-        return;
-      }
-
-      const selectedPlaces = [...places].sort(() => 0.5 - Math.random()).slice(0, 4);
-
-      const detailedChoices = await Promise.all(
-          selectedPlaces.map(async (place, index) => {
-            try {
-              const detailUrl = `https://api.opentripmap.com/0.1/en/places/xid/${place.xid}?apikey=${API_KEY}`;
-              const detailResponse = await fetch(detailUrl);
-              const details = await detailResponse.json();
-
-              // Fallback images if API doesn't provide one
-              const fallbackImg = `https://images.unsplash.com/photo-${[
-                '1507525428034-b723cf961d3e',
-                '1469474968028-56623f02e42e',
-                '1476514525535-07fb3b4ae5f1',
-                '1500835595367-9917d4c50dd1'
-              ][index % 4]}?q=80&w=800&auto=format&fit=crop`;
-
-              return {
-                id: place.xid,
-                image: details.preview?.source || details.image || fallbackImg,
-                location: details.address?.city || details.address?.state || city.name,
-                title: details.name || 'Historic Landmark',
-                description: details.wikipedia_extracts?.text || `Discover the amazing history of ${details.name || 'this location'}.`,
-                rating: (4.2 + Math.random() * 0.7).toFixed(1),
-                reviews: (Math.floor(Math.random() * 10) + 1) + 'k+',
-                price: `US$ ${(Math.floor(Math.random() * 50) + 10).toFixed(2)}`,
-                badge: index === 0 ? 'RECOMMENDED' : index === 2 ? 'MUST SEE' : null,
-                badgeColor: index === 0 ? 'bg-indigo-600' : 'bg-rose-600'
-              };
-            } catch (err) {
-              return STATIC_CHOICES[index % STATIC_CHOICES.length];
-            }
-          })
-      );
+      const detailedChoices = selectedTours.map((tour, index) => {
+        return {
+          id: tour._id,
+          image: tour.images && tour.images.length > 0 ? tour.images[0] : 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=800&auto=format&fit=crop',
+          location: tour.destinationId?.name ? tour.destinationId.name : tour.destinationName || 'Vietnam',
+          title: tour.title,
+          description: tour.description,
+          rating: tour.averageRating ? tour.averageRating.toFixed(1) : (4.2 + Math.random() * 0.7).toFixed(1),
+          reviews: tour.totalReviews ? `${tour.totalReviews}+` : (Math.floor(Math.random() * 10) + 1) + 'k+',
+          price: `VNĐ ${tour.basePrice ? tour.basePrice.toLocaleString('vi-VN') : 'Liên hệ'}`,
+          badge: index === 0 ? 'RECOMMENDED' : index === 2 ? 'MUST SEE' : null,
+          badgeColor: index === 0 ? 'bg-indigo-600' : 'bg-rose-600'
+        };
+      });
 
       setChoices(detailedChoices);
     } catch (err) {
-      console.error('OpenTripMap integration failed:', err.message);
-      setChoices(STATIC_CHOICES);
+      console.error('Fetching tours failed:', err.message);
+      setChoices([]);
     } finally {
       setLoading(false);
     }
-  }, [API_KEY]);
+  }, []);
 
   useEffect(() => {
-    fetchOpenTripMapData();
-  }, [fetchOpenTripMapData, refreshKey]);
+    fetchToursData();
+  }, [fetchToursData, refreshKey]);
 
   const handleRefresh = (e) => {
     e.preventDefault();
@@ -200,17 +93,11 @@ const FavoriteChoices = () => {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Global Travel Suggestions</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Discovering hidden gems in <span className="text-primary font-bold">{currentCity}</span> and beyond</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Discovering hidden gems and popular tours for you.</p>
             </div>
           </motion.div>
 
           <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
-            {apiKeyMissing && (
-                <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-3 py-1.5 rounded-lg text-xs font-medium border border-amber-100 dark:border-amber-800/50">
-                  <Info className="w-4 h-4" />
-                  <span>API Key required for live data</span>
-                </div>
-            )}
             <div className="flex items-center gap-2">
               <motion.button
                   whileHover={{ rotate: 180 }}
@@ -218,7 +105,7 @@ const FavoriteChoices = () => {
                   onClick={handleRefresh}
                   disabled={loading}
                   className={`p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors text-gray-500 dark:text-gray-400 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  title="Refresh destinations"
+                  title="Refresh tours"
               >
                 <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
               </motion.button>
@@ -258,6 +145,10 @@ const FavoriteChoices = () => {
                       </div>
                   ))}
                 </motion.div>
+            ) : choices.length === 0 ? (
+               <div className="col-span-full flex justify-center items-center h-full text-gray-500">
+                 Oops! No tours available at the moment.
+               </div>
             ) : (
                 choices.map((choice, index) => (
                     <motion.div
