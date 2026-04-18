@@ -1,0 +1,450 @@
+{
+  "users": [
+    {
+      "email": "admin@bmtravel.com",
+      "fullName": "Admin Travel",
+      "passwordHash": "$2b$10$dummyHashAdmin123456",
+      "phoneNumber": "0901234567",
+      "role": "admin",
+      "loyaltyPoints": 9999
+    },
+    {
+      "email": "customer1@gmail.com",
+      "fullName": "Nguyễn Văn Khách Khám Phá",
+      "passwordHash": "$2b$10$dummyHashUser1123456",
+      "phoneNumber": "0987654321",
+      "role": "user",
+      "loyaltyPoints": 150
+    },
+    {
+      "email": "customer2@gmail.com",
+      "fullName": "Trần Thị Đi Phượt",
+      "passwordHash": "$2b$10$dummyHashUser2123456",
+      "phoneNumber": "0912345678",
+      "role": "user",
+      "loyaltyPoints": 50
+    }
+  ],
+  "tours": [
+    {
+      "title": "Vé Sun World Ba Na Hills Đà Nẵng",
+      "description": "Trải nghiệm cáp treo đạt kỷ lục Guinness, dạo bước trên Cầu Vàng huyền thoại, khám phá Làng Pháp lãng mạn và vui chơi thỏa thích tại Fantasy Park.",
+      "destinationName": "Đà Nẵng",
+      "basePrice": 900000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b",
+        "https://images.unsplash.com/photo-1583417311718-ef15f949cbaa"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "Sáng: Đi cáp treo lên đỉnh, tham quan Cầu Vàng, hầm rượu Debay. Trưa: Ăn buffet. Chiều: Vui chơi Fantasy Park."}
+      ],
+      "included": ["Vé cáp treo khứ hồi", "Vé vào cửa Fantasy Park", "Bảo hiểm du lịch"],
+      "excluded": ["Chi phí ăn uống ngoài chương trình", "Xe đưa đón từ trung tâm"],
+      "averageRating": 4.8,
+      "totalReviews": 1250
+    },
+    {
+      "title": "Du Thuyền Hạ Long Heritage 5 Sao",
+      "description": "Tận hưởng kỳ nghỉ sang trọng trên Vịnh Hạ Long - kỳ quan thiên nhiên thế giới. Trải nghiệm chèo súp (Kayak), bơi lội, tắm nắng, và tiệc hoàng hôn trên Sundeck.",
+      "destinationName": "Hạ Long",
+      "basePrice": 3250000,
+      "duration": 2,
+      "images": [
+        "https://images.unsplash.com/photo-1528127269322-539801943592",
+        "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "12:00 Lên tàu, ăn trưa buffet. Đầu giờ chiều tham quan Hang Sửng Sốt, chèo Kayak ở Hang Luồn. Tối ăn set menu, thưởng thức nhạc sống."},
+        {"day": 2, "activity": "Sáng tập Thái Cực Quyền trên boong, tham quan đảo Titiop. Ngắm cảnh vịnh, ăn trưa nhẹ và trở về bến lúc 11h."}
+      ],
+      "included": ["Phòng Suite có ban công riêng", "4 bữa ăn trên du thuyền", "Vé tham quan vịnh", "HDV tiếng Việt/Anh"],
+      "excluded": ["Đồ uống minibar", "Dịch vụ massage/spa"],
+      "averageRating": 4.9,
+      "totalReviews": 845
+    },
+    {
+      "title": "Tour Khám Phá Núi Phú Sĩ & Làng Cổ Oshino Hakkai",
+      "description": "Ngắm nhìn ngọn Núi Phú Sĩ hùng vĩ từ Trạm số 5 nổi tiếng, thỏa mắt phong cảnh Hồ Kawaguchi và làng thả bộ bình yên với các hồ nước tinh khiết Oshino Hakkai.",
+      "destinationName": "Tokyo",
+      "basePrice": 1650000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e",
+        "https://images.unsplash.com/photo-1522850959516-58f958dde2c1"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "08:00 Xuất phát từ Shinjuku. 10:00 Đến trạm số 5 Núi Phú Sĩ. 13:00 Thăm làng cổ Ninja Oshino Hakkai. 16:00 Check-in hồ Kawaguchi."}
+      ],
+      "included": ["Xe bus khứ hồi đời mới từ Tokyo", "Hướng dẫn viên tiếng Anh/Nhật", "Vé vào cổng các điểm"],
+      "excluded": ["Bữa trưa", "Tip cho tài xế"],
+      "averageRating": 4.7,
+      "totalReviews": 2100
+    },
+    {
+      "title": "Khám Phá Paris: Tháp Eiffel & Du Thuyền Sông Seine",
+      "description": "Trải nghiệm lãng mạn tại thủ đô ánh sáng. Lên đỉnh tháp Eiffel ngắm toàn cảnh Paris và xuôi dòng sông Seine thơ mộng.",
+      "destinationName": "Paris",
+      "basePrice": 2500000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1502602898657-3e91760cbb34",
+        "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "Sáng: Thăm tháp Eiffel tầng 2. Chiều: Lên thuyền Bateaux Parisiens du ngoạn sông Seine ngắm hoàng hôn"}
+      ],
+      "included": ["Vé tháp Eiffel ưu tiên", "Vé du thuyền sông Seine 1 giờ", "Audio guide"],
+      "excluded": ["Ăn uống cá nhân", "Đưa đón khách sạn"],
+      "averageRating": 4.8,
+      "totalReviews": 3540
+    },
+    {
+      "title": "Colosseum & Roman Forum Đặc Biệt",
+      "description": "Quay ngược thời gian về thời kỳ hoàng kim của Đế Chế La Mã. Khám phá bí ẩn của Đấu trường La Mã và Quảng trường La Mã cổ đại.",
+      "destinationName": "Rome",
+      "basePrice": 1850000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1552832230-c0197dd311b5",
+        "https://images.unsplash.com/photo-1531572753322-ad063cecc140"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "Vào cổng ưu tiên Đấu trường Colosseum. Tham quan các di tích dưới lòng đất và đi dạo tại Roman Forum."}
+      ],
+      "included": ["Vé Skip-the-line", "Hướng dẫn viên khảo cổ học", "Tai nghe thuyết minh"],
+      "excluded": ["Phương tiện di chuyển đến điểm hẹn"],
+      "averageRating": 4.9,
+      "totalReviews": 5200
+    },
+    {
+      "title": "Ngắm Cảnh Manhattan Bằng Trực Thăng",
+      "description": "Ngắm toàn cảnh New York hoa lệ từ trên không, chiêm ngưỡng Tượng nữ thần tự do, Tòa nhà Empire State và công viên Central Park.",
+      "destinationName": "New York",
+      "basePrice": 5500000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9",
+        "https://images.unsplash.com/photo-1522083165195-3424ed129620"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "Bay trực thăng 15 phút an toàn với tầm nhìn 180 độ. Thưởng thức champagne sau chuyến bay."}
+      ],
+      "included": ["Chuyến bay trực thăng 15 phút", "Phí bãi đỗ trực thăng", "Đồ uống nhẹ"],
+      "excluded": ["Chi phí ra bãi đỗ trực thăng", "Tip cho phi công"],
+      "averageRating": 4.9,
+      "totalReviews": 1150
+    },
+    {
+      "title": "Bali Xích Đu Rừng Già & Ruộng Bậc Thang Ubud",
+      "description": "Trải nghiệm chụp ảnh check-in cực đỉnh tại xích đu Jungle Swing, ghé thăm ruộng bậc thang xanh mướt Tegalalang và rừng khỉ thiêng bí ẩn.",
+      "destinationName": "Bali",
+      "basePrice": 1200000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1537996194471-e657df975ab4",
+        "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "Khám phá Ubud Monkey Forest. Thưởng thức xích đu Bali Swing. Tham quan ruộng bậc thang Tegalalang."}
+      ],
+      "included": ["Xe ô tô điều hòa", "Vé vào tất cả các điểm", "Tiền thuê váy Swing"],
+      "excluded": ["Bữa trưa", "Video quay bằng Flycam"],
+      "averageRating": 4.6,
+      "totalReviews": 980
+    },
+    {
+      "title": "Đảo Nami & Làng Pháp Petite France",
+      "description": "Dạo bước trên hàng cây thủy sam nổi tiếng của Bản Tình Ca Mùa Đông. Thăm ngôi làng Pháp nhỏ lãng mạn đầy màu sắc.",
+      "destinationName": "Seoul",
+      "basePrice": 1450000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1517154421773-0529f29ea451",
+        "https://images.unsplash.com/photo-1534190239940-9ba8944ea261"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "Xuất phát từ Myeongdong. Đi phà tới Đảo Nami. Bữa trưa ăn gà xào bắp cải. Chiều tham quan làng Pháp Petite France."}
+      ],
+      "included": ["Xe bus khứ hồi", "Vé phà Nami", "Hướng dẫn viên nói tiếng Anh"],
+      "excluded": ["Chi phí đạp xe trên đảo Nami", "Trò chơi Zipline"],
+      "averageRating": 4.7,
+      "totalReviews": 1780
+    },
+    {
+      "title": "Nhà Hát Sydney Opera House & Du Thuyền Cảng",
+      "description": "Tận mắt chứng kiến kiến trúc vĩ đại của nhà hát Opera dập dềnh trên sóng nước và thưởng thức tách cà phê ngắm cầu cảng Sydney.",
+      "destinationName": "Sydney",
+      "basePrice": 2200000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9",
+        "https://images.unsplash.com/photo-1528072164453-f4e8ef0d475a"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "Tour tham quan bên trong nhà hát. Chiều lên tàu du ngoạn vòng quanh vịnh Sydney ngắm hoàng hôn đỏ rực."}
+      ],
+      "included": ["Vé tham quan Opera House", "Vé du thuyền 2 tiếng", "Welcome drink"],
+      "excluded": ["Ăn tối", "Di chuyển về khách sạn"],
+      "averageRating": 4.8,
+      "totalReviews": 456
+    },
+    {
+      "title": "London Eye & Hầm Ngục Chết Chóc",
+      "description": "Thu trọn London hoa lệ từ độ cao 135m trên vòng xoay khổng lồ sau đó trải nghiệm cảm giác rùng rợn dưới lòng đất.",
+      "destinationName": "London",
+      "basePrice": 2800000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad",
+        "https://images.unsplash.com/photo-1520986606214-8b456906c813"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "Ngồi vòng quay London Eye 30 phút. Tiếp tục tham quan bảo tàng The London Dungeon khám phá lịch sử gai góc."}
+      ],
+      "included": ["Vé ưu tiên London Eye", "Vé The London Dungeon"],
+      "excluded": ["Mua sắm đồ lưu niệm", "Bảo hiểm"],
+      "averageRating": 4.5,
+      "totalReviews": 1210
+    },
+    {
+      "title": "Gardens by the Bay & Đài Quan Sát Supertree",
+      "description": "Miền đất tương lai rực rỡ với vườn thực vật trong nhà kính khổng lồ Cloud Forest và Flower Dome tuyệt đẹp.",
+      "destinationName": "Singapore",
+      "basePrice": 650000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1569288052389-dac9b01c9c05",
+        "https://images.unsplash.com/photo-1525625293386-3f8f99389edd"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "Tham quan 2 nhà kính sinh thái và đi dạo OCBC Skyway. Thưởng thức show ánh sáng buổi tối lúc 19:45."}
+      ],
+      "included": ["Vé vào cổng 2 Domes", "Vé đi bộ trên không OCBC"],
+      "excluded": ["Hướng dẫn viên tận nơi"],
+      "averageRating": 4.9,
+      "totalReviews": 8900
+    },
+    {
+      "title": "Sa Mạc Safari Dubai & Tiệc Nướng BBQ",
+      "description": "Thách thức tốc độ với trải nghiệm đua xe trên đồi cát, cưỡi lạc đà ngắm hoàng hôn và múa bụng truyền thống.",
+      "destinationName": "Dubai",
+      "basePrice": 1800000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1512453979798-5ea266f8880c",
+        "https://images.unsplash.com/photo-1546412414-8035e1776c9a"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "14:00 Đón khách bằng xe 2 cầu Land Cruiser. Tham gia Dune Bashing. Ăn tối buffet nướng BBQ ở trại sa mạc."}
+      ],
+      "included": ["Đưa đón bằng xe 4x4", "Bữa tối BBQ", "Vẽ Henna", "Nước uống không giới hạn"],
+      "excluded": ["Xe địa hình ATV", "Nước có cồn"],
+      "averageRating": 4.8,
+      "totalReviews": 3450
+    },
+    {
+      "title": "Khám Phá Chùa Phật Ngọc & Chợ Đêm Asiatique",
+      "description": "Chiêm ngưỡng sự lộng lẫy uy nghiêm của Hoàng Cung Thái Lan và thỏa sức mua sắm ẩm thực tại chợ đêm đẹp nhất ven sông.",
+      "destinationName": "Bangkok",
+      "basePrice": 850000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a",
+        "https://images.unsplash.com/photo-1509017174183-0b7e0278f1ec"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "Buổi sáng: Tham quan Hoàng Cung và Chùa Wat Phra Kaew. Chiều muộn: Tự do đi tàu tới Asiatique."}
+      ],
+      "included": ["Vé Grand Palace", "Vé lên thuyền qua sông", "HDV người Thái nói tiếng Anh"],
+      "excluded": ["Quy định mặc quần áo dài tự túc", "Bữa tối tại chợ đêm"],
+      "averageRating": 4.7,
+      "totalReviews": 670
+    },
+    {
+      "title": "Thuyền Gondola Kênh Đào Venice",
+      "description": "Dạo xuôi theo những dòng kênh len lõi qua các con phố nhỏ thanh bình của châu Âu trong tiếng hát du dương của người chèo thuyền.",
+      "destinationName": "Venice",
+      "basePrice": 1500000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9",
+        "https://images.unsplash.com/photo-1501504905252-473c47e087f8"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "Chuyến ngắm cảnh lãng mạn kéo dài 30-40 phút quanh các kênh lớn nhỏ và Grand Canal."}
+      ],
+      "included": ["Thuyền Gondola chung (tối đa 5 người)", "Bình luận trên app điện thoại"],
+      "excluded": ["Thuyền Gondola thuê riêng ($100 phụ thu)"],
+      "averageRating": 4.4,
+      "totalReviews": 2100
+    },
+    {
+      "title": "Khám Phá Di Tích Acropolis & Bảo Tàng Đỉnh Olympus",
+      "description": "Leo lên ngọn đồi thần thoại Acropolis ngắm đền Parthenon uy nghi, bảo chứng của thần quyền và văn minh Hy Lạp.",
+      "destinationName": "Athens",
+      "basePrice": 1350000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1555993539-1732b0258235",
+        "https://images.unsplash.com/photo-1533105079780-92b9be482077"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "Tham quan quần thể di tích Acropolis trong vòng 2 giờ. Trưa: ăn Gyros rưới sốt truyền thống miễn phí."}
+      ],
+      "included": ["Vé vào cổng Acropolis", "Hướng dẫn viên chuyên nghiệp"],
+      "excluded": ["Không bao gồm xe đưa đón đón khách ngoài trung tâm"],
+      "averageRating": 4.8,
+      "totalReviews": 890
+    },
+    {
+      "title": "Kim Tự Tháp Giza & Trải Nghiệm Cưỡi Lạc Đà",
+      "description": "Chinh phục kỳ quan vĩ đại duy nhất còn sót lại của Thế Giới Cổ Đại trong một buổi chiều ráng vàng rực rỡ.",
+      "destinationName": "Cairo",
+      "basePrice": 1550000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1539650116574-8efeb43e2b50",
+        "https://images.unsplash.com/photo-1503177119275-0aa32b3a9368"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "Thăm quan 3 kim tự tháp lớn và tượng Nhân Sư. Trải nghiệm cưỡi lạc đà đi trên sa mạc 1 giờ đồng hồ."}
+      ],
+      "included": ["Vé vào khu tham quan", "Thuê Lạc đà", "HDV địa phương"],
+      "excluded": ["Vé đi vào tận bên trong lòng Kim tự tháp"],
+      "averageRating": 4.3,
+      "totalReviews": 425
+    },
+    {
+      "title": "Hành Trình Di Sản Machu Picchu 1 Ngày Đặc Sắc",
+      "description": "Đi tàu hỏa xuyên thung lũng thiêng để đặt chân đến Thành Phố Đã Mất Của Người Inca - một kiệt tác nằm giữa rừng rậm Peru.",
+      "destinationName": "Cusco",
+      "basePrice": 6500000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1587595431973-160d0d94add1",
+        "https://images.unsplash.com/photo-1526392060635-9d6019884377"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "Đi tàu Inca Rail từ Cusco. Đi xe buýt lên núi và tham quan trọn vẹn khu tàn tích trong 3 giờ."}
+      ],
+      "included": ["Vé tàu hỏa khứ hồi", "Vé xe bus lên đỉnh", "Vé Machu Picchu"],
+      "excluded": ["Chi phí ăn ở thủ đô Lima"],
+      "averageRating": 4.9,
+      "totalReviews": 732
+    },
+    {
+      "title": "Tour Khinh Khí Cầu Ở Đảo Nham Thạch Cappadocia",
+      "description": "Thức dậy từ sáng sớm để ngắm hàng nghìn quả khinh khí cầu khổng lồ bay lên giữa địa hình đá ống khói thần tiên kỳ diệu.",
+      "destinationName": "Istanbul",
+      "basePrice": 4200000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200",
+        "https://images.unsplash.com/photo-1506260408121-e353d10b87c7"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "04:30 đón tại khách sạn. Ngắm bình minh trên không 1 tiếng. Trao giấy chứng nhận và uống Sâm-panh kỷ niệm."}
+      ],
+      "included": ["Bay 1 giờ an toàn", "Bữa sáng nhẹ", "Thức uống lễ mừng"],
+      "excluded": ["Phương tiện đi di chuyển từ quốc gia khác sang Thổ Nhĩ Kỳ"],
+      "averageRating": 5.0,
+      "totalReviews": 11300
+    },
+    {
+      "title": "Maldives: Tàu Ngầm Dưới Đáy Đại Dương & Lặn Cùng Cá Đuối",
+      "description": "Khám phá thảm san hô nguyên sơ của kỳ quan Ấn Độ Dương bằng loại tàu ngầm Whale Submarine có một không hai.",
+      "destinationName": "Male",
+      "basePrice": 3500000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1514282401047-d79a71a590e8",
+        "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "Xuống tàu ngầm ở độ sâu 40m ngắm rạn san hô hoang sơ. Sau đó lên mặt nước thư giãn trên cano."}
+      ],
+      "included": ["Chuyến đi tàu ngầm dài 45 phút", "Đưa đón từ sân bay Male"],
+      "excluded": ["Thuế bảo vệ môi trường"],
+      "averageRating": 4.6,
+      "totalReviews": 312
+    },
+    {
+      "title": "Bán Đảo Hảo Vọng & Khám Phá Trạm Chim Cánh Cụt Boulders",
+      "description": "Cảm giác nghẹt thở khi đứng rìa thế giới, chứng kiến sự giao thoa của 2 đại dương và đùa giỡn với hàng ngàn chú chim cánh cụt bé xíu.",
+      "destinationName": "Cape Town",
+      "basePrice": 1950000,
+      "duration": 1,
+      "images": [
+        "https://images.unsplash.com/photo-1580060839134-75a5edca2e99",
+        "https://images.unsplash.com/photo-1516258763590-0f9c2d1b54a7"
+      ],
+      "itinerary": [
+        {"day": 1, "activity": "Lái xe qua đường Chapman Peak đẹp nhất thế giới. Ngắm Mũi Hảo Vọng và tản bộ tại bãi biển Boulders."}
+      ],
+      "included": ["Xe Minibus du lịch", "Vé Công Viên Quốc Gia Bán Đảo Hảo Vọng"],
+      "excluded": ["Bữa trưa tôm hùm"],
+      "averageRating": 4.7,
+      "totalReviews": 841
+    }
+  ],
+  "flights": [
+    {
+      "airline": "Vietnam Airlines",
+      "flightNumber": "VN245",
+      "departure": {
+        "airportCode": "HAN",
+        "time": "2024-08-15T08:00:00Z"
+      },
+      "arrival": {
+        "airportCode": "SGN",
+        "time": "2024-08-15T10:15:00Z"
+      },
+      "price": 1850000,
+      "availableSeats": 45,
+      "seatMap": [
+        {"seatNumber": "1A", "isAvailable": false, "class": "business"},
+        {"seatNumber": "12C", "isAvailable": true, "class": "economy"},
+        {"seatNumber": "15B", "isAvailable": true, "class": "economy"}
+      ]
+    },
+    {
+      "airline": "Vietjet Air",
+      "flightNumber": "VJ123",
+      "departure": {
+        "airportCode": "SGN",
+        "time": "2024-08-20T14:30:00Z"
+      },
+      "arrival": {
+        "airportCode": "DAD",
+        "time": "2024-08-20T15:45:00Z"
+      },
+      "price": 950000,
+      "availableSeats": 115,
+      "seatMap": [
+        {"seatNumber": "3A", "isAvailable": true, "class": "economy"},
+        {"seatNumber": "4F", "isAvailable": true, "class": "economy"}
+      ]
+    }
+  ],
+  "coupons": [
+    {
+      "code": "SUMMERVIBES",
+      "discountType": "percentage",
+      "discountValue": 10,
+      "minPurchaseAmount": 2000000,
+      "validFrom": "2024-05-01T00:00:00Z",
+      "validUntil": "2024-09-30T23:59:59Z",
+      "usageLimit": 1000
+    },
+    {
+      "code": "APP500K",
+      "discountType": "fixed_amount",
+      "discountValue": 500000,
+      "minPurchaseAmount": 5000000,
+      "validFrom": "2024-01-01T00:00:00Z",
+      "validUntil": "2024-12-31T23:59:59Z",
+      "usageLimit": 500
+    }
+  ]
+}
