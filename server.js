@@ -24,14 +24,22 @@ async function startServer() {
     app.use(express.json());
 
     // 1. KẾT NỐI MONGODB
-    const MONGODB_URI = process.env.MONGODB_URI;
+    let MONGODB_URI = process.env.MONGODB_URI;
     if (MONGODB_URI) {
-        try {
-            await mongoose.connect(MONGODB_URI);
-            console.log('✅ Đã kết nối thành công tới MongoDB Atlas!');
-        } catch (error) {
-            console.error('Mongo connect error full:', error);
-            console.error('Mongo connect error message:', error.message);
+        // Remove trailing/leading quotes if the user accidentally included them
+        MONGODB_URI = MONGODB_URI.trim().replace(/^["']|["']$/g, '');
+        
+        if (!MONGODB_URI.startsWith('mongodb://') && !MONGODB_URI.startsWith('mongodb+srv://')) {
+            console.error('Mongo connect error full: MongoParseError: Invalid scheme, expected connection string to start with "mongodb://" or "mongodb+srv://"');
+            console.error('⚠️ Cảnh báo: MONGODB_URI không hợp lệ. Chuỗi kết nối phải bắt đầu bằng "mongodb://" hoặc "mongodb+srv://".');
+        } else {
+            try {
+                await mongoose.connect(MONGODB_URI);
+                console.log('✅ Đã kết nối thành công tới MongoDB Atlas!');
+            } catch (error) {
+                console.error('Mongo connect error full:', error);
+                console.error('Mongo connect error message:', error.message);
+            }
         }
     } else {
         console.warn('⚠️ Cảnh báo: Chưa tìm thấy MONGODB_URI trong file .env. Vui lòng thiết lập trong Settings.');
@@ -39,10 +47,10 @@ async function startServer() {
 
     // 2. KHAI BÁO CÁC API ROUTES (Backend)
     // Import routes
-    const tourRoutes = (await import('./src/routes/tourRoutes.js')).default;
-    const destinationRoutes = (await import('./src/routes/destinationRoutes.js')).default;
-    const bookingRoutes = (await import('./src/routes/bookingRoutes.js')).default;
-    const userRoutes = (await import('./src/routes/userRoutes.js')).default;
+    const tourRoutes = (await import('./server/routes/tourRoutes.js')).default;
+    const destinationRoutes = (await import('./server/routes/destinationRoutes.js')).default;
+    const bookingRoutes = (await import('./server/routes/bookingRoutes.js')).default;
+    const userRoutes = (await import('./server/routes/userRoutes.js')).default;
 
     // API test để kiểm tra server có hoạt động không
     app.get('/api/health', (req, res) => {

@@ -1,20 +1,15 @@
-import express from 'express';
 import Tour from '../models/Tour.js';
 
-const router = express.Router();
-
-// Lấy danh sách tất cả các tour
-router.get('/', async (req, res) => {
+export const getAllTours = async (req, res) => {
     try {
         const tours = await Tour.find().populate('destinationId');
         res.json(tours);
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi lấy danh sách tour', error: error.message });
     }
-});
+};
 
-// Lấy chi tiết một tour theo ID
-router.get('/:id', async (req, res) => {
+export const getTourById = async (req, res) => {
     try {
         const tour = await Tour.findById(req.params.id).populate('destinationId');
         if (!tour) {
@@ -24,10 +19,9 @@ router.get('/:id', async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi lấy thông tin tour', error: error.message });
     }
-});
+};
 
-// Tạo tour mới
-router.post('/', async (req, res) => {
+export const createTour = async (req, res) => {
     try {
         const newTour = new Tour(req.body);
         const savedTour = await newTour.save();
@@ -35,10 +29,9 @@ router.post('/', async (req, res) => {
     } catch (error) {
         res.status(400).json({ message: 'Lỗi khi tạo tour', error: error.message });
     }
-});
+};
 
-// Cập nhật tour
-router.put('/:id', async (req, res) => {
+export const updateTour = async (req, res) => {
     try {
         const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
         if (!updatedTour) {
@@ -48,10 +41,9 @@ router.put('/:id', async (req, res) => {
     } catch (error) {
         res.status(400).json({ message: 'Lỗi khi cập nhật tour', error: error.message });
     }
-});
+};
 
-// Xóa tour
-router.delete('/:id', async (req, res) => {
+export const deleteTour = async (req, res) => {
     try {
         const deletedTour = await Tour.findByIdAndDelete(req.params.id);
         if (!deletedTour) {
@@ -61,6 +53,4 @@ router.delete('/:id', async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi xóa tour', error: error.message });
     }
-});
-
-export default router;
+};
