@@ -14,9 +14,10 @@ const flightSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   availableSeats: { type: Number, required: true },
   seatMap: [{
-    seatNumber: String,
-    isAvailable: Boolean,
-    class: { type: String, enum: ['economy', 'business', 'first_class'] }
+    seatNumber: { type: String, required: true },
+    seatClass: { type: String, enum: ['economy', 'business', 'first_class'], default: 'economy' },
+    status: { type: String, enum: ['Available', 'Booked', 'Blocked'], default: 'Available' },
+    priceMultiplier: { type: Number, default: 1.0 }
   }]
 });
 

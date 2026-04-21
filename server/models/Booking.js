@@ -4,14 +4,28 @@ const bookingSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   bookingType: { type: String, enum: ['tour', 'flight'], required: true },
   itemId: { type: mongoose.Schema.Types.ObjectId, required: true }, // Ref: TourSchedule hoặc Flight
+  bookingCode: { type: String, unique: true, sparse: true },
   travelers: [{
     fullName: String,
     age: Number,
-    documentId: String
+    documentId: String,
+    seatNumber: String,
+    baggage: { type: String, default: "7kg xách tay" }
   }],
-  totalAmount: { type: Number, required: true },
+  
+  // Bóc tách kế toán
+  baseFare: { type: Number, default: 0 },
+  baggageFee: { type: Number, default: 0 },
+  taxAmount: { type: Number, default: 0 },
+  discountAmount: { type: Number, default: 0 },
+  grandTotal: { type: Number, required: true },
+  totalAmount: { type: Number }, // Giữ lại để tương thích ngược với code cũ,
+  
   couponApplied: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
-  status: { type: String, enum: ['pending', 'confirmed', 'cancelled', 'completed'], default: 'pending' },
+  status: { type: String, enum: ['pending', 'paid', 'confirmed', 'ticketed', 'cancelled', 'completed', 'refund_pending', 'refunded'], default: 'pending' },
+  penaltyFee: { type: Number, default: 0 },
+  processedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  
   paymentStatus: { type: String, enum: ['unpaid', 'paid', 'refunded'], default: 'unpaid' },
   bookingDate: { type: Date, default: Date.now },
   
