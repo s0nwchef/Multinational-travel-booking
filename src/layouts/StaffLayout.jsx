@@ -1,0 +1,213 @@
+import React, { useState } from 'react';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  MapPin, 
+  Calendar, 
+  Users, 
+  BarChart3,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+  ChevronRight,
+  User
+} from 'lucide-react';
+
+const StaffLayout = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [user] = useState({
+    name: 'Nguyễn Văn A',
+    role: 'Tour Operator',
+    email: 'operator@travel.com'
+  });
+  const navigate = useNavigate();
+
+  const navigationItems = [
+    { 
+      name: 'Dashboard', 
+      icon: LayoutDashboard, 
+      path: '/staff/dashboard',
+      color: 'text-orange-500'
+    },
+    { 
+      name: 'Tours', 
+      icon: MapPin, 
+      path: '/staff/tours',
+      color: 'text-blue-500'
+    },
+    { 
+      name: 'Bookings', 
+      icon: Calendar, 
+      path: '/staff/bookings',
+      color: 'text-green-500'
+    },
+    { 
+      name: 'Customers', 
+      icon: Users, 
+      path: '/staff/customers',
+      color: 'text-purple-500'
+    },
+    { 
+      name: 'Analytics', 
+      icon: BarChart3, 
+      path: '/staff/analytics',
+      color: 'text-pink-500'
+    },
+    { 
+      name: 'Settings', 
+      icon: Settings, 
+      path: '/staff/settings',
+      color: 'text-gray-500'
+    },
+  ];
+
+  const handleLogout = () => {
+    // Xử lý logout logic ở đây
+    navigate('/');
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <aside className={`
+        ${sidebarOpen ? 'w-80' : 'w-20'} 
+        bg-white shadow-xl transition-all duration-300 
+        flex flex-col border-r border-gray-200
+        fixed h-full z-40
+      `}>
+        {/* Logo và toggle button */}
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+          {sidebarOpen ? (
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center">
+                <MapPin className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">Staff Portal</h1>
+                <p className="text-xs text-gray-500">Tour Operator</p>
+              </div>
+            </div>
+          ) : (
+            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto">
+              <MapPin className="w-6 h-6 text-white" />
+            </div>
+          )}
+          
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          >
+            {sidebarOpen ? (
+              <X className="w-5 h-5 text-gray-500" />
+            ) : (
+              <Menu className="w-5 h-5 text-gray-500" />
+            )}
+          </button>
+        </div>
+
+        {/* User info */}
+        <div className="p-6 border-b border-gray-100">
+          {sidebarOpen ? (
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center">
+                <User className="w-6 h-6 text-orange-600" />
+              </div>
+              <div className="flex-1">
+                <h2 className="font-semibold text-gray-900 truncate">{user.name}</h2>
+                <p className="text-sm text-gray-500 truncate">{user.role}</p>
+                <p className="text-xs text-gray-400 truncate">{user.email}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mx-auto">
+              <User className="w-6 h-6 text-orange-600" />
+            </div>
+          )}
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-2">
+          {navigationItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.name}
+                to={item.path}
+                className={({ isActive }) => `
+                  flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200
+                  ${isActive 
+                    ? 'bg-orange-50 text-orange-600 font-semibold' 
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }
+                  ${sidebarOpen ? 'justify-start' : 'justify-center'}
+                `}
+              >
+                <Icon className={`w-5 h-5 ${item.color}`} />
+                {sidebarOpen && (
+                  <span className="flex-1">{item.name}</span>
+                )}
+                {sidebarOpen && (
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                )}
+              </NavLink>
+            );
+          })}
+        </nav>
+
+        {/* Logout button */}
+        <div className="p-6 border-t border-gray-100">
+          <button
+            onClick={handleLogout}
+            className={`
+              w-full flex items-center gap-3 px-4 py-3 rounded-2xl 
+              text-gray-600 hover:bg-gray-50 hover:text-gray-900 
+              transition-all duration-200
+              ${sidebarOpen ? 'justify-start' : 'justify-center'}
+            `}
+          >
+            <LogOut className="w-5 h-5 text-gray-500" />
+            {sidebarOpen && <span className="flex-1">Đăng xuất</span>}
+          </button>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main className={`
+        flex-1 transition-all duration-300
+        ${sidebarOpen ? 'ml-80' : 'ml-20'}
+      `}>
+        {/* Header */}
+        <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Staff Dashboard</h1>
+              <p className="text-gray-500">Quản lý tour và booking hiệu quả</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="w-2 h-2 bg-orange-500 rounded-full absolute -top-1 -right-1 animate-pulse"></div>
+                <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                  <Calendar className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+              <div className="relative">
+                <div className="w-2 h-2 bg-green-500 rounded-full absolute -top-1 -right-1 animate-pulse"></div>
+                <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                  <Users className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Content */}
+        <div className="p-8">
+          <Outlet />
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default StaffLayout;
