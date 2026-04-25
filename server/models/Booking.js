@@ -5,6 +5,9 @@ const bookingSchema = new mongoose.Schema({
   bookingType: { type: String, enum: ['tour', 'flight'], required: true },
   itemId: { type: mongoose.Schema.Types.ObjectId, required: true }, // Ref: TourSchedule hoặc Flight
   bookingCode: { type: String, unique: true, sparse: true },
+  bookingReference: { type: String },
+  customerName: { type: String },
+  tourId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tour' },
   travelers: [{
     fullName: String,
     age: Number,

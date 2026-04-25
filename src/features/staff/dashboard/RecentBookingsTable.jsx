@@ -1,7 +1,7 @@
 import React from 'react';
 import { CheckCircle, Clock, XCircle, CheckCheck } from 'lucide-react';
 
-const RecentBookingsTable = ({ bookings }) => {
+const RecentBookingsTable = ({ bookings, onViewBooking }) => {
   const statusConfig = {
     confirmed: {
       icon: CheckCircle,
@@ -30,6 +30,7 @@ const RecentBookingsTable = ({ bookings }) => {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return '-';
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN', {
       day: '2-digit',
@@ -39,12 +40,23 @@ const RecentBookingsTable = ({ bookings }) => {
   };
 
   const formatCurrency = (amount) => {
+    if (!amount) return '0 ₫';
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND',
       minimumFractionDigits: 0
-    }).format(amount * 1000);
+    }).format(amount);
   };
+
+  // Map API data
+  const mappedBookings = bookings.map(booking => ({
+    id: booking._id || booking.id || booking.bookingReference || 'N/A',
+    customerName: booking.userId?.fullName || booking.customerName || 'Khách hàng',
+    tourName: booking.tourId?.title || booking.tourName || '-',
+    bookingDate: booking.bookingDate || booking.createdAt,
+    status: booking.status,
+    amount: booking.totalAmount || booking.amount || 0
+  }));
 
   return (
     <div className="overflow-x-auto">
@@ -61,8 +73,8 @@ const RecentBookingsTable = ({ bookings }) => {
           </tr>
         </thead>
         <tbody>
-          {bookings.map((booking) => {
-            const status = statusConfig[booking.status];
+          {mappedBookings.map((booking) => {
+            const status = statusConfig[booking.status] || statusConfig.pending;
             const StatusIcon = status.icon;
             
             return (
@@ -99,14 +111,12 @@ const RecentBookingsTable = ({ bookings }) => {
                 </td>
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-2">
-                    <button className="p-2 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors">
+                    <button 
+                      onClick={() => onViewBooking?.(booking.id)}
+                      className="p-2 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                    >
                       <span className="text-sm font-medium">Xem</span>
                     </button>
-                    {booking.status === 'pending' && (
-                      <button className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors">
-                        <span className="text-sm font-medium">Xác nhận</span>
-                      </button>
-                    )}
                   </div>
                 </td>
               </tr>
@@ -114,6 +124,12 @@ const RecentBookingsTable = ({ bookings }) => {
           })}
         </tbody>
       </table>
+
+      {mappedBookings.length === 0 && (
+        <div className="py-8 text-center text-gray-500">
+          Chưa có booking nào
+        </div>
+      )}
     </div>
   );
 };

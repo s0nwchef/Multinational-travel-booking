@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -13,15 +13,32 @@ import {
   ChevronRight,
   User
 } from 'lucide-react';
+import authService from '../services/authService.js';
 
 const StaffLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [user] = useState({
-    name: 'Nguyễn Văn A',
-    role: 'Tour Operator',
-    email: 'operator@travel.com'
-  });
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) {
+        // Try to fetch from server
+        const freshUser = await authService.fetchCurrentUser();
+        if (freshUser) {
+          setUser(freshUser);
+        } else {
+          // Redirect to home if not authenticated
+          navigate('/home');
+        }
+      } else {
+        setUser(currentUser);
+      }
+    };
+
+    loadUser();
+  }, [navigate]);
 
   const navigationItems = [
     { 
@@ -62,10 +79,26 @@ const StaffLayout = () => {
     },
   ];
 
-  const handleLogout = () => {
-    // Xử lý logout logic ở đây
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      navigate('/home');
+    } catch (error) {
+      console.error('Logout error:', error);
+      navigate('/home');
+    }
   };
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Đang tải...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -111,17 +144,36 @@ const StaffLayout = () => {
           {sidebarOpen ? (
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center">
-                <User className="w-6 h-6 text-orange-600" />
+                {user.avatarUrl ? (
+                  <img 
+                    src={user.avatarUrl} 
+                    alt={user.fullName}
+                    className="w-12 h-12 rounded-2xl object-cover"
+                  />
+                ) : (
+                  <User className="w-6 h-6 text-orange-600" />
+                )}
               </div>
               <div className="flex-1">
-                <h2 className="font-semibold text-gray-900 truncate">{user.name}</h2>
-                <p className="text-sm text-gray-500 truncate">{user.role}</p>
+                <h2 className="font-semibold text-gray-900 truncate">{user.fullName || user.name}</h2>
+                <p className="text-sm text-gray-500 truncate">
+                  {user.role === 'tour_operator' ? 'Tour Operator' : 
+                   user.role === 'admin' ? 'Administrator' : user.role}
+                </p>
                 <p className="text-xs text-gray-400 truncate">{user.email}</p>
               </div>
             </div>
           ) : (
             <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mx-auto">
-              <User className="w-6 h-6 text-orange-600" />
+              {user.avatarUrl ? (
+                <img 
+                  src={user.avatarUrl} 
+                  alt={user.fullName}
+                  className="w-12 h-12 rounded-2xl object-cover"
+                />
+              ) : (
+                <User className="w-6 h-6 text-orange-600" />
+              )}
             </div>
           )}
         </div>

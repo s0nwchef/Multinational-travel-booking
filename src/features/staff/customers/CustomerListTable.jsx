@@ -24,7 +24,9 @@ const CustomerListTable = ({ customers }) => {
     });
   };
 
-  const handleViewDetails = (customerId, customer) => {
+  const handleViewDetails = (customer, e) => {
+    e?.stopPropagation();
+    const customerId = customer._id || customer.id;
     console.log('View customer details:', customerId);
     // If customer has onViewDetails prop, use it
     if (customer.onViewDetails) {
@@ -110,9 +112,11 @@ const CustomerListTable = ({ customers }) => {
             </tr>
           </thead>
           <tbody>
-            {filteredCustomers.map((customer) => (
+            {filteredCustomers.map((customer) => {
+              const customerId = customer._id || customer.id;
+              return (
               <tr 
-                key={customer.id}
+                key={customerId}
                 className="border-b border-gray-100 hover:bg-gray-50 transition-colors group"
               >
                 <td className="py-3 px-4">
@@ -165,7 +169,7 @@ const CustomerListTable = ({ customers }) => {
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
-                      onClick={() => handleViewDetails(customer.id, customer)}
+                      onClick={(e) => handleViewDetails(customer, e)}
                       className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       title="Xem chi tiết"
                     >
@@ -189,7 +193,8 @@ const CustomerListTable = ({ customers }) => {
                   </div>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
 

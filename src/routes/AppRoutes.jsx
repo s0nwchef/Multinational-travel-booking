@@ -1,6 +1,8 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
+import StaffLayout from "../layouts/StaffLayout";
+import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import HomePage from "../pages/HomePage";
 import Notifications from "../pages/Notifications";
 import TourDetailPage from "../pages/TourDetailPage";
@@ -25,6 +27,15 @@ import WishlistPage from "../pages/WishlistPage.jsx";
 import CancelBookingModal from "../pages/Modal/CancelBookingModal.jsx";
 import RefundStatusPage from "../pages/RefundStatusPage.jsx";
 import MyBookingsPage from "../pages/MyBookingPage.jsx";
+
+// Staff Pages
+import StaffDashboardPage from "../pages/staff/StaffDashboardPage.jsx";
+import TourManagementPage from "../pages/staff/TourManagementPage.jsx";
+import BookingManagementPage from "../pages/staff/BookingManagementPage.jsx";
+import CustomerManagementPage from "../pages/staff/CustomerManagementPage.jsx";
+import AnalyticsPage from "../pages/staff/AnalyticsPage.jsx";
+import StaffSettingsPage from "../pages/staff/StaffSettingsPage.jsx";
+import TourEditorPage from "../pages/staff/TourEditorPage.jsx";
 
 // import Sidebar from "../layouts/Sidebar.jsx";
 
@@ -77,6 +88,50 @@ export default function AppRoutes() {
 
         {/* MyBookingsPage */}
         <Route path="my-bookings" element={<MyBookingsPage />} />
+      </Route>
+
+      {/* Staff Routes */}
+      <Route element={<StaffLayout />}>
+        <Route path="/staff/dashboard" element={
+          <ProtectedRoute roles={['tour_operator', 'admin']}>
+            <StaffDashboardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/tours" element={
+          <ProtectedRoute roles={['tour_operator', 'admin']}>
+            <TourManagementPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/bookings" element={
+          <ProtectedRoute roles={['tour_operator', 'admin']}>
+            <BookingManagementPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/customers" element={
+          <ProtectedRoute roles={['tour_operator', 'admin']}>
+            <CustomerManagementPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/analytics" element={
+          <ProtectedRoute roles={['tour_operator', 'admin']}>
+            <AnalyticsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/settings" element={
+          <ProtectedRoute roles={['tour_operator', 'admin']}>
+            <StaffSettingsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/tours/new" element={
+          <ProtectedRoute roles={['tour_operator', 'admin']}>
+            <TourEditorPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/tours/:id/edit" element={
+          <ProtectedRoute roles={['tour_operator', 'admin']}>
+            <TourEditorPage />
+          </ProtectedRoute>
+        } />
       </Route>
     </Routes>
   );

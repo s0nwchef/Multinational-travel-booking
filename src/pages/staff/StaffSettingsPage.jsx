@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   User, 
   Bell, 
@@ -6,55 +6,87 @@ import {
   Globe,
   CreditCard,
   Download,
-  Save
+  Save,
+  X,
+  Check
 } from 'lucide-react';
+import authService from '../../services/authService.js';
 
 const StaffSettingsPage = () => {
-  const settingsSections = [
-    {
-      title: "Thông tin cá nhân",
-      icon: User,
-      description: "Quản lý thông tin cá nhân và liên hệ",
-      fields: [
-        { label: "Họ và tên", value: "Nguyễn Văn A", editable: true },
-        { label: "Email", value: "operator@travel.com", editable: true },
-        { label: "Số điện thoại", value: "+84 123 456 789", editable: true },
-        { label: "Vai trò", value: "Tour Operator", editable: false },
-        { label: "Ngày tham gia", value: "15/01/2024", editable: false }
-      ]
-    },
-    {
-      title: "Thông báo",
-      icon: Bell,
-      description: "Cài đặt thông báo và email",
-      fields: [
-        { label: "Thông báo booking mới", value: "Bật", editable: true, type: "toggle" },
-        { label: "Thông báo hủy tour", value: "Bật", editable: true, type: "toggle" },
-        { label: "Báo cáo hàng tuần", value: "Tắt", editable: true, type: "toggle" },
-        { label: "Cảnh báo quan trọng", value: "Bật", editable: true, type: "toggle" }
-      ]
-    },
-    {
-      title: "Bảo mật",
-      icon: Shield,
-      description: "Quản lý mật khẩu và bảo mật tài khoản",
-      fields: [
-        { label: "Đổi mật khẩu", value: "********", editable: true, type: "password" },
-        { label: "Xác thực 2 yếu tố", value: "Tắt", editable: true, type: "toggle" },
-        { label: "Lịch sử đăng nhập", value: "Xem lịch sử", editable: true, type: "link" }
-      ]
-    },
-    {
-      title: "Ngôn ngữ & Vùng",
-      icon: Globe,
-      description: "Cài đặt ngôn ngữ và múi giờ",
-      fields: [
-        { label: "Ngôn ngữ", value: "Tiếng Việt", editable: true, type: "select" },
-        { label: "Múi giờ", value: "GMT+7", editable: true, type: "select" },
-        { label: "Định dạng ngày", value: "DD/MM/YYYY", editable: true, type: "select" }
-      ]
-    }
-  ];
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  // Toggle states
+  const [toggles, setToggles] = useState({
+    newBookingNotification: true,
+    cancellationNotification: true,
+    weeklyReport: false,
+    importantAlerts: true,
+    twoFactorAuth: false,
+    autoBackup: true
+  });
+
+  // Edit modal state
+  const [editingField, setEditingField] = useState(null);
+  const [editValue, setEditValue] = useState('');
+
+  useEffect(() => {
+    const user = authService.getCurrentUser();
+    setCurrentUser(user);
+    setLoading(false);
+  }, []);
+
+  const handleToggleChange = (key) => {
+    setToggles(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+    console.log(`Toggle ${key} changed to:`, !toggles[key]);
+  };
+
+  const handleEditClick = (fieldKey, currentValue) => {
+    setEditingField(fieldKey);
+    setEditValue(currentValue || '');
+  };
+
+  const handleSaveEdit = () => {
+    console.log(`Saving ${editingField}:`, editValue);
+    // Here you would call API to update the field
+    setEditingField(null);
+    setEditValue('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingField(null);
+    setEditValue('');
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Đang tải...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Toggle component
+  const ToggleSwitch = ({ checked, onChange }) => (
+    <button
+      onClick={onChange}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+        checked ? 'bg-orange-500' : 'bg-gray-300'
+      }`}
+    >
+      <span
+        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+          checked ? 'translate-x-6' : 'translate-x-1'
+        }`}
+      />
+    </button>
+  );
 
   return (
     <div className="space-y-8">
@@ -76,40 +108,283 @@ const StaffSettingsPage = () => {
         </div>
       </div>
 
-      {/* Settings Sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {settingsSections.map((section, index) => {
-          const Icon = section.icon;
-          return (
-            <div key={index} className="bg-white rounded-2xl shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
-                  <Icon className="w-6 h-6 text-orange-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{section.title}</h3>
-                  <p className="text-gray-500">{section.description}</p>
-                </div>
-              </div>
+      {/* Personal Information */}
+      <div className="bg-white rounded-2xl shadow-sm p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
+            <User className="w-6 h-6 text-orange-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Thông tin cá nhân</h3>
+            <p className="text-gray-500">Quản lý thông tin cá nhân và liên hệ</p>
+          </div>
+        </div>
 
-              <div className="space-y-4">
-                {section.fields.map((field, fieldIndex) => (
-                  <div key={fieldIndex} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-                    <div>
-                      <p className="font-medium text-gray-900">{field.label}</p>
-                      <p className="text-gray-500 text-sm mt-1">{field.value}</p>
-                    </div>
-                    {field.editable && (
-                      <button className="text-orange-600 hover:text-orange-700 font-medium text-sm">
-                        Chỉnh sửa
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Full Name */}
+          <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div>
+              <p className="font-medium text-gray-900">Họ và tên</p>
+              <p className="text-gray-500 text-sm mt-1">
+                {editingField === 'fullName' ? (
+                  <input
+                    type="text"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="border border-gray-300 rounded px-2 py-1"
+                    autoFocus
+                  />
+                ) : (
+                  currentUser?.fullName || currentUser?.name || 'Nguyễn Văn A'
+                )}
+              </p>
             </div>
-          );
-        })}
+            {editingField === 'fullName' ? (
+              <div className="flex gap-2">
+                <button onClick={handleCancelEdit} className="p-2 text-gray-500 hover:bg-gray-100 rounded">
+                  <X className="w-4 h-4" />
+                </button>
+                <button onClick={handleSaveEdit} className="p-2 text-green-600 hover:bg-green-50 rounded">
+                  <Check className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => handleEditClick('fullName', currentUser?.fullName || currentUser?.name)}
+                className="text-orange-600 hover:text-orange-700 font-medium text-sm"
+              >
+                Chỉnh sửa
+              </button>
+            )}
+          </div>
+
+          {/* Email */}
+          <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div>
+              <p className="font-medium text-gray-900">Email</p>
+              <p className="text-gray-500 text-sm mt-1">
+                {editingField === 'email' ? (
+                  <input
+                    type="email"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="border border-gray-300 rounded px-2 py-1"
+                    autoFocus
+                  />
+                ) : (
+                  currentUser?.email || 'operator@travel.com'
+                )}
+              </p>
+            </div>
+            {editingField === 'email' ? (
+              <div className="flex gap-2">
+                <button onClick={handleCancelEdit} className="p-2 text-gray-500 hover:bg-gray-100 rounded">
+                  <X className="w-4 h-4" />
+                </button>
+                <button onClick={handleSaveEdit} className="p-2 text-green-600 hover:bg-green-50 rounded">
+                  <Check className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => handleEditClick('email', currentUser?.email)}
+                className="text-orange-600 hover:text-orange-700 font-medium text-sm"
+              >
+                Chỉnh sửa
+              </button>
+            )}
+          </div>
+
+          {/* Phone */}
+          <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div>
+              <p className="font-medium text-gray-900">Số điện thoại</p>
+              <p className="text-gray-500 text-sm mt-1">
+                {editingField === 'phone' ? (
+                  <input
+                    type="tel"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="border border-gray-300 rounded px-2 py-1"
+                    autoFocus
+                  />
+                ) : (
+                  currentUser?.phoneNumber || '+84 123 456 789'
+                )}
+              </p>
+            </div>
+            {editingField === 'phone' ? (
+              <div className="flex gap-2">
+                <button onClick={handleCancelEdit} className="p-2 text-gray-500 hover:bg-gray-100 rounded">
+                  <X className="w-4 h-4" />
+                </button>
+                <button onClick={handleSaveEdit} className="p-2 text-green-600 hover:bg-green-50 rounded">
+                  <Check className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => handleEditClick('phone', currentUser?.phoneNumber)}
+                className="text-orange-600 hover:text-orange-700 font-medium text-sm"
+              >
+                Chỉnh sửa
+              </button>
+            )}
+          </div>
+
+          {/* Role */}
+          <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div>
+              <p className="font-medium text-gray-900">Vai trò</p>
+              <p className="text-gray-500 text-sm mt-1 capitalize">{currentUser?.role || 'Tour Operator'}</p>
+            </div>
+            <span className="text-gray-400 text-sm">Không thể chỉnh sửa</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Notifications */}
+      <div className="bg-white rounded-2xl shadow-sm p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
+            <Bell className="w-6 h-6 text-orange-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Thông báo</h3>
+            <p className="text-gray-500">Cài đặt thông báo và email</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div>
+              <p className="font-medium text-gray-900">Thông báo booking mới</p>
+              <p className="text-gray-500 text-sm mt-1">Nhận thông báo khi có booking mới</p>
+            </div>
+            <ToggleSwitch 
+              checked={toggles.newBookingNotification} 
+              onChange={() => handleToggleChange('newBookingNotification')}
+            />
+          </div>
+
+          <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div>
+              <p className="font-medium text-gray-900">Thông báo hủy tour</p>
+              <p className="text-gray-500 text-sm mt-1">Nhận thông báo khi tour bị hủy</p>
+            </div>
+            <ToggleSwitch 
+              checked={toggles.cancellationNotification} 
+              onChange={() => handleToggleChange('cancellationNotification')}
+            />
+          </div>
+
+          <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div>
+              <p className="font-medium text-gray-900">Báo cáo hàng tuần</p>
+              <p className="text-gray-500 text-sm mt-1">Nhận báo cáo tổng hợp hàng tuần qua email</p>
+            </div>
+            <ToggleSwitch 
+              checked={toggles.weeklyReport} 
+              onChange={() => handleToggleChange('weeklyReport')}
+            />
+          </div>
+
+          <div className="flex items-center justify-between py-3">
+            <div>
+              <p className="font-medium text-gray-900">Cảnh báo quan trọng</p>
+              <p className="text-gray-500 text-sm mt-1">Nhận các cảnh báo quan trọng về hệ thống</p>
+            </div>
+            <ToggleSwitch 
+              checked={toggles.importantAlerts} 
+              onChange={() => handleToggleChange('importantAlerts')}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Security */}
+      <div className="bg-white rounded-2xl shadow-sm p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
+            <Shield className="w-6 h-6 text-orange-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Bảo mật</h3>
+            <p className="text-gray-500">Quản lý mật khẩu và bảo mật tài khoản</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div>
+              <p className="font-medium text-gray-900">Đổi mật khẩu</p>
+              <p className="text-gray-500 text-sm mt-1">••••••••••••••••</p>
+            </div>
+            <button className="text-orange-600 hover:text-orange-700 font-medium text-sm">
+              Thay đổi
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div>
+              <p className="font-medium text-gray-900">Xác thực 2 yếu tố</p>
+              <p className="text-gray-500 text-sm mt-1">Bảo vệ tài khoản với 2FA</p>
+            </div>
+            <ToggleSwitch 
+              checked={toggles.twoFactorAuth} 
+              onChange={() => handleToggleChange('twoFactorAuth')}
+            />
+          </div>
+
+          <div className="flex items-center justify-between py-3">
+            <div>
+              <p className="font-medium text-gray-900">Lịch sử đăng nhập</p>
+              <p className="text-gray-500 text-sm mt-1">Xem lịch sử đăng nhập của bạn</p>
+            </div>
+            <button className="text-orange-600 hover:text-orange-700 font-medium text-sm">
+              Xem lịch sử
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Language & Region */}
+      <div className="bg-white rounded-2xl shadow-sm p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
+            <Globe className="w-6 h-6 text-orange-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Ngôn ngữ & Vùng</h3>
+            <p className="text-gray-500">Cài đặt ngôn ngữ và múi giờ</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <p className="font-medium text-gray-900 mb-2">Ngôn ngữ</p>
+            <select className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none">
+              <option>Tiếng Việt</option>
+              <option>English</option>
+            </select>
+          </div>
+          <div>
+            <p className="font-medium text-gray-900 mb-2">Múi giờ</p>
+            <select className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none">
+              <option>GMT+7 (Việt Nam)</option>
+              <option>GMT+8 (Singapore)</option>
+              <option>GMT+9 (Nhật Bản)</option>
+            </select>
+          </div>
+          <div>
+            <p className="font-medium text-gray-900 mb-2">Định dạng ngày</p>
+            <select className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none">
+              <option>DD/MM/YYYY</option>
+              <option>MM/DD/YYYY</option>
+              <option>YYYY-MM-DD</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* System Settings */}
@@ -151,9 +426,10 @@ const StaffSettingsPage = () => {
                 <p className="font-medium text-gray-900">Backup tự động</p>
                 <p className="text-gray-500 text-sm mt-1">Hàng ngày lúc 02:00</p>
               </div>
-              <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                Cấu hình
-              </button>
+              <ToggleSwitch 
+                checked={toggles.autoBackup} 
+                onChange={() => handleToggleChange('autoBackup')}
+              />
             </div>
             <div className="flex items-center justify-between">
               <div>
