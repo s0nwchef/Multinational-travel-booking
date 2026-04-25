@@ -1,8 +1,12 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Calendar, Users, MapPin, ChevronRight } from 'lucide-react';
 
-const UpcomingToursCalendar = ({ tours }) => {
+const UpcomingToursCalendar = ({ tours, onViewAll, onAddTour }) => {
+  const navigate = useNavigate();
+
   const formatDate = (dateString) => {
+    if (!dateString) return '-';
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN', {
       weekday: 'short',
@@ -12,6 +16,7 @@ const UpcomingToursCalendar = ({ tours }) => {
   };
 
   const getSeatPercentage = (seats, totalSeats) => {
+    if (!totalSeats) return 0;
     return Math.round((seats / totalSeats) * 100);
   };
 
@@ -19,6 +24,31 @@ const UpcomingToursCalendar = ({ tours }) => {
     if (percentage >= 80) return 'bg-red-500';
     if (percentage >= 50) return 'bg-yellow-500';
     return 'bg-green-500';
+  };
+
+  // Map API data
+  const mappedTours = tours.map(tour => ({
+    id: tour._id || tour.id,
+    name: tour.title || tour.name || 'Tour',
+    date: tour.createdAt || tour.date,
+    seats: tour.bookedSeats || tour.seats || 0,
+    totalSeats: tour.maxCapacity || tour.totalSeats || 0
+  }));
+
+  const handleViewAll = () => {
+    if (onViewAll) {
+      onViewAll();
+    } else {
+      navigate('/staff/tours');
+    }
+  };
+
+  const handleAddTour = () => {
+    if (onAddTour) {
+      onAddTour();
+    } else {
+      navigate('/staff/tours/new');
+    }
   };
 
   return (
@@ -33,19 +63,23 @@ const UpcomingToursCalendar = ({ tours }) => {
             <p className="text-sm text-gray-500">Lịch trình trong 30 ngày tới</p>
           </div>
         </div>
-        <button className="text-orange-600 hover:text-orange-700 text-sm font-medium">
+        <button 
+          onClick={handleViewAll}
+          className="text-orange-600 hover:text-orange-700 text-sm font-medium"
+        >
           Xem lịch
         </button>
       </div>
 
       <div className="space-y-4">
-        {tours.map((tour) => {
+        {mappedTours.map((tour) => {
           const seatPercentage = getSeatPercentage(tour.seats, tour.totalSeats);
           const seatColor = getSeatColor(seatPercentage);
           
           return (
             <div 
               key={tour.id}
+              onClick={() => navigate(`/staff/tours/${tour.id}/edit`)}
               className="group p-4 rounded-xl border border-gray-200 hover:border-orange-300 hover:bg-orange-50/50 transition-all duration-300 cursor-pointer"
             >
               <div className="flex items-start justify-between">
@@ -86,10 +120,19 @@ const UpcomingToursCalendar = ({ tours }) => {
             </div>
           );
         })}
+
+        {mappedTours.length === 0 && (
+          <div className="py-8 text-center text-gray-500">
+            Chưa có tour nào
+          </div>
+        )}
       </div>
 
       {/* Add new tour button */}
-      <button className="mt-6 w-full py-3 border-2 border-dashed border-gray-300 hover:border-orange-400 hover:bg-orange-50/30 rounded-xl text-gray-500 hover:text-orange-600 transition-all duration-300 flex items-center justify-center gap-2">
+      <button 
+        onClick={handleAddTour}
+        className="mt-6 w-full py-3 border-2 border-dashed border-gray-300 hover:border-orange-400 hover:bg-orange-50/30 rounded-xl text-gray-500 hover:text-orange-600 transition-all duration-300 flex items-center justify-center gap-2"
+      >
         <div className="w-6 h-6 border-2 border-current rounded-full flex items-center justify-center">
           <span className="text-lg">+</span>
         </div>

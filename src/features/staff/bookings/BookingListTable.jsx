@@ -1,17 +1,21 @@
-import React from 'react';
-import { Eye, Mail, Phone, Calendar, User, MapPin } from 'lucide-react';
+import React, { useState } from 'react';
+import { Eye, Mail, Phone, Calendar, User, MapPin, Check, X } from 'lucide-react';
 import BookingStatusBadge from './BookingStatusBadge';
 
-const BookingListTable = ({ bookings }) => {
+const BookingListTable = ({ bookings, onUpdateStatus }) => {
+  const [showStatusModal, setShowStatusModal] = useState(null);
+
   const formatCurrency = (amount) => {
+    if (!amount) return '0 ₫';
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND',
       minimumFractionDigits: 0
-    }).format(amount * 1000);
+    }).format(amount);
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return '-';
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN', {
       day: '2-digit',
@@ -27,6 +31,26 @@ const BookingListTable = ({ bookings }) => {
   const handleContactCustomer = (customerEmail) => {
     console.log('Contact customer:', customerEmail);
   };
+
+  const handleStatusChange = (bookingId, newStatus) => {
+    onUpdateStatus?.(bookingId, newStatus);
+    setShowStatusModal(null);
+  };
+
+  // Map API data to table format
+  const mappedBookings = bookings.map(booking => ({
+    id: booking._id || booking.id,
+    bookingNumber: booking.bookingReference || booking.bookingNumber || `BK-${booking._id?.slice(-6)}`,
+    customerName: booking.userId?.fullName || booking.customerName || 'Khách hàng',
+    customerEmail: booking.userId?.email || booking.customerEmail || '-',
+    tourName: booking.tourId?.title || booking.tourName || '-',
+    bookingDate: booking.bookingDate || booking.createdAt,
+    travelDate: booking.travelDate || '-',
+    status: booking.status,
+    totalAmount: booking.totalAmount,
+    numberOfTravelers: booking.travelers?.length || booking.numberOfTravelers || 1,
+    paymentMethod: booking.paymentMethod || 'Credit Card'
+  }));
 
   return (
     <div className="overflow-x-auto">
@@ -44,7 +68,7 @@ const BookingListTable = ({ bookings }) => {
           </tr>
         </thead>
         <tbody>
-          {bookings.map((booking) => (
+          {mappedBookings.map((booking) => (
             <tr 
               key={booking.id}
               className="border-b border-gray-100 hover:bg-gray-50 transition-colors group"
@@ -116,10 +140,11 @@ const BookingListTable = ({ bookings }) => {
                     <Mail className="w-4 h-4" />
                   </button>
                   <button 
+                    onClick={() => setShowStatusModal(booking.id)}
                     className="p-2 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                    title="Gọi điện"
+                    title="Cập nhật trạng thái"
                   >
-                    <Phone className="w-4 h-4" />
+                    <Check className="w-4 h-4" />
                   </button>
                 </div>
               </td>
@@ -128,8 +153,37 @@ const BookingListTable = ({ bookings }) => {
         </tbody>
       </table>
 
+      {/* Status Update Modal */}
+      {showStatusModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-96">
+            <h3 className="text-lg font-semibold mb-4">Cập nhật trạng thái</h3>
+            <div className="space-y-2">
+              {['confirmed', 'pending', 'cancelled', 'completed'].map((status) => (
+                <button
+                  key={status}
+                  onClick={() => handleStatusChange(showStatusModal, status)}
+                  className="w-full p-3 text-left rounded-xl border hover:border-orange-500 hover:bg-orange-50 transition-colors capitalize"
+                >
+                  {status === 'confirmed' && '✅ Đã xác nhận'}
+                  {status === 'pending' && '⏳ Chờ xác nhận'}
+                  {status === 'cancelled' && '❌ Đã hủy'}
+                  {status === 'completed' && '🎉 Hoàn thành'}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowStatusModal(null)}
+              className="mt-4 w-full p-3 text-gray-600 hover:bg-gray-100 rounded-xl"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Empty state */}
-      {bookings.length === 0 && (
+      {mappedBookings.length === 0 && (
         <div className="py-12 text-center">
           <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <span className="text-2xl">📋</span>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft,
   Save,
@@ -6,47 +6,72 @@ import {
   Upload,
   Plus,
   Trash2,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import staffService from '../../services/staffService.js';
 
 const TourEditorPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = !!id;
 
+  const [loading, setLoading] = useState(isEditMode);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [previewMode, setPreviewMode] = useState(false);
+
   const [tourData, setTourData] = useState({
-    name: isEditMode ? "Tour Đà Nẵng - Hội An 3N2Đ" : "",
-    description: isEditMode ? "Khám phá vẻ đẹp của Đà Nẵng và phố cổ Hội An với tour 3 ngày 2 đêm. Trải nghiệm ẩm thực đặc sắc và văn hóa địa phương." : "",
-    destination: isEditMode ? "Đà Nẵng, Hội An" : "",
-    duration: isEditMode ? 3 : 1,
-    price: isEditMode ? 450 : 0,
-    status: isEditMode ? "active" : "draft",
-    images: isEditMode ? [
-      "https://images.unsplash.com/photo-1523059623039-f9d5b3220e1c?w=800",
-      "https://images.unsplash.com/photo-1528181304800-259b08848526?w-800"
-    ] : [],
-    itinerary: isEditMode ? [
-      { day: 1, title: "Đến Đà Nẵng", description: "Đón tại sân bay, check-in khách sạn, tham quan Cầu Rồng" },
-      { day: 2, title: "Khám phá Hội An", description: "Tham quan phố cổ Hội An, chợ đêm, ẩm thực địa phương" },
-      { day: 3, title: "Về lại Đà Nẵng", description: "Mua sắm tại chợ Hàn, tham quan Bà Nà Hills, tiễn sân bay" }
-    ] : [{ day: 1, title: "", description: "" }],
-    inclusions: isEditMode ? [
-      "Vé máy bay khứ hồi",
-      "Khách sạn 3-4 sao",
-      "Ăn sáng hàng ngày",
-      "Hướng dẫn viên địa phương",
-      "Bảo hiểm du lịch"
-    ] : ["", ""],
-    exclusions: isEditMode ? [
-      "Chi phí cá nhân",
-      "Đồ uống có cồn",
-      "Tips cho hướng dẫn viên",
-      "Phí visa (nếu có)"
-    ] : ["", ""]
+    title: "",
+    description: "",
+    destination: "",
+    duration: 1,
+    basePrice: 0,
+    status: "draft",
+    images: [],
+    itinerary: [{ day: 1, title: "", description: "" }],
+    inclusions: ["", ""],
+    exclusions: ["", ""]
   });
 
-  const [previewMode, setPreviewMode] = useState(false);
+  // Fetch existing tour data if in edit mode
+  useEffect(() => {
+    if (isEditMode && id) {
+      fetchTourData(id);
+    }
+  }, [id, isEditMode]);
+
+  const fetchTourData = async (tourId) => {
+    try {
+      setLoading(true);
+      const response = await staffService.getTours({ search: tourId });
+      const tour = response.tours?.find(t => t._id === tourId);
+      
+      if (tour) {
+        setTourData({
+          title: tour.title || "",
+          description: tour.description || "",
+          destination: tour.destinationId?.name || "",
+          duration: tour.duration || 1,
+          basePrice: tour.basePrice || 0,
+          status: tour.status || "draft",
+          images: tour.images || [],
+          itinerary: tour.itinerary?.length > 0 
+            ? tour.itinerary 
+            : [{ day: 1, title: "", description: "" }],
+          inclusions: tour.included?.length > 0 ? tour.included : ["", ""],
+          exclusions: tour.excluded?.length > 0 ? tour.excluded : ["", ""]
+        });
+      }
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch tour:', err);
+      setError('Không thể tải thông tin tour');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (field, value) => {
     setTourData(prev => ({ ...prev, [field]: value }));
@@ -105,11 +130,40 @@ const TourEditorPage = () => {
     setTourData(prev => ({ ...prev, exclusions: newExclusions }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Tour data:', tourData);
-    // In a real app, this would save to backend
-    navigate('/staff/tours');
+    
+    // Prepare tour data for API
+    const tourPayload = {
+      title: tourData.title,
+      description: tourData.description,
+      duration: tourData.duration,
+      basePrice: tourData.basePrice,
+      status: tourData.status,
+      images: tourData.images,
+      itinerary: tourData.itinerary.filter(i => i.title || i.description),
+      included: tourData.inclusions.filter(i => i.trim()),
+      excluded: tourData.exclusions.filter(e => e.trim())
+    };
+
+    try {
+      setSaving(true);
+      
+      if (isEditMode) {
+        await staffService.updateTour(id, tourPayload);
+        alert('Cập nhật tour thành công!');
+      } else {
+        await staffService.createTour(tourPayload);
+        alert('Tạo tour thành công!');
+      }
+      
+      navigate('/staff/tours');
+    } catch (err) {
+      console.error('Failed to save tour:', err);
+      alert('Lưu tour thất bại: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {

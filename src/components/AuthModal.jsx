@@ -108,36 +108,56 @@ export default function AuthModal({ isOpen, onClose }) {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAuth = (e) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
-    if (isRegister) {
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      if (users.find(u => u.email === formData.email)) {
-        alert('Email already exists');
-        return;
-      }
-      const newUser = {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        membership: 'Platinum Member',
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name || 'default'}`
-      };
-      users.push(newUser);
-      localStorage.setItem('users', JSON.stringify(users));
-      localStorage.setItem('currentUser', JSON.stringify(newUser));
-    } else {
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      const user = users.find(u => u.email === formData.email && u.password === formData.password);
-      if (user) {
-        localStorage.setItem('currentUser', JSON.stringify(user));
+    try {
+      if (isRegister) {
+        // For now, registration uses localStorage
+        // In production, this would call the backend API
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        if (users.find(u => u.email === formData.email)) {
+          alert('Email đã tồn tại');
+          return;
+        }
+        const newUser = {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          membership: 'Platinum Member',
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name || 'default'}`
+        };
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+        localStorage.setItem('currentUser', JSON.stringify(newUser));
       } else {
-        alert('Invalid email or password');
-        return;
+        // Login with backend API
+        const authService = await import('../services/authService.js');
+        const result = await authService.default.login(formData.email, formData.password);
+        
+        // Store user in localStorage for compatibility
+        localStorage.setItem('currentUser', JSON.stringify({
+          name: result.user.fullName,
+          email: result.user.email,
+          membership: result.user.loyaltyTier || 'Platinum Member',
+          avatar: result.user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${result.user.fullName || 'default'}`,
+          role: result.user.role
+        }));
+
+        // Redirect based on user role
+        const userRole = result.user.role;
+        if (userRole === 'tour_operator' || userRole === 'admin') {
+          window.location.href = '/staff/dashboard';
+          return;
+        } else if (userRole === 'user') {
+          window.location.href = '/dashboard';
+          return;
+        }
       }
+      window.dispatchEvent(new Event('auth-change'));
+      onClose();
+    } catch (error) {
+      alert(error.message || 'Đăng nhập thất bại');
     }
-    window.dispatchEvent(new Event('auth-change'));
-    onClose();
   };
 
   return (

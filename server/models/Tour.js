@@ -14,7 +14,14 @@ const tourSchema = new mongoose.Schema({
   included: [{ type: String }],
   excluded: [{ type: String }],
   averageRating: { type: Number, default: 0 },
-  totalReviews: { type: Number, default: 0 }
-});
+  totalReviews: { type: Number, default: 0 },
+  status: { 
+    type: String, 
+    enum: ['draft', 'active', 'archived'], 
+    default: 'draft' 
+  },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  totalBookings: { type: Number, default: 0 }
+}, { timestamps: true });
 
 export default mongoose.models.Tour || mongoose.model('Tour', tourSchema);

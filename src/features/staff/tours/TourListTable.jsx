@@ -1,9 +1,10 @@
 import React from 'react';
-import { Edit, Trash2, Eye, MoreVertical } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import TourStatusBadge from './TourStatusBadge';
 
-const TourListTable = ({ tours }) => {
+const TourListTable = ({ tours, onEdit, onDelete }) => {
   const formatCurrency = (price) => {
+    if (!price) return 'Liên hệ';
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND',
@@ -12,6 +13,7 @@ const TourListTable = ({ tours }) => {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return '-';
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN', {
       day: '2-digit',
@@ -26,6 +28,19 @@ const TourListTable = ({ tours }) => {
     if (rating >= 3.0) return 'text-yellow-600 bg-yellow-50';
     return 'text-gray-600 bg-gray-50';
   };
+
+  // Map API data to table format
+  const mappedTours = tours.map(tour => ({
+    id: tour._id || tour.id,
+    name: tour.title || tour.name,
+    status: tour.status,
+    price: tour.basePrice || tour.price,
+    bookings: tour.totalBookings || tour.bookings || 0,
+    rating: tour.averageRating || tour.rating || 0,
+    destination: tour.destinationId?.name || tour.destination || '-',
+    duration: tour.duration || 1,
+    createdAt: tour.createdAt
+  }));
 
   return (
     <div className="overflow-x-auto">
@@ -43,7 +58,7 @@ const TourListTable = ({ tours }) => {
           </tr>
         </thead>
         <tbody>
-          {tours.map((tour) => (
+          {mappedTours.map((tour) => (
             <tr 
               key={tour.id}
               className="border-b border-gray-100 hover:bg-gray-50 transition-colors group"
@@ -71,7 +86,7 @@ const TourListTable = ({ tours }) => {
               <td className="py-3 px-4">
                 {tour.rating > 0 ? (
                   <div className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full ${getRatingColor(tour.rating)}`}>
-                    <span className="text-sm font-semibold">{tour.rating}</span>
+                    <span className="text-sm font-semibold">{tour.rating.toFixed(1)}</span>
                     <span className="text-xs">★</span>
                   </div>
                 ) : (
@@ -86,17 +101,19 @@ const TourListTable = ({ tours }) => {
               </td>
               <td className="py-3 px-4">
                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                    <Eye className="w-4 h-4" />
-                  </button>
-                  <button className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors">
+                  <button 
+                    onClick={() => onEdit?.(tour.id)}
+                    className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                    title="Chỉnh sửa"
+                  >
                     <Edit className="w-4 h-4" />
                   </button>
-                  <button className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                  <button 
+                    onClick={() => onDelete?.(tour.id)}
+                    className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Xóa"
+                  >
                     <Trash2 className="w-4 h-4" />
-                  </button>
-                  <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                    <MoreVertical className="w-4 h-4" />
                   </button>
                 </div>
               </td>
@@ -106,7 +123,7 @@ const TourListTable = ({ tours }) => {
       </table>
 
       {/* Empty state */}
-      {tours.length === 0 && (
+      {mappedTours.length === 0 && (
         <div className="py-12 text-center">
           <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <span className="text-2xl">🔍</span>
