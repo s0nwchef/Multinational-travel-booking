@@ -1,16 +1,79 @@
-# React + Vite
+# 🌍 Multinational Travel Booking
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Nền tảng đặt tour du lịch và chuyến bay quốc tế.
 
-Currently, two official plugins are available:
+## 🌐 Truy cập
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+**Live Demo**: https://multinational-travel-booking.vercel.app
 
-## React Compiler
+## ✨ Tính năng
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Trang chủ** - Giới thiệu các điểm đến nổi bật
+- **Tìm kiếm tour** - Browse và search tours theo điểm đến
+- **Chi tiết tour** - Xem thông tin, hình ảnh, đánh giá
+- **Đặt tour** - Quy trình đặt tour hoàn chỉnh
+- **Tìm chuyến bay** - Search và chọn ghế máy bay
+- **Tài khoản người dùng** - Đăng nhập, dashboard cá nhân
+- **Danh sách yêu thích** - Lưu tour yêu thích
+- **Quản lý đặt tour** - Xem, hủy, hoàn tiền
+- **Hệ thống coupon** - Loyalty points và giảm giá
+- **Đánh giá** - Viết và xem reviews tours
 
-## Expanding the ESLint configuration
+## 🛠️ Công nghệ
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+| Phần | Công nghệ |
+|------|-----------|
+| Frontend | React 19, Vite 7, React Router DOM 7 |
+| Styling | Tailwind CSS 4, Motion (Framer Motion) |
+| Icons | Lucide React, React Icons |
+| Backend | Express 5 (Node.js) |
+| Database | MongoDB (Mongoose 9) |
+| Deployment | Vercel (Frontend + Serverless) |
+
+## 🚀 Chạy local
+
+```bash
+# Cài đặt dependencies
+npm install
+
+# Chạy development (cả server + frontend)
+npm run dev
+
+# Chạy riêng server
+npm run dev:nodemon
+
+# Chạy riêng frontend
+npm run client
+
+# Build production
+npm run build
+```
+
+## 📁 Cấu trúc
+
+```
+├── server.js              # Express server entry
+├── server/
+│   ├── controllers/       # Route handlers
+│   ├── models/            # Mongoose schemas
+│   └── routes/            # API routes
+├── src/
+│   ├── App.jsx            # Root React component
+│   ├── pages/             # Page components
+│   ├── features/          # Feature components
+│   ├── components/        # Shared UI components
+│   └── data/              # Static data
+├── public/                # Static assets
+└── dist/                  # Production build
+```
+
+## 🔧 Environment Variables
+
+| Biến | Mô tả |
+|------|-------|
+| `PORT` | Server port (default: 3000) |
+| `MONGODB_URI` | MongoDB connection string |
+
+## 📄 License
+
+MIT
