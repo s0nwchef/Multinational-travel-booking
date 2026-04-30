@@ -47,33 +47,3 @@ npm run client
 
 # Build production
 npm run build
-```
-
-## 📁 Cấu trúc
-
-```
-├── server.js              # Express server entry
-├── server/
-│   ├── controllers/       # Route handlers
-│   ├── models/            # Mongoose schemas
-│   └── routes/            # API routes
-├── src/
-│   ├── App.jsx            # Root React component
-│   ├── pages/             # Page components
-│   ├── features/          # Feature components
-│   ├── components/        # Shared UI components
-│   └── data/              # Static data
-├── public/                # Static assets
-└── dist/                  # Production build
-```
-
-## 🔧 Environment Variables
-
-| Biến | Mô tả |
-|------|-------|
-| `PORT` | Server port (default: 3000) |
-| `MONGODB_URI` | MongoDB connection string |
-
-## 📄 License
-
-MIT
