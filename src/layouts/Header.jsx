@@ -260,7 +260,7 @@ export default function Header({
               <div className="hidden lg:block">
                 {user ? (
                     <Link
-                        to="/dashboard"
+                        to={user.role === 'tour_operator' || user.role === 'admin' ? '/staff/dashboard' : '/dashboard'}
                         className="flex items-center gap-3 bg-primary text-white pl-6 pr-1.5 py-1.5 rounded-full shadow-lg group relative cursor-pointer"
                     >
                       <div className="flex flex-col items-start -space-y-0.5">
@@ -268,7 +268,7 @@ export default function Header({
                       {user.name}
                     </span>
                         <span className="text-[10px] font-medium opacity-90">
-                      {user.membership}
+                      {user.role === 'tour_operator' || user.role === 'admin' ? 'Staff' : user.membership}
                     </span>
                       </div>
                       <div className="w-10 h-10 rounded-full border-2 border-white/30 overflow-hidden bg-white/20">
