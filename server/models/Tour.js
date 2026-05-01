@@ -6,6 +6,13 @@ const tourSchema = new mongoose.Schema({
   destinationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Destination', required: true },
   basePrice: { type: Number, required: true },
   duration: { type: Number, required: true },
+  startDate: { type: Date },
+  endDate: { type: Date },
+  category: { 
+    type: String, 
+    enum: ['adventure', 'cultural', 'relaxation', 'family', 'luxury', 'nature', 'city_tour', 'food'], 
+    default: 'city_tour' 
+  },
   images: [{ type: String }],
   itinerary: [{
     day: Number,

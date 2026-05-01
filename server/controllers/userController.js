@@ -19,6 +19,89 @@ export const createUser = async (req, res) => {
     }
 };
 
+export const registerUser = async (req, res) => {
+    try {
+        const { email, password, fullName, phoneNumber } = req.body;
+
+        // 1. Validate input
+        if (!email || !password) {
+            return res.status(400).json({ 
+                message: 'Email và mật khẩu là bắt buộc' 
+            });
+        }
+
+        // 2. Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ 
+                message: 'Email không hợp lệ' 
+            });
+        }
+
+        // 3. Validate password length
+        if (password.length < 6) {
+            return res.status(400).json({ 
+                message: 'Mật khẩu phải có ít nhất 6 ký tự' 
+            });
+        }
+
+        // 4. Check if email already exists
+        const existingUser = await User.findOne({ email: email.toLowerCase() });
+        if (existingUser) {
+            return res.status(409).json({ 
+                message: 'Email đã được sử dụng' 
+            });
+        }
+
+        // 5. Hash password
+        const bcrypt = await import('bcryptjs');
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(password, salt);
+
+        // 6. Create user
+        const newUser = new User({
+            email: email.toLowerCase(),
+            fullName: fullName || '',
+            passwordHash,
+            phoneNumber: phoneNumber || '',
+            role: 'user',
+            loyaltyPoints: 0,
+            loyaltyTier: 'Bronze'
+        });
+
+        const savedUser = await newUser.save();
+
+        // 7. Create session
+        const { createSession } = await import('../middleware/authMiddleware.js');
+        const sessionId = createSession(savedUser._id.toString());
+
+        // 8. Return user data (exclude passwordHash)
+        const userResponse = {
+            id: savedUser._id,
+            email: savedUser.email,
+            fullName: savedUser.fullName,
+            role: savedUser.role,
+            avatarUrl: savedUser.avatarUrl,
+            phoneNumber: savedUser.phoneNumber,
+            loyaltyPoints: savedUser.loyaltyPoints,
+            loyaltyTier: savedUser.loyaltyTier,
+            createdAt: savedUser.createdAt
+        };
+
+        res.status(201).json({
+            message: 'Đăng ký thành công',
+            user: userResponse,
+            sessionId
+        });
+
+    } catch (error) {
+        console.error('Register error:', error);
+        res.status(500).json({ 
+            message: 'Lỗi server khi đăng ký', 
+            error: error.message 
+        });
+    }
+};
 
 export const loginUser = async (req, res) => {
     try {
