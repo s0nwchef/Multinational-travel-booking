@@ -3,7 +3,8 @@ import mongoose from 'mongoose';
 const tourSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String },
-  destinationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Destination', required: true },
+  destinationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Destination' },
+  destinationName: { type: String }, // Fallback when destinationId not available
   basePrice: { type: Number, required: true },
   duration: { type: Number, required: true },
   startDate: { type: Date },

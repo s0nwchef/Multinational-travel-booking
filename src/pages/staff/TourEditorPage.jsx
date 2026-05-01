@@ -11,6 +11,18 @@ import {
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import staffService from '../../services/staffService.js';
+import destinations from '../../data/destinations.json';
+
+const CATEGORIES = [
+  { value: 'adventure', label: 'Adventure' },
+  { value: 'cultural', label: 'Cultural' },
+  { value: 'relaxation', label: 'Relaxation' },
+  { value: 'family', label: 'Family' },
+  { value: 'luxury', label: 'Luxury' },
+  { value: 'nature', label: 'Nature' },
+  { value: 'city_tour', label: 'City Tour' },
+  { value: 'food', label: 'Food & Culinary' }
+];
 
 const TourEditorPage = () => {
   const navigate = useNavigate();
@@ -25,9 +37,12 @@ const TourEditorPage = () => {
   const [tourData, setTourData] = useState({
     title: "",
     description: "",
-    destination: "",
+    destinationId: "",
     duration: 1,
     basePrice: 0,
+    startDate: "",
+    endDate: "",
+    category: "city_tour",
     status: "draft",
     images: [],
     itinerary: [{ day: 1, title: "", description: "" }],
@@ -49,16 +64,23 @@ const TourEditorPage = () => {
       const tour = response.tours?.find(t => t._id === tourId);
       
       if (tour) {
+        const destinationValue = tour.destinationId?._id 
+          ? `${tour.destinationId.name}, ${tour.destinationId.country || ''}`
+          : tour.destinationName || "";
+        
         setTourData({
           title: tour.title || "",
           description: tour.description || "",
-          destination: tour.destinationId?.name || "",
+          destinationId: destinationValue,
           duration: tour.duration || 1,
           basePrice: tour.basePrice || 0,
+          startDate: tour.startDate ? new Date(tour.startDate).toISOString().split('T')[0] : "",
+          endDate: tour.endDate ? new Date(tour.endDate).toISOString().split('T')[0] : "",
+          category: tour.category || "city_tour",
           status: tour.status || "draft",
           images: tour.images || [],
           itinerary: tour.itinerary?.length > 0 
-            ? tour.itinerary 
+            ? tour.itinerary.map(i => ({ day: i.day, title: i.activity || "", description: i.activity || "" }))
             : [{ day: 1, title: "", description: "" }],
           inclusions: tour.included?.length > 0 ? tour.included : ["", ""],
           exclusions: tour.excluded?.length > 0 ? tour.excluded : ["", ""]
@@ -75,6 +97,18 @@ const TourEditorPage = () => {
 
   const handleInputChange = (field, value) => {
     setTourData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Handle both destination text input and destinationId selection
+  const handleDestinationChange = (value) => {
+    // Check if it's a destinationId (ObjectId) or a name
+    const selectedDestination = destinations.find(d => d.name === value);
+    if (selectedDestination) {
+      // For now, we'll store destination name and handle lookup on backend
+      setTourData(prev => ({ ...prev, destinationId: value }));
+    } else {
+      setTourData(prev => ({ ...prev, destinationId: value }));
+    }
   };
 
   const handleItineraryChange = (index, field, value) => {
@@ -133,15 +167,22 @@ const TourEditorPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Prepare tour data for API
+    // Prepare tour data for API - map form fields to model fields
     const tourPayload = {
       title: tourData.title,
       description: tourData.description,
+      destinationName: tourData.destinationId,
       duration: tourData.duration,
       basePrice: tourData.basePrice,
+      startDate: tourData.startDate || null,
+      endDate: tourData.endDate || null,
+      category: tourData.category,
       status: tourData.status,
-      images: tourData.images,
-      itinerary: tourData.itinerary.filter(i => i.title || i.description),
+      images: tourData.images || [],
+      itinerary: tourData.itinerary.filter(i => i.title || i.description).map(i => ({
+        day: i.day,
+        activity: i.description
+      })),
       included: tourData.inclusions.filter(i => i.trim()),
       excluded: tourData.exclusions.filter(e => e.trim())
     };
@@ -183,10 +224,10 @@ const TourEditorPage = () => {
           </button>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              {isEditMode ? 'Chỉnh sửa Tour' : 'Tạo Tour Mới'}
+              {isEditMode ? 'Edit Tour' : 'Create New Tour'}
             </h1>
             <p className="text-gray-500 mt-2">
-              {isEditMode ? 'Cập nhật thông tin tour hiện có' : 'Thiết kế và tạo tour du lịch mới'}
+              {isEditMode ? 'Update existing tour information' : 'Design and create a new tour'}
             </p>
           </div>
         </div>
@@ -200,20 +241,20 @@ const TourEditorPage = () => {
             }`}
           >
             <Eye className="w-4 h-4" />
-            {previewMode ? 'Chỉnh sửa' : 'Xem trước'}
+            {previewMode ? 'Edit' : 'Preview'}
           </button>
           <button
             onClick={handleCancel}
             className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-colors"
           >
-            Hủy
+            Cancel
           </button>
           <button
             onClick={handleSubmit}
             className="flex items-center gap-2 px-4 py-2.5 bg-orange-500 text-white hover:bg-orange-600 rounded-xl font-medium transition-colors"
           >
             <Save className="w-4 h-4" />
-            {isEditMode ? 'Cập nhật' : 'Tạo tour'}
+            {isEditMode ? 'Update' : 'Create Tour'}
           </button>
         </div>
       </div>
@@ -223,40 +264,55 @@ const TourEditorPage = () => {
         <div className="bg-white rounded-2xl shadow-sm p-8">
           <div className="max-w-4xl mx-auto">
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900">{tourData.name || 'Tên tour'}</h2>
-              <p className="text-gray-500 mt-2">{tourData.destination || 'Điểm đến'}</p>
+              <h2 className="text-2xl font-bold text-gray-900">{tourData.title || 'Tour Name'}</h2>
+              <p className="text-gray-500 mt-2">{tourData.destinationId || 'Destination'}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="bg-gray-50 rounded-xl p-4">
-                <p className="text-sm text-gray-500">Thời lượng</p>
-                <p className="text-xl font-bold text-gray-900">{tourData.duration} ngày</p>
+                <p className="text-sm text-gray-500">Duration</p>
+                <p className="text-xl font-bold text-gray-900">{tourData.duration} days</p>
               </div>
               <div className="bg-gray-50 rounded-xl p-4">
-                <p className="text-sm text-gray-500">Giá</p>
-                <p className="text-xl font-bold text-gray-900">${tourData.price}/người</p>
+                <p className="text-sm text-gray-500">Price</p>
+                <p className="text-xl font-bold text-gray-900">${tourData.basePrice}/person</p>
               </div>
               <div className="bg-gray-50 rounded-xl p-4">
-                <p className="text-sm text-gray-500">Trạng thái</p>
+                <p className="text-sm text-gray-500">Status</p>
                 <p className="text-xl font-bold text-gray-900 capitalize">{tourData.status}</p>
               </div>
             </div>
 
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Mô tả</h3>
-              <p className="text-gray-700 whitespace-pre-line">{tourData.description || 'Mô tả tour'}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-sm text-gray-500">Category</p>
+                <p className="text-lg font-bold text-gray-900">{CATEGORIES.find(c => c.value === tourData.category)?.label || 'N/A'}</p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-sm text-gray-500">Travel Dates</p>
+                <p className="text-lg font-bold text-gray-900">
+                  {tourData.startDate && tourData.endDate 
+                    ? `${tourData.startDate} - ${tourData.endDate}` 
+                    : tourData.startDate || 'Not set'}
+                </p>
+              </div>
             </div>
 
             <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Lịch trình</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Description</h3>
+              <p className="text-gray-700 whitespace-pre-line">{tourData.description || 'Tour description'}</p>
+            </div>
+
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Itinerary</h3>
               <div className="space-y-4">
                 {tourData.itinerary.map((day, index) => (
                   <div key={index} className="border-l-4 border-orange-500 pl-4 py-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-gray-900">Ngày {day.day}:</span>
-                      <span className="font-semibold text-gray-900">{day.title || 'Tiêu đề ngày'}</span>
+                      <span className="font-bold text-gray-900">Day {day.day}:</span>
+                      <span className="font-semibold text-gray-900">{day.title || 'Day Title'}</span>
                     </div>
-                    <p className="text-gray-600 mt-1">{day.description || 'Mô tả hoạt động'}</p>
+                    <p className="text-gray-600 mt-1">{day.description || 'Activity description'}</p>
                   </div>
                 ))}
               </div>
@@ -264,7 +320,7 @@ const TourEditorPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Bao gồm</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Included</h3>
                 <ul className="space-y-2">
                   {tourData.inclusions.map((item, index) => (
                     item && (
@@ -277,7 +333,7 @@ const TourEditorPage = () => {
                 </ul>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Không bao gồm</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Excluded</h3>
                 <ul className="space-y-2">
                   {tourData.exclusions.map((item, index) => (
                     item && (
@@ -297,71 +353,126 @@ const TourEditorPage = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information */}
           <div className="bg-white rounded-2xl shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Thông tin cơ bản</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">Basic Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tên tour *
+                  Tour Name *
                 </label>
                 <input
                   type="text"
-                  value={tourData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  value={tourData.title}
+                  onChange={(e) => handleInputChange('title', e.target.value)}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-colors"
-                  placeholder="Nhập tên tour"
+                  placeholder="Enter tour name"
                   required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Điểm đến *
+                  Destination *
                 </label>
-                <input
-                  type="text"
-                  value={tourData.destination}
-                  onChange={(e) => handleInputChange('destination', e.target.value)}
+                <select
+                  value={tourData.destinationId}
+                  onChange={(e) => handleInputChange('destinationId', e.target.value)}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-colors"
-                  placeholder="Ví dụ: Đà Nẵng, Hội An"
                   required
-                />
+                >
+                  <option value="">Select destination</option>
+                  {destinations.map((dest) => (
+                    <option key={dest.name} value={dest.name}>
+                      {dest.name}, {dest.country}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Thời lượng (ngày) *
+                  Duration (days) *
                 </label>
                 <input
                   type="number"
                   min="1"
                   value={tourData.duration}
-                  onChange={(e) => handleInputChange('duration', parseInt(e.target.value))}
+                  onChange={(e) => handleInputChange('duration', parseInt(e.target.value) || 1)}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-colors"
                   required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Giá (USD) *
+                  Price (USD) *
                 </label>
                 <input
                   type="number"
                   min="0"
                   step="10"
-                  value={tourData.price}
-                  onChange={(e) => handleInputChange('price', parseFloat(e.target.value))}
+                  value={tourData.basePrice}
+                  onChange={(e) => handleInputChange('basePrice', parseFloat(e.target.value) || 0)}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-colors"
                   required
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category
+                </label>
+                <select
+                  value={tourData.category}
+                  onChange={(e) => handleInputChange('category', e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-colors"
+                >
+                  {CATEGORIES.map((cat) => (
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Status
+                </label>
+                <select
+                  value={tourData.status}
+                  onChange={(e) => handleInputChange('status', e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-colors"
+                >
+                  <option value="draft">Draft</option>
+                  <option value="active">Active</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={tourData.startDate}
+                  onChange={(e) => handleInputChange('startDate', e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={tourData.endDate}
+                  onChange={(e) => handleInputChange('endDate', e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-colors"
+                />
+              </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Mô tả *
+                  Description *
                 </label>
                 <textarea
                   value={tourData.description}
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   rows={4}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-colors"
-                  placeholder="Mô tả chi tiết về tour..."
+                  placeholder="Describe the tour..."
                   required
                 />
               </div>
@@ -371,14 +482,14 @@ const TourEditorPage = () => {
           {/* Itinerary */}
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Lịch trình</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Itinerary</h3>
               <button
                 type="button"
                 onClick={addItineraryDay}
                 className="flex items-center gap-2 px-4 py-2 text-orange-600 hover:text-orange-700 font-medium"
               >
                 <Plus className="w-4 h-4" />
-                Thêm ngày
+                Add Day
               </button>
             </div>
             <div className="space-y-4">
@@ -401,26 +512,26 @@ const TourEditorPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tiêu đề
+                        Title
                       </label>
                       <input
                         type="text"
                         value={day.title}
                         onChange={(e) => handleItineraryChange(index, 'title', e.target.value)}
                         className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-colors"
-                        placeholder="Ví dụ: Khám phá Hội An"
+                        placeholder="e.g., Explore Ho Chi Minh City"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Mô tả
+                        Description
                       </label>
                       <textarea
                         value={day.description}
                         onChange={(e) => handleItineraryChange(index, 'description', e.target.value)}
                         rows={2}
                         className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-colors"
-                        placeholder="Mô tả hoạt động trong ngày..."
+                        placeholder="Describe the activities for this day..."
                       />
                     </div>
                   </div>
@@ -434,14 +545,14 @@ const TourEditorPage = () => {
             {/* Inclusions */}
             <div className="bg-white rounded-2xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Bao gồm</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Included</h3>
                 <button
                   type="button"
                   onClick={addInclusion}
                   className="flex items-center gap-2 px-4 py-2 text-green-600 hover:text-green-700 font-medium"
                 >
                   <Plus className="w-4 h-4" />
-                  Thêm mục
+                  Add Item
                 </button>
               </div>
               <div className="space-y-3">
@@ -452,7 +563,7 @@ const TourEditorPage = () => {
                       value={item}
                       onChange={(e) => handleInclusionChange(index, e.target.value)}
                       className="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-colors"
-                      placeholder="Ví dụ: Vé máy bay khứ hồi"
+                      placeholder="e.g., Round-trip airfare"
                     />
                     {tourData.inclusions.length > 2 && (
                       <button
@@ -471,14 +582,14 @@ const TourEditorPage = () => {
             {/* Exclusions */}
             <div className="bg-white rounded-2xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Không bao gồm</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Excluded</h3>
                 <button
                   type="button"
                   onClick={addExclusion}
                   className="flex items-center gap-2 px-4 py-2 text-red-600 hover:text-red-700 font-medium"
                 >
                   <Plus className="w-4 h-4" />
-                  Thêm mục
+                  Add Item
                 </button>
               </div>
               <div className="space-y-3">
@@ -489,7 +600,7 @@ const TourEditorPage = () => {
                       value={item}
                       onChange={(e) => handleExclusionChange(index, e.target.value)}
                       className="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-colors"
-                      placeholder="Ví dụ: Chi phí cá nhân"
+                      placeholder="e.g., Personal expenses"
                     />
                     {tourData.exclusions.length > 2 && (
                       <button
