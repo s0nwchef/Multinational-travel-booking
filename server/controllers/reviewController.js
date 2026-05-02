@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Review from '../models/Review.js';
 import Tour from '../models/Tour.js';
 import Booking from '../models/Booking.js';
@@ -8,6 +9,10 @@ export const getTourReviews = async (req, res) => {
         const { tourId } = req.params;
         const { page = 1, limit = 10, sort = 'newest' } = req.query;
         const skip = (page - 1) * limit;
+
+        if (!mongoose.Types.ObjectId.isValid(tourId)) {
+            return res.status(400).json({ message: 'ID tour không hợp lệ' });
+        }
 
         let sortOption = { createdAt: -1 }; // newest first
         if (sort === 'oldest') sortOption = { createdAt: 1 };
@@ -24,7 +29,7 @@ export const getTourReviews = async (req, res) => {
 
         // Get rating distribution
         const ratingStats = await Review.aggregate([
-            { $match: { tourId: require('mongoose').Types.ObjectId.createFromHexString(tourId) } },
+            { $match: { tourId: new mongoose.Types.ObjectId(tourId) } },
             { $group: { _id: '$rating', count: { $sum: 1 } } }
         ]);
 
@@ -256,7 +261,7 @@ export const getReviewById = async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ 
-            message: 'Lỗi khi l��y đánh giá', 
+            message: 'Lỗi khi lấy đánh giá', 
             error: error.message 
         });
     }
