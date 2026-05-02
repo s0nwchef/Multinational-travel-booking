@@ -1,22 +1,32 @@
 import Tour from '../models/Tour.js';
+import mongoose from 'mongoose';
 
 export const getAllTours = async (req, res) => {
     try {
         const tours = await Tour.find().populate('destinationId');
         res.json(tours);
     } catch (error) {
+        console.error('getAllTours error:', error);
         res.status(500).json({ message: 'Lỗi khi lấy danh sách tour', error: error.message });
     }
 };
 
 export const getTourById = async (req, res) => {
     try {
-        const tour = await Tour.findById(req.params.id).populate('destinationId');
+        const { id } = req.params;
+        
+        // Validate MongoDB ObjectId format
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: 'ID tour không hợp lệ' });
+        }
+        
+        const tour = await Tour.findById(id).populate('destinationId');
         if (!tour) {
             return res.status(404).json({ message: 'Không tìm thấy tour' });
         }
         res.json(tour);
     } catch (error) {
+        console.error('getTourById error:', error);
         res.status(500).json({ message: 'Lỗi khi lấy thông tin tour', error: error.message });
     }
 };

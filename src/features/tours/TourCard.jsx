@@ -41,6 +41,8 @@ export default function TourCard({ tour }) {
     return colors[type] || "bg-gray-500/90";
   };
 
+  const uid = tour.id || tour._id;
+
   return (
     <motion.div
       whileHover={{ y: -5 }}
@@ -159,7 +161,7 @@ export default function TourCard({ tour }) {
 
           <motion.button
             whileTap={{ scale: 0.95 }}
-            onClick={() => navigate(`/tour/${tour.id}`)}
+            onClick={() => navigate(`/tour/${uid}`)}
             className="bg-orange-500 text-white px-8 py-3.5 rounded-[1.2rem] font-black text-sm flex items-center gap-2 hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20"
           >
             View Details

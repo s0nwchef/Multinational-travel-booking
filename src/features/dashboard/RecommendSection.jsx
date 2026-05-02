@@ -1,7 +1,58 @@
 import React from "react";
 import { Star, Heart } from "lucide-react";
 import { motion } from "framer-motion";
-import { toursData } from "../tours/TourList";
+
+// Fallback mock data for recommendations
+const defaultTours = [
+  {
+    id: 1,
+    badge: "BEST SELLER",
+    badgeType: "orange",
+    image:
+      "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&q=80&w=800",
+    title: "Colosseum, Roman Forum & Palatine Hill Priority Access Guide",
+    location: "ROME",
+    type: "HISTORICAL TOUR",
+    rating: 4.8,
+    reviews: "12,403",
+    duration: "3 hours",
+    price: 55.0,
+    originalPrice: 65.0,
+    guests: "Group Tour",
+  },
+  {
+    id: 2,
+    badge: "KLOOK EXCLUSIVE",
+    badgeType: "blue",
+    image:
+      "https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&q=80&w=800",
+    title: "Venice Gondola Ride with Audio Guide",
+    location: "VENICE",
+    type: "WATER ACTIVITY",
+    rating: 4.5,
+    reviews: "4,800",
+    duration: "30 mins",
+    price: 32.5,
+    originalPrice: 40.0,
+    guests: "Private Tour",
+  },
+  {
+    id: 3,
+    badge: "SMALL GROUP",
+    badgeType: "purple",
+    image:
+      "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&q=80&w=800",
+    title: "Tuscany Day Trip from Florence with Chianti Wine Tasting",
+    location: "FLORENCE",
+    type: "DAY TRIP",
+    rating: 4.9,
+    reviews: "2,100",
+    duration: "10 hours",
+    price: 89.0,
+    originalPrice: 110.0,
+    guests: "Max 15 people",
+  },
+];
 
 const VerticalTourCard = ({ tour }) => (
   <motion.div
@@ -57,7 +108,8 @@ const VerticalTourCard = ({ tour }) => (
 );
 
 export default function RecommendSection() {
-  const recommendations = toursData.slice(0, 3);
+  // Use fallback mock data for recommendations (first 3 tours)
+  const recommendations = (defaultTours || []).slice(0, 3);
 
   return (
     <section className="bg-gray-100/50 rounded-[2.5rem] p-8 mt-10">
@@ -68,9 +120,10 @@ export default function RecommendSection() {
         </button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {recommendations.map((tour) => (
-          <VerticalTourCard key={tour.id} tour={tour} />
-        ))}
+        {recommendations.map((tour) => {
+          const key = tour.id || tour._id;
+          return <VerticalTourCard key={key} tour={tour} />;
+        })}
       </div>
     </section>
   );
