@@ -1,6 +1,73 @@
 import React from "react";
 import { ArrowRight, Star } from "lucide-react";
-import { toursData } from "../tours/TourList";
+
+// Fallback mock data for suggested tours
+const defaultTours = [
+  {
+    id: 4,
+    title: "Paris, France",
+    location: "PARIS",
+    image:
+      "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=800",
+    rating: 4.8,
+    reviews: "8,500",
+    duration: "5 nights",
+    guests: "2 Adults",
+    originalPrice: 580,
+    price: 450,
+    badge: "POPULAR",
+    badgeType: "orange",
+    type: "CITY TOUR",
+  },
+  {
+    id: 5,
+    title: "Bali, Indonesia",
+    location: "BALI",
+    image:
+      "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&q=80&w=800",
+    rating: 4.9,
+    reviews: "15,200",
+    duration: "7 nights",
+    guests: "All Inclusive",
+    originalPrice: 750,
+    price: 620,
+    badge: "TOP RATED",
+    badgeType: "blue",
+    type: "BEACH HOLIDAY",
+  },
+  {
+    id: 6,
+    title: "Tokyo, Japan",
+    location: "TOKYO",
+    image:
+      "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&q=80&w=800",
+    rating: 4.7,
+    reviews: "10,100",
+    duration: "4 nights",
+    guests: "City Center",
+    originalPrice: 890,
+    price: 780,
+    badge: "CULTURE",
+    badgeType: "purple",
+    type: "DISCOVERY",
+  },
+  {
+    id: 7,
+    title: "Rome, Italy",
+    location: "ROME",
+    image:
+      "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&q=80&w=800",
+    rating: 4.6,
+    reviews: "5,400",
+    duration: "3 nights",
+    guests: "Historic",
+    originalPrice: 600,
+    price: 510,
+    badge: "HISTORY",
+    badgeType: "orange",
+    type: "LANDMARK",
+  },
+];
 
 function VerticalCard({ tour }) {
   return (
@@ -40,7 +107,13 @@ function VerticalCard({ tour }) {
 }
 
 export default function SuggestedTours() {
-  const displayTours = toursData.filter((tour) => tour.id >= 4 && tour.id <= 7);
+  // Use fallback mock data for suggested tours (id 4-7)
+  const displayTours = defaultTours.filter((tour) => {
+    const rawId = tour.id ?? tour._id;
+    const n = Number(rawId);
+    if (!Number.isNaN(n)) return n >= 4 && n <= 7;
+    return false;
+  });
 
   return (
     <div className="w-full mt-16 px-2">
@@ -54,9 +127,10 @@ export default function SuggestedTours() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {displayTours.map((tour) => (
-          <VerticalCard key={tour.id} tour={tour} />
-        ))}
+        {displayTours.map((tour) => {
+          const key = tour.id || tour._id;
+          return <VerticalCard key={key} tour={tour} />;
+        })}
       </div>
     </div>
   );

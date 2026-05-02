@@ -12,8 +12,10 @@ import {
 } from "lucide-react";
 import EmptyResultsPage from "../../pages/EmptyResultPage";
 import { useLocation } from "react-router-dom";
+import tourService from "../../services/tourService";
 
-export const toursData = [
+// Fallback mock data in case API fails
+const mockToursData = [
   {
     id: 1,
     badge: "BEST SELLER",
@@ -205,9 +207,12 @@ export default function TourList() {
   const searchQuery = location.state?.query || "";
   const [showMap, setShowMap] = useState(false);
   const [viewMode, setViewMode] = useState("list");
+  const [tours, setTours] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [filters, setFilters] = useState({
-    price: 1200,
+    price: 5000,
     category: "",
     duration: [],
     startDate: "",
@@ -218,13 +223,54 @@ export default function TourList() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
 
+  // Fetch tours from API
+  useEffect(() => {
+    const fetchTours = async () => {
+      try {
+        setLoading(true);
+        const data = await tourService.getAllTours();
+        
+        // Transform API data to match TourCard format
+        const transformedTours = data.map((tour) => ({
+          id: tour._id, // Use MongoDB _id
+          title: tour.title,
+          location: tour.destinationId?.name || 'Unknown',
+          image: tour.images?.[0] || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=800',
+          rating: tour.averageRating || 0,
+          reviews: (tour.totalReviews || 0).toString(),
+          duration: `${tour.duration || 0} days`,
+          price: tour.basePrice || 0,
+          originalPrice: (tour.basePrice || 0) * 1.2, // Calculate original price
+          type: 'TOUR',
+          guests: 'Group Tour',
+          badge: tour.status === 'active' ? 'FEATURED' : '',
+          badgeType: 'orange',
+          highlight: { text: 'Instant Confirmation', type: 'instant' },
+          description: tour.description,
+        }));
+        
+        setTours(transformedTours);
+        setError(null);
+      } catch (err) {
+        console.error('❌ Error fetching tours:', err);
+        setError(err.message);
+        // Fall back to mock data
+        setTours(mockToursData);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTours();
+  }, []);
+
   useEffect(() => {
     setCurrentPage(1);
   }, [filters, searchQuery]);
 
   const handleResetFilters = () => {
     setFilters({
-      price: 1200,
+      price: 5000,
       category: "",
       duration: [],
       startDate: "",
@@ -236,6 +282,9 @@ export default function TourList() {
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
+
+  // Use tours from API or fallback to mock data
+  const toursData = tours.length > 0 ? tours : mockToursData;
 
   const filteredTours = toursData.filter((tour) => {
     const matchesSearch =
@@ -255,6 +304,25 @@ export default function TourList() {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentTours = filteredTours.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8 w-full text-center">
+        <p className="text-gray-500">Đang tải danh sách tours...</p>
+      </div>
+    );
+  }
+
+  // Show error state but continue with mock data
+  if (error && tours.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8 w-full text-center">
+        <p className="text-orange-600 mb-4">⚠️ {error}</p>
+        <p className="text-gray-500">Hiển thị dữ liệu mặc định...</p>
+      </div>
+    );
+  }
 
   if (filteredTours.length === 0) {
     return (
