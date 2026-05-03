@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Mail, Lock, User, Sun, Palmtree, Umbrella, Waves } from 'lucide-react';
+import { X, Mail, Lock, User, Sun, Palmtree, Umbrella, Waves, Phone } from 'lucide-react';
 
 const SummerElement = ({ children, className, delay = 0 }) => (
     <motion.div
@@ -100,7 +100,8 @@ export default function AuthModal({ isOpen, onClose }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    phone: ''
   });
 
   const handleInputChange = (e) => {
@@ -112,47 +113,52 @@ export default function AuthModal({ isOpen, onClose }) {
     e.preventDefault();
     try {
       if (isRegister) {
-        // For now, registration uses localStorage
-        // In production, this would call the backend API
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        if (users.find(u => u.email === formData.email)) {
-          alert('Email đã tồn tại');
-          return;
-        }
-        const newUser = {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          membership: 'Platinum Member',
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name || 'default'}`
-        };
-        users.push(newUser);
-        localStorage.setItem('users', JSON.stringify(users));
-        localStorage.setItem('currentUser', JSON.stringify(newUser));
-      } else {
-        // Login with backend API
+        // Register with backend API
         const authService = await import('../services/authService.js');
-        const result = await authService.default.login(formData.email, formData.password);
+        const result = await authService.default.register(
+          formData.name,
+          formData.email,
+          formData.password,
+          formData.phone || ''
+        );
         
         // Store user in localStorage for compatibility
         localStorage.setItem('currentUser', JSON.stringify({
           name: result.user.fullName,
           email: result.user.email,
-          membership: result.user.loyaltyTier || 'Platinum Member',
-          avatar: result.user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${result.user.fullName || 'default'}`,
-          role: result.user.role
+          role: result.user.role,
+          avatar: result.user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name || 'default'}`
         }));
-
-        // Redirect based on user role
-        const userRole = result.user.role;
-        if (userRole === 'tour_operator' || userRole === 'admin') {
-          window.location.href = '/staff/dashboard';
-          return;
-        } else if (userRole === 'user') {
-          window.location.href = '/dashboard';
-          return;
-        }
+        
+        alert('Đăng ký thành công!');
+        window.dispatchEvent(new Event('auth-change'));
+        onClose();
+        return;
       }
+      
+      // Login with backend API
+      const authService = await import('../services/authService.js');
+      const result = await authService.default.login(formData.email, formData.password);
+      
+      // Store user in localStorage for compatibility
+      localStorage.setItem('currentUser', JSON.stringify({
+        name: result.user.fullName,
+        email: result.user.email,
+        membership: result.user.loyaltyTier || 'Platinum Member',
+        avatar: result.user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${result.user.fullName || 'default'}`,
+        role: result.user.role
+      }));
+
+      // Redirect based on user role
+      const userRole = result.user.role;
+      if (userRole === 'tour_operator' || userRole === 'admin') {
+        window.location.href = '/staff/dashboard';
+        return;
+      } else if (userRole === 'user') {
+        window.location.href = '/dashboard';
+        return;
+      }
+      
       window.dispatchEvent(new Event('auth-change'));
       onClose();
     } catch (error) {
@@ -222,6 +228,16 @@ export default function AuthModal({ isOpen, onClose }) {
                         value={formData.password}
                         onChange={handleInputChange}
                     />
+                    {isRegister && (
+                        <CustomInput
+                            label="Phone Number"
+                            icon={Phone}
+                            name="phone"
+                            placeholder="+84 123 456 789"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                        />
+                    )}
 
                     {!isRegister && (
                         <div className="flex justify-end mt-1">

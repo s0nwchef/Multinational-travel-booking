@@ -1,6 +1,7 @@
 import express from 'express';
 import Booking from '../models/Booking.js';
 import { requireAuth } from '../middleware/authMiddleware.js';
+import { sendNotification } from '../utils/notificationHelper.js';
 
 const router = express.Router();
 
@@ -30,6 +31,17 @@ router.post('/', requireAuth(), async (req, res) => {
 
         const newBooking = new Booking(bookingData);
         const savedBooking = await newBooking.save();
+
+        // Gửi thông báo cho user
+        if (savedBooking.userId) {
+            await sendNotification(savedBooking.userId, {
+                title: 'Đặt tour thành công',
+                message: `Mã đặt tour: ${savedBooking.bookingCode || savedBooking._id}`,
+                type: 'booking',
+                link: `/my-bookings/${savedBooking._id}`
+            });
+        }
+
         res.status(201).json(savedBooking);
     } catch (error) {
         res.status(400).json({ message: 'Lỗi khi tạo booking', error: error.message });

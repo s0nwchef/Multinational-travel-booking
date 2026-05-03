@@ -1,4 +1,5 @@
 import Booking from '../models/Booking.js';
+import { sendNotification } from '../utils/notificationHelper.js';
 
 // Request a refund
 export const requestRefund = async (req, res) => {
@@ -52,6 +53,14 @@ export const requestRefund = async (req, res) => {
         booking.penaltyFee = penaltyFee;
 
         await booking.save();
+
+        // Gửi thông báo
+        await sendNotification(userId, {
+            title: 'Yêu cầu hoàn tiền đã được gửi',
+            message: `Mã đặt tour: ${booking.bookingCode || booking._id}. Số tiền hoàn: ${refundAmount.toLocaleString()}đ`,
+            type: 'refund',
+            link: `/refund-status?bookingId=${bookingId}`
+        });
 
         res.json({
             message: 'Yêu cầu hoàn tiền đã được gửi',
@@ -207,16 +216,30 @@ export const processRefund = async (req, res) => {
                 status: 'success',
                 date: new Date()
             });
+
+            // Gửi thông báo hoàn tiền thành công
+            await sendNotification(booking.userId._id, {
+                title: 'Hoàn tiền thành công',
+                message: `Yêu cầu hoàn tiền cho booking ${booking.bookingCode || booking._id} đã được xử lý. Số tiền hoàn: ${booking.refundDetails.amount.toLocaleString()}đ`,
+                type: 'refund',
+                link: `/my-bookings/${bookingId}`
+            });
         } else {
             // Reject refund - restore original status
             booking.status = 'confirmed';
             booking.refundDetails.status = 'rejected';
             booking.refundDetails.processedDate = new Date();
+
+            // Gửi thông báo từ chối hoàn tiền
+            await sendNotification(booking.userId._id, {
+                title: 'Yêu cầu hoàn tiền bị từ chối',
+                message: `Yêu cầu hoàn tiền cho booking ${booking.bookingCode || booking._id} đã bị từ chối. Lý do: ${notes || 'Không có'}`,
+                type: 'refund',
+                link: `/my-bookings/${bookingId}`
+            });
         }
 
         await booking.save();
-
-        // TODO: Send notification to user
 
         res.json({
             message: action === 'approve' ? 'Hoàn tiền thành công' : 'Từ chối hoàn tiền thành công',
@@ -266,6 +289,14 @@ export const cancelBooking = async (req, res) => {
         };
 
         await booking.save();
+
+        // Gửi thông báo hủy booking
+        await sendNotification(userId, {
+            title: 'Đặt tour đã bị hủy',
+            message: `Booking ${booking.bookingCode || booking._id} đã được hủy thành công`,
+            type: 'booking',
+            link: `/my-bookings`
+        });
 
         res.json({
             message: 'Hủy booking thành công',

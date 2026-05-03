@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { MapPin, Heart, Star, ArrowRight, Loader2, Globe, RefreshCw, Info } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import tourService from '../../services/tourService.js';
 
 const FavoriteChoices = () => {
@@ -116,13 +116,10 @@ const FavoriteChoices = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 min-h-[420px]">
-          <AnimatePresence mode="wait">
-            {loading ? (
+          {loading ? (
                 <motion.div
-                    key="skeleton-grid"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full col-span-full"
                 >
                   {[1, 2, 3, 4].map((i) => (
@@ -145,7 +142,8 @@ const FavoriteChoices = () => {
                  Oops! No tours available at the moment.
                </div>
             ) : (
-                choices.map((choice, index) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full col-span-full">
+                {choices.map((choice, index) => (
                     <motion.div
                         key={choice.id}
                         custom={index}
@@ -206,10 +204,10 @@ const FavoriteChoices = () => {
                         </div>
                       </div>
                     </motion.div>
-                ))
+                ))}
+                </div>
             )}
-          </AnimatePresence>
-        </div>
+          </div>
       </section>
   );
 };

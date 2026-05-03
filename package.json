@@ -10,6 +10,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "seed:tour-operators": "node seed-tour-operators.mjs",
+    "seed:tours": "node server/seedTours.js",
+    "cleanup:tours": "node test/cleanupInvalidTours.js",
     "vercel-build": "vite build",
     "start": "node server.js"
   },

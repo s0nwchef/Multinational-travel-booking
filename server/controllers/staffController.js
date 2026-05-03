@@ -1,6 +1,7 @@
 import Tour from '../models/Tour.js';
 import Booking from '../models/Booking.js';
 import User from '../models/User.js';
+import Destination from '../models/Destination.js';
 
 // Get all tours for staff (with filtering)
 export const getStaffTours = async (req, res) => {
@@ -52,11 +53,41 @@ export const getStaffTours = async (req, res) => {
 // Create a new tour
 export const createTour = async (req, res) => {
     try {
+        console.log('Create tour request body:', JSON.stringify(req.body));
+        
+        // Build tour data directly from request body
         const tourData = {
-            ...req.body,
-            createdBy: req.user.id,
-            status: 'draft'
+            title: req.body.title,
+            description: req.body.description || '',
+            duration: req.body.duration || 1,
+            basePrice: req.body.basePrice || 0,
+            startDate: req.body.startDate,
+            endDate: req.body.endDate,
+            category: req.body.category || 'city_tour',
+            status: 'draft',
+            images: req.body.images || [],
+            itinerary: req.body.itinerary || [],
+            included: req.body.included || [],
+            excluded: req.body.excluded || [],
+            destinationName: req.body.destinationName || null,
+            createdBy: req.user.id
         };
+        
+        // Try to find or create destination
+        if (req.body.destinationName) {
+            try {
+                let destination = await Destination.findOne({ 
+                    name: { $regex: new RegExp(`^${req.body.destinationName}$`, 'i') } 
+                });
+                if (destination) {
+                    tourData.destinationId = destination._id;
+                }
+            } catch (e) {
+                console.log('Destination lookup failed, using name only');
+            }
+        }
+        
+        console.log('Tour data to save:', JSON.stringify(tourData));
         
         const newTour = new Tour(tourData);
         const savedTour = await newTour.save();
@@ -67,9 +98,12 @@ export const createTour = async (req, res) => {
         });
         
     } catch (error) {
+        console.error('Create tour error:', error);
+        console.error('Error stack:', error.stack);
         res.status(400).json({ 
             message: 'Lỗi khi tạo tour', 
-            error: error.message 
+            error: error.message,
+            details: error.errors ? Object.keys(error.errors) : null
         });
     }
 };
@@ -78,7 +112,27 @@ export const createTour = async (req, res) => {
 export const updateTour = async (req, res) => {
     try {
         const { id } = req.params;
-        const updateData = req.body;
+        let { destinationId, ...updateData } = req.body;
+        
+        // If destinationId is a name (string), find the destination document
+        if (destinationId && typeof destinationId === 'string') {
+            const destination = await Destination.findOne({ name: destinationId });
+            if (destination) {
+                destinationId = destination._id;
+            } else {
+                // Create a new destination if it doesn't exist
+                const newDestination = await Destination.create({
+                    name: destinationId,
+                    type: 'city',
+                    description: `Destination in ${destinationId}`
+                });
+                destinationId = newDestination._id;
+            }
+        }
+        
+        if (destinationId) {
+            updateData.destinationId = destinationId;
+        }
         
         const updatedTour = await Tour.findByIdAndUpdate(
             id,

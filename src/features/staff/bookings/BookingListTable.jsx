@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { Eye, Mail, Phone, Calendar, User, MapPin, Check, X } from 'lucide-react';
+import { Eye, Mail, Phone, Calendar, User, MapPin, Check } from 'lucide-react';
 import BookingStatusBadge from './BookingStatusBadge';
 
 const BookingListTable = ({ bookings, onUpdateStatus }) => {
   const [showStatusModal, setShowStatusModal] = useState(null);
 
   const formatCurrency = (amount) => {
-    if (!amount) return '0 ₫';
-    return new Intl.NumberFormat('vi-VN', {
+    if (!amount) return '$0';
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'VND',
+      currency: 'USD',
       minimumFractionDigits: 0
     }).format(amount);
   };
@@ -17,7 +17,7 @@ const BookingListTable = ({ bookings, onUpdateStatus }) => {
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN', {
+    return date.toLocaleDateString('en-US', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
@@ -41,7 +41,7 @@ const BookingListTable = ({ bookings, onUpdateStatus }) => {
   const mappedBookings = bookings.map(booking => ({
     id: booking._id || booking.id,
     bookingNumber: booking.bookingReference || booking.bookingNumber || `BK-${booking._id?.slice(-6)}`,
-    customerName: booking.userId?.fullName || booking.customerName || 'Khách hàng',
+    customerName: booking.userId?.fullName || booking.customerName || 'Customer',
     customerEmail: booking.userId?.email || booking.customerEmail || '-',
     tourName: booking.tourId?.title || booking.tourName || '-',
     bookingDate: booking.bookingDate || booking.createdAt,
@@ -57,14 +57,13 @@ const BookingListTable = ({ bookings, onUpdateStatus }) => {
       <table className="w-full">
         <thead>
           <tr className="border-b border-gray-200">
-            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-500">Mã Booking</th>
-            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-500">Khách hàng</th>
+            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-500">Booking #</th>
+            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-500">Customer</th>
             <th className="text-left py-3 px-4 text-sm font-semibold text-gray-500">Tour</th>
-            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-500">Ngày đặt</th>
-            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-500">Ngày đi</th>
-            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-500">Trạng thái</th>
-            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-500">Tổng tiền</th>
-            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-500">Hành động</th>
+            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-500">Book Date</th>
+            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-500">Status</th>
+            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-500">Total</th>
+            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-500">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -80,7 +79,7 @@ const BookingListTable = ({ bookings, onUpdateStatus }) => {
                   </div>
                   <div>
                     <p className="font-mono text-sm font-semibold text-gray-900">{booking.bookingNumber}</p>
-                    <p className="text-xs text-gray-500">{booking.numberOfTravelers} người</p>
+                    <p className="text-xs text-gray-500">{booking.numberOfTravelers} traveler(s)</p>
                   </div>
                 </div>
               </td>
@@ -109,12 +108,6 @@ const BookingListTable = ({ bookings, onUpdateStatus }) => {
                 </div>
               </td>
               <td className="py-3 px-4">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-gray-400" />
-                  <p className="text-gray-600">{formatDate(booking.travelDate)}</p>
-                </div>
-              </td>
-              <td className="py-3 px-4">
                 <BookingStatusBadge status={booking.status} />
               </td>
               <td className="py-3 px-4">
@@ -128,21 +121,21 @@ const BookingListTable = ({ bookings, onUpdateStatus }) => {
                   <button 
                     onClick={() => handleViewDetails(booking.id)}
                     className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                    title="Xem chi tiết"
+                    title="View Details"
                   >
                     <Eye className="w-4 h-4" />
                   </button>
                   <button 
                     onClick={() => handleContactCustomer(booking.customerEmail)}
                     className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                    title="Liên hệ khách hàng"
+                    title="Contact Customer"
                   >
                     <Mail className="w-4 h-4" />
                   </button>
                   <button 
                     onClick={() => setShowStatusModal(booking.id)}
                     className="p-2 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                    title="Cập nhật trạng thái"
+                    title="Update Status"
                   >
                     <Check className="w-4 h-4" />
                   </button>
@@ -157,7 +150,7 @@ const BookingListTable = ({ bookings, onUpdateStatus }) => {
       {showStatusModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 w-96">
-            <h3 className="text-lg font-semibold mb-4">Cập nhật trạng thái</h3>
+            <h3 className="text-lg font-semibold mb-4">Update Status</h3>
             <div className="space-y-2">
               {['confirmed', 'pending', 'cancelled', 'completed'].map((status) => (
                 <button
@@ -165,10 +158,10 @@ const BookingListTable = ({ bookings, onUpdateStatus }) => {
                   onClick={() => handleStatusChange(showStatusModal, status)}
                   className="w-full p-3 text-left rounded-xl border hover:border-orange-500 hover:bg-orange-50 transition-colors capitalize"
                 >
-                  {status === 'confirmed' && '✅ Đã xác nhận'}
-                  {status === 'pending' && '⏳ Chờ xác nhận'}
-                  {status === 'cancelled' && '❌ Đã hủy'}
-                  {status === 'completed' && '🎉 Hoàn thành'}
+                  {status === 'confirmed' && '✅ Confirmed'}
+                  {status === 'pending' && '⏳ Pending'}
+                  {status === 'cancelled' && '❌ Cancelled'}
+                  {status === 'completed' && '🎉 Completed'}
                 </button>
               ))}
             </div>
@@ -176,7 +169,7 @@ const BookingListTable = ({ bookings, onUpdateStatus }) => {
               onClick={() => setShowStatusModal(null)}
               className="mt-4 w-full p-3 text-gray-600 hover:bg-gray-100 rounded-xl"
             >
-              Hủy
+              Cancel
             </button>
           </div>
         </div>
@@ -188,8 +181,8 @@ const BookingListTable = ({ bookings, onUpdateStatus }) => {
           <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <span className="text-2xl">📋</span>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Không tìm thấy booking</h3>
-          <p className="text-gray-500">Thử thay đổi bộ lọc hoặc tìm kiếm khác</p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">No bookings found</h3>
+          <p className="text-gray-500">Try changing your filters or search criteria</p>
         </div>
       )}
     </div>
