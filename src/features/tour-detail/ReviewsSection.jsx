@@ -54,7 +54,7 @@ const ReviewsSection = ({ tour }) => {
 
         const reviews = (data.reviews || []).map((review) => ({
           id: review._id,
-          author: review.userId?.fullName || 'Anonymous traveler',
+          author: review.isAnonymous ? 'Anonymous traveler' : (review.userId?.fullName || 'Anonymous traveler'),
           avatar: review.userId?.avatarUrl || 'https://i.pravatar.cc/150?img=12',
           verification: `Verified Traveler • ${tour.duration ? `${tour.duration} Days` : 'Tour'}`,
           date: new Date(review.createdAt).toLocaleDateString('en-US', {
@@ -63,7 +63,7 @@ const ReviewsSection = ({ tour }) => {
             year: 'numeric',
           }),
           rating: review.rating,
-          title: review.rating >= 5 ? 'Excellent experience' : 'Great trip',
+          title: review.title || (review.rating >= 5 ? 'Excellent experience' : 'Great trip'),
           text: review.content,
           images: review.photos || [],
           helpfulCount: 0,

@@ -17,6 +17,7 @@ export default function ExperienceRating({ rating, setRating }) {
         {ratings.map((item) => (
           <button
             key={item.value}
+            type="button"
             onClick={() => setRating(item.value)}
             className={`flex flex-col items-center gap-2 p-3 rounded-lg transition-all ${
               rating === item.value

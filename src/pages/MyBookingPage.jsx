@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../layouts/Sidebar.jsx";
 import {
   Search,
@@ -8,19 +9,145 @@ import {
   Clock3,
   CheckCircle2,
   XCircle,
+  AlertCircle,
 } from "lucide-react";
-import { BOOKING_DATA } from "../data/bookingData.js";
 import BookingCard from "../features/booking/BookingCard.jsx";
 import { AnimatePresence, motion } from "framer-motion";
+import bookingService from "../services/bookingService.js";
+import authService from "../services/authService.js";
+
+const categorizeBooking = (status = "") => {
+  const normalized = String(status).toLowerCase();
+
+  if (["completed", "ticketed"].includes(normalized)) {
+    return "completed";
+  }
+
+  if (["cancelled", "canceled", "refunded", "refund_pending"].includes(normalized)) {
+    return "cancelled";
+  }
+
+  return "upcoming";
+};
+
+const normalizeBooking = (booking) => {
+  const item = booking.itemId || booking.tourId || {};
+  const isTour = booking.bookingType === "tour" || item.title || booking.tourId;
+
+  return {
+    id: booking.bookingCode || booking._id,
+    bookingId: booking._id,
+    bookingCode: booking.bookingCode,
+    tourId: booking.tourId?._id || booking.tourId || item._id || item.id,
+    category: categorizeBooking(booking.status),
+    type: isTour ? "Tour" : "Flight",
+    image:
+      item.images?.[0] ||
+      item.image ||
+      "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=800&auto=format&fit=crop",
+    status: booking.status ? booking.status.charAt(0).toUpperCase() + booking.status.slice(1) : "Confirmed",
+    title: item.title || booking.customerName || "Booking",
+    description: item.description || booking.bookingReference || "Travel booking",
+    location: item.destinationId?.name || item.location || "",
+    startDate: booking.bookingDate
+      ? new Date(booking.bookingDate).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "",
+    endDate: booking.bookingDate
+      ? new Date(booking.bookingDate).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "",
+    time: "",
+    adults: booking.travelers?.length || 1,
+    airline: booking.bookingType === "flight" ? item.airline || "" : "",
+    nights: Number(item.duration || 0),
+    price: booking.grandTotal ?? booking.totalAmount ?? booking.baseFare ?? 0,
+    priceNote: booking.paymentStatus ? booking.paymentStatus.replace(/_/g, " ") : "Paid",
+    searchText: [
+      booking.bookingCode,
+      booking.bookingReference,
+      item.title,
+      item.location,
+      item.destinationId?.name,
+      booking.customerName,
+      booking.status,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase(),
+  };
+};
 
 export default function MyBookingsPage() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("upcoming");
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const itemsPerPage = 3;
 
-  const filteredData = BOOKING_DATA.filter(
-    (item) => item.category === activeTab,
-  );
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchBookings = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        if (!authService.isAuthenticated()) {
+          if (mounted) {
+            setBookings([]);
+            setError("Please sign in to view your bookings.");
+          }
+          return;
+        }
+
+        const data = await bookingService.getBookings();
+        const currentUserId = authService.getCurrentUser()?._id || authService.getCurrentUser()?.id;
+
+        const normalized = (Array.isArray(data) ? data : [])
+          .filter((booking) => {
+            const bookingUserId = booking.userId?._id || booking.userId?.id || booking.userId;
+            return !currentUserId || String(bookingUserId) === String(currentUserId);
+          })
+          .map(normalizeBooking);
+
+        if (mounted) {
+          setBookings(normalized);
+        }
+      } catch (fetchError) {
+        if (mounted) {
+          setError(fetchError.message || "Không thể tải danh sách booking");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchBookings();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const filteredData = useMemo(() => {
+    return bookings.filter((item) => {
+      const matchesTab = item.category === activeTab;
+      const matchesSearch =
+        searchTerm.trim() === "" || item.searchText.includes(searchTerm.toLowerCase().trim());
+      return matchesTab && matchesSearch;
+    });
+  }, [activeTab, bookings, searchTerm]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const currentItems = filteredData.slice(
@@ -33,6 +160,39 @@ export default function MyBookingsPage() {
     { id: "completed", label: "Completed", icon: CheckCircle2 },
     { id: "cancelled", label: "Cancelled", icon: XCircle },
   ];
+
+  const tabCounts = useMemo(() => {
+    return tabs.reduce((accumulator, tab) => {
+      accumulator[tab.id] = bookings.filter((booking) => booking.category === tab.id).length;
+      return accumulator;
+    }, {});
+  }, [bookings]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F8F9FA]">
+        <p className="text-gray-500 font-bold">Đang tải danh sách booking...</p>
+      </div>
+    );
+  }
+
+  if (error && bookings.length === 0) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F8F9FA] px-4 text-center">
+        <div className="max-w-md bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
+          <AlertCircle className="mx-auto mb-4 text-orange-500" size={40} />
+          <h2 className="text-2xl font-black text-gray-900 mb-2">Bookings unavailable</h2>
+          <p className="text-gray-500 mb-6">{error}</p>
+          <button
+            onClick={() => navigate('/tours')}
+            className="px-6 py-3 bg-orange-500 text-white font-black rounded-2xl hover:bg-orange-600 transition-all"
+          >
+            Explore Tours
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-[#F8F9FA]">
@@ -72,7 +232,7 @@ export default function MyBookingsPage() {
                     {tab.label}
                     <span className="text-[10px] opacity-60">
                       (
-                      {BOOKING_DATA.filter((b) => b.category === tab.id).length}
+                      {tabCounts[tab.id] || 0}
                       )
                     </span>
                     {activeTab === tab.id && (
@@ -95,6 +255,11 @@ export default function MyBookingsPage() {
                 <input
                   type="text"
                   placeholder="Find a booking..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="w-full pl-14 pr-6 py-4 bg-white rounded-[1.5rem] shadow-sm text-sm font-bold outline-none border border-transparent focus:border-orange-200 transition-all"
                 />
               </div>

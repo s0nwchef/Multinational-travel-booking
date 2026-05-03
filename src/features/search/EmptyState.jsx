@@ -2,7 +2,7 @@ import React from "react";
 import { SearchX, RotateCcw, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function EmptyState({ searchTerm = "your location", onReset }) {
+export default function EmptyState({ searchTerm = "your search", onReset }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 px-4">
       <motion.div
@@ -21,8 +21,8 @@ export default function EmptyState({ searchTerm = "your location", onReset }) {
         No results found for "{searchTerm}"
       </h2>
       <p className="text-gray-500 max-w-md text-center mb-10 font-medium leading-relaxed">
-        We couldn't find any tours in this location. Try adjusting your filters
-        or search for a different destination.
+        We couldn't find any tours matching this search. Try adjusting your
+        filters or search for a different destination.
       </p>
 
       <div className="flex gap-4">

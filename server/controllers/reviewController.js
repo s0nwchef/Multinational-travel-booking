@@ -61,7 +61,7 @@ export const getTourReviews = async (req, res) => {
 export const createReview = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { tourId, rating, content, photos } = req.body;
+        const { tourId, rating, title, content, photos, isAnonymous, detailedRatings } = req.body;
 
         if (!tourId || !rating || !content) {
             return res.status(400).json({ 
@@ -100,9 +100,12 @@ export const createReview = async (req, res) => {
         const review = new Review({
             userId,
             tourId,
+            title: title || '',
             rating,
             content,
-            photos: photos || []
+            photos: photos || [],
+            isAnonymous: Boolean(isAnonymous),
+            detailedRatings: detailedRatings || {}
         });
 
         await review.save();
@@ -134,7 +137,7 @@ export const updateReview = async (req, res) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
-        const { rating, content, photos } = req.body;
+        const { rating, title, content, photos, isAnonymous, detailedRatings } = req.body;
 
         const review = await Review.findOne({ _id: id, userId });
 
@@ -146,8 +149,11 @@ export const updateReview = async (req, res) => {
 
         // Update fields
         if (rating) review.rating = rating;
+        if (title !== undefined) review.title = title;
         if (content) review.content = content;
         if (photos) review.photos = photos;
+        if (typeof isAnonymous === 'boolean') review.isAnonymous = isAnonymous;
+        if (detailedRatings) review.detailedRatings = detailedRatings;
 
         await review.save();
 

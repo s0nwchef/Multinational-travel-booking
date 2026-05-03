@@ -70,7 +70,7 @@ export default function TourFilters({ filters, onFilterChange }) {
                 <input
                   type="range"
                   min="50"
-                  max="1200"
+                  max="5000"
                   value={filters.price}
                   onChange={(e) => onFilterChange("price", e.target.value)}
                   className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-orange-500 mb-6"
@@ -88,6 +88,7 @@ export default function TourFilters({ filters, onFilterChange }) {
                       type="number"
                       value={filters.price}
                       onChange={(e) => onFilterChange("price", e.target.value)}
+                      max="5000"
                       className="w-full pl-6 pr-3 py-3 border border-orange-100 bg-orange-50/20 rounded-2xl text-xs text-orange-600 font-black focus:outline-none focus:ring-1 focus:ring-orange-500"
                     />
                   </div>

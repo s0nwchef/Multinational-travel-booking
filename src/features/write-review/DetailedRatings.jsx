@@ -26,6 +26,7 @@ export default function DetailedRatings({ ratings, setRatings }) {
       {[1, 2, 3, 4, 5].map((star) => (
         <button
           key={star}
+          type="button"
           onClick={() => handleStarClick(category, star)}
           className="transition-transform hover:scale-110"
         >

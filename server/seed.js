@@ -5,6 +5,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import dns from 'node:dns';
+import bcrypt from 'bcryptjs';
 import User from './models/User.js';
 import Destination from './models/Destination.js';
 import Tour from './models/Tour.js';
@@ -83,6 +84,7 @@ async function seedData() {
         console.log(`✅ Đã thêm ${destinations.length} destinations`);
 
         const seedUsers = [];
+        const seededPasswordHash = await bcrypt.hash('Password123!', 10);
         const userSeeds = [
             {
                 email: 'sarah.jenkins@example.com',
@@ -118,10 +120,11 @@ async function seedData() {
                     $set: {
                         fullName: userSeed.fullName,
                         avatarUrl: userSeed.avatarUrl,
-                        role: 'user'
+                        role: 'user',
+                        passwordHash: seededPasswordHash
                     }
                 },
-                { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+                    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
             );
             seedUsers.push(user);
         }
@@ -236,23 +239,17 @@ async function seedData() {
                 tourId: tours[0]._id,
                 averageRating: 4.9,
                 reviews: [
-                    {
-                        user: seedUsers[0],
-                        rating: 5,
-                        content: 'Lộ trình rất hợp lý, khách sạn sạch sẽ và hướng dẫn viên nhiệt tình. Chuyến đi vượt kỳ vọng của tôi.',
-                        photos: [
-                            'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=600&auto=format&fit=crop',
-                            'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&auto=format&fit=crop'
-                        ]
-                    },
+                    
                     {
                         user: seedUsers[1],
+                        title: 'Wonderful and well organized',
                         rating: 5,
                         content: 'Ba thành phố đều rất đẹp, đặc biệt Venice vào buổi tối. Dịch vụ rất chuyên nghiệp.',
                         photos: []
                     },
                     {
                         user: seedUsers[2],
+                        title: 'Great trip with a busy schedule',
                         rating: 4,
                         content: 'Tour có nhiều trải nghiệm tốt, chỉ hơi dày lịch trình ở ngày 4-5 nhưng vẫn đáng tiền.',
                         photos: [
@@ -267,6 +264,7 @@ async function seedData() {
                 reviews: [
                     {
                         user: seedUsers[3],
+                        title: 'Paris at its best',
                         rating: 5,
                         content: 'Paris đẹp đúng như kỳ vọng. Phần tham quan Louvre và Versailles là điểm nhấn lớn nhất.',
                         photos: [
@@ -275,6 +273,7 @@ async function seedData() {
                     },
                     {
                         user: seedUsers[4],
+                        title: 'Perfect for a family trip',
                         rating: 5,
                         content: 'Nhịp tour nhẹ nhàng, phù hợp cho gia đình. Hướng dẫn viên am hiểu và hỗ trợ tốt.',
                         photos: []
@@ -285,16 +284,10 @@ async function seedData() {
                 tourId: tours[2]._id,
                 averageRating: 4.7,
                 reviews: [
-                    {
-                        user: seedUsers[0],
-                        rating: 5,
-                        content: 'Tokyo hiện đại nhưng vẫn giữ được nét truyền thống. Rất nhiều trải nghiệm đáng nhớ.',
-                        photos: [
-                            'https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=600&auto=format&fit=crop'
-                        ]
-                    },
+                    
                     {
                         user: seedUsers[1],
+                        title: 'Worth every penny',
                         rating: 4,
                         content: 'Đáng tiền, đặc biệt là ngày đi Mount Fuji. Có thể thêm một đêm nghỉ ở khu Shibuya thì tuyệt hơn.',
                         photos: []
@@ -306,14 +299,44 @@ async function seedData() {
         const reviewDocs = [];
         const bookingDocs = [];
 
+        // Give Sarah Jenkins a completed booking for every seeded tour
+        // so review creation can be tested on all tours.
+        for (const tour of tours) {
+            bookingDocs.push({
+                userId: seedUsers[0]._id,
+                bookingType: 'tour',
+                itemId: tour._id,
+                bookingCode: `SARAH-${tour._id.toString().slice(-6)}`,
+                bookingReference: `SARAH-REF-${tour._id.toString().slice(-6)}`,
+                customerName: seedUsers[0].fullName,
+                tourId: tour._id,
+                travelers: [
+                    {
+                        fullName: seedUsers[0].fullName,
+                        age: 30,
+                        documentId: `DOC-${seedUsers[0]._id.toString().slice(-6)}`,
+                        seatNumber: 'A1',
+                        baggage: '7kg xách tay'
+                    }
+                ],
+                grandTotal: tour.basePrice || 0,
+                totalAmount: tour.basePrice || 0,
+                status: 'completed',
+                paymentStatus: 'paid'
+            });
+        }
+
         for (const reviewGroup of reviewsByTour) {
             for (const reviewSeed of reviewGroup.reviews) {
                 reviewDocs.push({
                     userId: reviewSeed.user._id,
                     tourId: reviewGroup.tourId,
+                    title: reviewSeed.title || '',
                     rating: reviewSeed.rating,
                     content: reviewSeed.content,
-                    photos: reviewSeed.photos
+                    photos: reviewSeed.photos,
+                    isAnonymous: false,
+                    detailedRatings: {}
                 });
 
                 bookingDocs.push({

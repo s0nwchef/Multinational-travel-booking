@@ -1,5 +1,6 @@
 import express from 'express';
 import Booking from '../models/Booking.js';
+import { requireAuth } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -12,9 +13,22 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+// Create booking - require auth to ensure userId is set from session
+router.post('/', requireAuth(), async (req, res) => {
     try {
-        const newBooking = new Booking(req.body);
+        // Prefer server-side user from session
+        const userId = req.user?._id || req.body.userId;
+        const bookingCode = req.body.bookingCode || `BK-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+
+        const bookingData = {
+            ...req.body,
+            userId,
+            bookingCode,
+            bookingReference: req.body.bookingReference || bookingCode,
+            itemId: req.body.itemId || req.body.tourId,
+        };
+
+        const newBooking = new Booking(bookingData);
         const savedBooking = await newBooking.save();
         res.status(201).json(savedBooking);
     } catch (error) {

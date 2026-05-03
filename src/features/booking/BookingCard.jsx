@@ -25,6 +25,7 @@ const BookingCard = ({ item }) => {
   const navigate = useNavigate();
   const isCompleted = item.category === "completed";
   const isCancelled = item.category === "cancelled";
+  const tourId = item.tourId || item.id;
 
   return (
     <motion.div
@@ -106,7 +107,7 @@ const BookingCard = ({ item }) => {
           <div className="flex gap-6">
             {isCompleted ? (
               <button
-                onClick={() => navigate(`/review/:tourId${item.id}`)}
+                onClick={() => navigate(`/review/${tourId}`)}
                 className="text-[11px] font-black text-orange-500 hover:underline flex items-center gap-1.5 uppercase tracking-wider"
               >
                 <Star size={14} className="fill-orange-500" /> Rate Experience
@@ -129,7 +130,10 @@ const BookingCard = ({ item }) => {
 
           <div className="flex gap-3">
             {isCompleted ? (
-              <button className="bg-orange-500 text-white text-[10px] font-black px-7 py-3.5 rounded-2xl hover:bg-orange-600 shadow-lg shadow-orange-100 flex items-center gap-2 transition-all active:scale-95">
+              <button
+                onClick={() => navigate(`/checkout/${tourId}`)}
+                className="bg-orange-500 text-white text-[10px] font-black px-7 py-3.5 rounded-2xl hover:bg-orange-600 shadow-lg shadow-orange-100 flex items-center gap-2 transition-all active:scale-95"
+              >
                 <Repeat size={14} /> REBOOK
               </button>
             ) : isCancelled ? (

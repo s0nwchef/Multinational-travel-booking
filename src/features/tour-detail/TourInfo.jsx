@@ -6,7 +6,7 @@ export default function TourInfo({ tour }) {
   const navigate = useNavigate();
 
   const handleBookNow = () => {
-    navigate(`/checkout`);
+    navigate(`/checkout/${tour.id}`);
   };
 
   return (
