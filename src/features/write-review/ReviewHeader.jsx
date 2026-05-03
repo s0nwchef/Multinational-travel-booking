@@ -19,10 +19,10 @@ export default function ReviewHeader({ tour }) {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Completed on {tour.completionDate}
+              {tour.completionDate ? `Completed on ${tour.completionDate}` : 'Ready to review'}
             </p>
           </div>
-          <button className="text-orange-500 text-sm font-semibold hover:text-orange-600">
+          <button type="button" className="text-orange-500 text-sm font-semibold hover:text-orange-600">
             View details
           </button>
         </div>

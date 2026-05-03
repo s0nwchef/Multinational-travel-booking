@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 
-export default function PhotoUpload({ photos, setPhotos }) {
+export default function PhotoUpload({ photos, setPhotos, isAnonymous, setIsAnonymous }) {
   const fileInputRef = useRef(null);
 
   const handleFileSelect = (e) => {
@@ -50,6 +50,7 @@ export default function PhotoUpload({ photos, setPhotos }) {
                 className="w-full h-24 object-cover rounded-lg"
               />
               <button
+                type="button"
                 onClick={() => removePhoto(photo.id)}
                 className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
               >
@@ -60,6 +61,7 @@ export default function PhotoUpload({ photos, setPhotos }) {
             </div>
           ))}
           <button
+            type="button"
             onClick={() => fileInputRef.current?.click()}
             className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg h-24 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:border-orange-500 dark:hover:border-orange-400 transition-colors"
           >
@@ -82,6 +84,8 @@ export default function PhotoUpload({ photos, setPhotos }) {
       <label className="flex items-center gap-3 cursor-pointer">
         <input
           type="checkbox"
+          checked={isAnonymous}
+          onChange={(e) => setIsAnonymous(e.target.checked)}
           className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-orange-500 focus:ring-orange-500 dark:focus:ring-orange-400"
         />
         <span className="text-sm text-gray-700 dark:text-gray-300">Post anonymously</span>

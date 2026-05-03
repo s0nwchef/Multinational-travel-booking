@@ -202,9 +202,12 @@ const mockToursData = [
   },
 ];
 
+// Export for other components that need mock data
+export const toursData = mockToursData;
+
 export default function TourList() {
   const location = useLocation();
-  const searchQuery = location.state?.query || "";
+  const searchQuery = (location.state?.query || "").trim();
   const [showMap, setShowMap] = useState(false);
   const [viewMode, setViewMode] = useState("list");
   const [tours, setTours] = useState([]);
@@ -252,7 +255,7 @@ export default function TourList() {
         setTours(transformedTours);
         setError(null);
       } catch (err) {
-        console.error('❌ Error fetching tours:', err);
+        console.error('Error fetching tours:', err);
         setError(err.message);
         // Fall back to mock data
         setTours(mockToursData);
@@ -287,10 +290,20 @@ export default function TourList() {
   const toursData = tours.length > 0 ? tours : mockToursData;
 
   const filteredTours = toursData.filter((tour) => {
+    const searchableText = [
+      tour.title,
+      tour.location,
+      tour.type,
+      tour.description,
+      tour.badge,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
     const matchesSearch =
       searchQuery === "" ||
-      tour.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tour.location.toLowerCase().includes(searchQuery.toLowerCase());
+      searchableText.includes(searchQuery.toLowerCase());
     const matchesPrice = tour.price <= filters.price;
     const matchesCategory =
       !filters.category ||

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Review from '../models/Review.js';
 import Tour from '../models/Tour.js';
 import Booking from '../models/Booking.js';
@@ -8,6 +9,10 @@ export const getTourReviews = async (req, res) => {
         const { tourId } = req.params;
         const { page = 1, limit = 10, sort = 'newest' } = req.query;
         const skip = (page - 1) * limit;
+
+        if (!mongoose.Types.ObjectId.isValid(tourId)) {
+            return res.status(400).json({ message: 'ID tour không hợp lệ' });
+        }
 
         let sortOption = { createdAt: -1 }; // newest first
         if (sort === 'oldest') sortOption = { createdAt: 1 };
@@ -24,7 +29,7 @@ export const getTourReviews = async (req, res) => {
 
         // Get rating distribution
         const ratingStats = await Review.aggregate([
-            { $match: { tourId: require('mongoose').Types.ObjectId.createFromHexString(tourId) } },
+            { $match: { tourId: new mongoose.Types.ObjectId(tourId) } },
             { $group: { _id: '$rating', count: { $sum: 1 } } }
         ]);
 
@@ -56,7 +61,7 @@ export const getTourReviews = async (req, res) => {
 export const createReview = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { tourId, rating, content, photos } = req.body;
+        const { tourId, rating, title, content, photos, isAnonymous, detailedRatings } = req.body;
 
         if (!tourId || !rating || !content) {
             return res.status(400).json({ 
@@ -95,9 +100,12 @@ export const createReview = async (req, res) => {
         const review = new Review({
             userId,
             tourId,
+            title: title || '',
             rating,
             content,
-            photos: photos || []
+            photos: photos || [],
+            isAnonymous: Boolean(isAnonymous),
+            detailedRatings: detailedRatings || {}
         });
 
         await review.save();
@@ -129,7 +137,7 @@ export const updateReview = async (req, res) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
-        const { rating, content, photos } = req.body;
+        const { rating, title, content, photos, isAnonymous, detailedRatings } = req.body;
 
         const review = await Review.findOne({ _id: id, userId });
 
@@ -141,8 +149,11 @@ export const updateReview = async (req, res) => {
 
         // Update fields
         if (rating) review.rating = rating;
+        if (title !== undefined) review.title = title;
         if (content) review.content = content;
         if (photos) review.photos = photos;
+        if (typeof isAnonymous === 'boolean') review.isAnonymous = isAnonymous;
+        if (detailedRatings) review.detailedRatings = detailedRatings;
 
         await review.save();
 
@@ -256,7 +267,7 @@ export const getReviewById = async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ 
-            message: 'Lỗi khi l��y đánh giá', 
+            message: 'Lỗi khi lấy đánh giá', 
             error: error.message 
         });
     }

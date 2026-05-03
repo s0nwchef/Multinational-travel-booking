@@ -13,6 +13,7 @@ const PaymentDetails = ({ onPaymentChange }) => {
 
   const handleMethodChange = (method) => {
     setSelectedMethod(method);
+    onPaymentChange?.({ ...formData, method });
   };
 
   const handleInputChange = (e) => {
@@ -40,7 +41,7 @@ const PaymentDetails = ({ onPaymentChange }) => {
 
     const updated = { ...formData, [name]: formattedValue };
     setFormData(updated);
-    onPaymentChange?.(updated);
+    onPaymentChange?.({ ...updated, method: selectedMethod });
   };
 
   return (

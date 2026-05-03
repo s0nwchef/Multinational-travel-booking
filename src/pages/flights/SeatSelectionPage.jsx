@@ -178,7 +178,7 @@ export default function SeatSelectionPage() {
               </div>
               <button 
                 disabled={!selectedSeat}
-                onClick={() => navigate('/checkout')}
+                onClick={() => navigate('/payment')}
                 className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all
                   ${selectedSeat 
                     ? 'bg-primary text-white hover:bg-primary-dark shadow-lg shadow-primary/30' 

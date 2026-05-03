@@ -1,40 +1,104 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import TravelerDetails from '../features/checkout/TravelerDetails';
 import PaymentDetails from '../features/checkout/PaymentDetails';
 import OrderSummary from '../features/checkout/OrderSummary';
+import tourService from '../services/tourService.js';
+import bookingService from '../services/bookingService.js';
+import authService from '../services/authService.js';
 
 const CheckoutPage = () => {
   const { tourId } = useParams();
   const navigate = useNavigate();
+
+  const [tour, setTour] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
   const [travelerData, setTravelerData] = useState({});
   const [paymentData, setPaymentData] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
-  // Mock tour data - in a real app, this would come from props or API
-  const mockTour = {
-    id: tourId || 'japan-essential',
-    name: 'Essential Japan: Tokyo, Kyoto & Osaka',
-    location: 'Tokyo, Japan',
-    image: 'https://images.unsplash.com/photo-1540959375944-7049f642d455?w=500&h=400&fit=crop',
-    rating: 4.9,
-    reviews: 1204,
-    dates: 'Oct 12 - Oct 21, 2024',
-    guests: '2 Adults',
-    duration: '10 Days',
-    price: 2400
+  useEffect(() => {
+    let mounted = true;
+    const fetchTour = async () => {
+      try {
+        setLoading(true);
+        const data = await tourService.getTourById(tourId);
+        const normalized = {
+          id: data._id || data.id,
+          name: data.title || data.name || 'Untitled Tour',
+          location: data.destinationId?.name || data.location || '',
+          image: Array.isArray(data.images) && data.images.length > 0 ? data.images[0] : data.imageUrl || '',
+          rating: data.averageRating || data.rating || 0,
+          reviews: data.totalReviews || data.reviewCount || 0,
+          dates: data.dates || '',
+          guests: '1 Adult',
+          duration: data.duration || data.days || '',
+          price: data.basePrice || data.price || 0,
+        };
+
+        if (mounted) setTour(normalized);
+      } catch (err) {
+        console.error(err);
+        if (mounted) setError('Không thể tải thông tin tour');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    fetchTour();
+    return () => { mounted = false; };
+  }, [tourId]);
+
+  const handleTravelerDataChange = (data) => setTravelerData(data);
+  const handlePaymentDataChange = (data) => setPaymentData(data);
+
+  const handleBackClick = () => navigate(-1);
+
+  const normalizePaymentMethod = (method) => {
+    if (method === 'creditCard') return 'credit_card';
+    if (method === 'paypal') return 'paypal';
+    if (method === 'payLater') return 'bank_transfer';
+    return 'credit_card';
   };
 
-  const handleTravelerDataChange = (data) => {
-    setTravelerData(data);
+  const handleCompleteBooking = async () => {
+    if (!authService.isAuthenticated()) {
+      navigate(`/home?returnUrl=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const payload = {
+        userId: authService.getCurrentUser()?._id,
+        bookingType: 'tour',
+        tourId: tour.id,
+        itemId: tour.id,
+        customerName: `${travelerData.firstName || ''} ${travelerData.lastName || ''}`.trim(),
+        travelers: [{ fullName: `${travelerData.firstName || ''} ${travelerData.lastName || ''}`.trim(), age: 30 }],
+        baseFare: tour.price,
+        totalAmount: tour.price,
+        grandTotal: tour.price,
+        paymentStatus: 'paid',
+        paymentHistory: [{ transactionId: `txn_${Date.now()}`, amount: tour.price, method: normalizePaymentMethod(paymentData.method), status: 'success' }],
+        status: 'confirmed'
+      };
+
+      await bookingService.createBooking(payload);
+      navigate('/my-bookings');
+    } catch (err) {
+      console.error('Booking failed', err);
+      setError(err.message || 'Không thể tạo booking');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handlePaymentDataChange = (data) => {
-    setPaymentData(data);
-  };
-
-  const handleBackClick = () => {
-    navigate(-1);
-  };
+  if (loading) return <div className="py-12 text-center">Đang tải thông tin tour...</div>;
+  if (error) return <div className="py-12 text-center text-red-500">Lỗi: {error}</div>;
+  if (!tour) return <div className="py-12 text-center">Không tìm thấy tour.</div>;
 
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -56,7 +120,7 @@ const CheckoutPage = () => {
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
             <span>Tours</span>
             <span>/</span>
-            <span>Japan</span>
+            <span>{tour.location}</span>
             <span>/</span>
             <span className="text-gray-900 dark:text-white font-medium">Checkout</span>
           </div>
@@ -77,7 +141,7 @@ const CheckoutPage = () => {
 
           {/* Right Column - Order Summary */}
           <div>
-            <OrderSummary tour={mockTour} />
+            <OrderSummary tour={tour} onCompleteBooking={handleCompleteBooking} submitting={submitting} />
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { MapPin, Heart, Star, ArrowRight, Loader2, Globe, RefreshCw, Info } from 'lucide-react';
 import { motion } from 'motion/react';
+import tourService from '../../services/tourService.js';
 
 const FavoriteChoices = () => {
   const [choices, setChoices] = useState([]);
@@ -10,13 +11,7 @@ const FavoriteChoices = () => {
   const fetchToursData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/tours');
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch tours');
-      }
-
-      const tours = await response.json();
+      const tours = await tourService.getAllTours();
       
       // Select 4 random tours to display, or just take the first ones if there are few
       const selectedTours = [...tours].sort(() => 0.5 - Math.random()).slice(0, 4);

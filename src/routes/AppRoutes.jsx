@@ -67,8 +67,8 @@ export default function AppRoutes() {
         <Route path="flights/search" element={<FlightSearchPage />} />
         <Route path="flights/:flightId/seats" element={<SeatSelectionPage />} />
         <Route path="tour/:tourId" element={<TourDetailPage />} />
-        <Route path="checkout" element={<CheckoutPage />} />
-        <Route path="review/:tourId" element={<WriteReviewPage />} />
+        <Route path="checkout/:tourId" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
+        <Route path="review/:tourId" element={<ProtectedRoute><WriteReviewPage /></ProtectedRoute>} />
 
         {/* Other */}
         <Route path="notifications" element={<Notifications />} />

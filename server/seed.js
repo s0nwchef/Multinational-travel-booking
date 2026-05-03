@@ -5,8 +5,12 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import dns from 'node:dns';
+import bcrypt from 'bcryptjs';
+import User from './models/User.js';
 import Destination from './models/Destination.js';
 import Tour from './models/Tour.js';
+import Booking from './models/Booking.js';
+import Review from './models/Review.js';
 
 // Set DNS servers
 dns.setServers(['8.8.8.8', '1.1.1.1']);
@@ -40,6 +44,8 @@ async function seedData() {
         // Clear existing data
         await Tour.deleteMany({});
         await Destination.deleteMany({});
+        await Booking.deleteMany({});
+        await Review.deleteMany({});
         console.log('🗑️ Đã xóa dữ liệu cũ');
 
         // Create sample destinations
@@ -76,6 +82,52 @@ async function seedData() {
             }
         ]);
         console.log(`✅ Đã thêm ${destinations.length} destinations`);
+
+        const seedUsers = [];
+        const seededPasswordHash = await bcrypt.hash('Password123!', 10);
+        const userSeeds = [
+            {
+                email: 'sarah.jenkins@example.com',
+                fullName: 'Sarah Jenkins',
+                avatarUrl: 'https://i.pravatar.cc/150?img=1',
+            },
+            {
+                email: 'marcus.chen@example.com',
+                fullName: 'Marcus Chen',
+                avatarUrl: 'https://i.pravatar.cc/150?img=2',
+            },
+            {
+                email: 'elena.dragan@example.com',
+                fullName: 'Elena Dragan',
+                avatarUrl: 'https://i.pravatar.cc/150?img=3',
+            },
+            {
+                email: 'olivia.miller@example.com',
+                fullName: 'Olivia Miller',
+                avatarUrl: 'https://i.pravatar.cc/150?img=4',
+            },
+            {
+                email: 'daniel.kim@example.com',
+                fullName: 'Daniel Kim',
+                avatarUrl: 'https://i.pravatar.cc/150?img=5',
+            }
+        ];
+
+        for (const userSeed of userSeeds) {
+            const user = await User.findOneAndUpdate(
+                { email: userSeed.email },
+                {
+                    $set: {
+                        fullName: userSeed.fullName,
+                        avatarUrl: userSeed.avatarUrl,
+                        role: 'user',
+                        passwordHash: seededPasswordHash
+                    }
+                },
+                    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+            );
+            seedUsers.push(user);
+        }
 
         // Create sample tours
         const tours = await Tour.insertMany([
@@ -181,6 +233,152 @@ async function seedData() {
             }
         ]);
         console.log(`✅ Đã thêm ${tours.length} tours`);
+
+        const reviewsByTour = [
+            {
+                tourId: tours[0]._id,
+                averageRating: 4.9,
+                reviews: [
+                    
+                    {
+                        user: seedUsers[1],
+                        title: 'Wonderful and well organized',
+                        rating: 5,
+                        content: 'Ba thành phố đều rất đẹp, đặc biệt Venice vào buổi tối. Dịch vụ rất chuyên nghiệp.',
+                        photos: []
+                    },
+                    {
+                        user: seedUsers[2],
+                        title: 'Great trip with a busy schedule',
+                        rating: 4,
+                        content: 'Tour có nhiều trải nghiệm tốt, chỉ hơi dày lịch trình ở ngày 4-5 nhưng vẫn đáng tiền.',
+                        photos: [
+                            'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&auto=format&fit=crop'
+                        ]
+                    }
+                ]
+            },
+            {
+                tourId: tours[1]._id,
+                averageRating: 4.8,
+                reviews: [
+                    {
+                        user: seedUsers[3],
+                        title: 'Paris at its best',
+                        rating: 5,
+                        content: 'Paris đẹp đúng như kỳ vọng. Phần tham quan Louvre và Versailles là điểm nhấn lớn nhất.',
+                        photos: [
+                            'https://images.unsplash.com/photo-1431274172911-5dff6b52884b?w=600&auto=format&fit=crop'
+                        ]
+                    },
+                    {
+                        user: seedUsers[4],
+                        title: 'Perfect for a family trip',
+                        rating: 5,
+                        content: 'Nhịp tour nhẹ nhàng, phù hợp cho gia đình. Hướng dẫn viên am hiểu và hỗ trợ tốt.',
+                        photos: []
+                    }
+                ]
+            },
+            {
+                tourId: tours[2]._id,
+                averageRating: 4.7,
+                reviews: [
+                    
+                    {
+                        user: seedUsers[1],
+                        title: 'Worth every penny',
+                        rating: 4,
+                        content: 'Đáng tiền, đặc biệt là ngày đi Mount Fuji. Có thể thêm một đêm nghỉ ở khu Shibuya thì tuyệt hơn.',
+                        photos: []
+                    }
+                ]
+            }
+        ];
+
+        const reviewDocs = [];
+        const bookingDocs = [];
+
+        // Give Sarah Jenkins a completed booking for every seeded tour
+        // so review creation can be tested on all tours.
+        for (const tour of tours) {
+            bookingDocs.push({
+                userId: seedUsers[0]._id,
+                bookingType: 'tour',
+                itemId: tour._id,
+                bookingCode: `SARAH-${tour._id.toString().slice(-6)}`,
+                bookingReference: `SARAH-REF-${tour._id.toString().slice(-6)}`,
+                customerName: seedUsers[0].fullName,
+                tourId: tour._id,
+                travelers: [
+                    {
+                        fullName: seedUsers[0].fullName,
+                        age: 30,
+                        documentId: `DOC-${seedUsers[0]._id.toString().slice(-6)}`,
+                        seatNumber: 'A1',
+                        baggage: '7kg xách tay'
+                    }
+                ],
+                grandTotal: tour.basePrice || 0,
+                totalAmount: tour.basePrice || 0,
+                status: 'completed',
+                paymentStatus: 'paid'
+            });
+        }
+
+        for (const reviewGroup of reviewsByTour) {
+            for (const reviewSeed of reviewGroup.reviews) {
+                reviewDocs.push({
+                    userId: reviewSeed.user._id,
+                    tourId: reviewGroup.tourId,
+                    title: reviewSeed.title || '',
+                    rating: reviewSeed.rating,
+                    content: reviewSeed.content,
+                    photos: reviewSeed.photos,
+                    isAnonymous: false,
+                    detailedRatings: {}
+                });
+
+                bookingDocs.push({
+                    userId: reviewSeed.user._id,
+                    bookingType: 'tour',
+                    itemId: reviewGroup.tourId,
+                    bookingCode: `SEED-${reviewGroup.tourId.toString().slice(-6)}-${reviewSeed.user._id.toString().slice(-4)}`,
+                    bookingReference: `REF-${reviewGroup.tourId.toString().slice(-6)}-${reviewSeed.user._id.toString().slice(-4)}`,
+                    customerName: reviewSeed.user.fullName,
+                    tourId: reviewGroup.tourId,
+                    travelers: [
+                        {
+                            fullName: reviewSeed.user.fullName,
+                            age: 30,
+                            documentId: `DOC-${reviewSeed.user._id.toString().slice(-6)}`,
+                            seatNumber: 'A1',
+                            baggage: '7kg xách tay'
+                        }
+                    ],
+                    grandTotal: tours.find((tour) => String(tour._id) === String(reviewGroup.tourId))?.basePrice || 0,
+                    totalAmount: tours.find((tour) => String(tour._id) === String(reviewGroup.tourId))?.basePrice || 0,
+                    status: 'completed',
+                    paymentStatus: 'paid'
+                });
+            }
+        }
+
+        await Booking.insertMany(bookingDocs);
+        await Review.insertMany(reviewDocs);
+
+        for (const reviewGroup of reviewsByTour) {
+            const totalReviews = reviewGroup.reviews.length;
+            const averageRating = reviewGroup.reviews.reduce((sum, item) => sum + item.rating, 0) / totalReviews;
+
+            await Tour.findByIdAndUpdate(reviewGroup.tourId, {
+                averageRating: Math.round(averageRating * 10) / 10,
+                totalReviews
+            });
+        }
+
+        console.log(`✅ Đã thêm ${reviewDocs.length} reviews`);
+        console.log(`✅ Đã thêm ${bookingDocs.length} completed bookings`);
 
         console.log('\n✨ Seed data thành công!');
         process.exit(0);

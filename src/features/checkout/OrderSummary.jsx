@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Star, MapPin, Calendar, Users, Clock } from 'lucide-react';
 
-const OrderSummary = ({ tour }) => {
+const OrderSummary = ({ tour, onCompleteBooking, submitting }) => {
   const [promoCode, setPromoCode] = useState('');
   const [discount, setDiscount] = useState(0);
 
@@ -135,8 +135,13 @@ const OrderSummary = ({ tour }) => {
       </div>
 
       {/* Complete Booking Button */}
-      <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg mb-4 flex items-center justify-center gap-2 transition-colors">
-        Complete Booking
+      <button
+        type="button"
+        onClick={() => onCompleteBooking?.()}
+        disabled={submitting}
+        className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg mb-4 flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+      >
+        {submitting ? 'Processing...' : 'Complete Booking'}
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
