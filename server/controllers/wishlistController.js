@@ -1,182 +1,72 @@
-import User from '../models/User.js';
-import Tour from '../models/Tour.js';
+import NguoiDung from '../models/NguoiDung.js';
+import TourVi from '../models/TourVi.js';
 
-// Get user's wishlist
 export const getWishlist = async (req, res) => {
     try {
-        const userId = req.user.id;
-
-        const user = await User.findById(userId)
-            .populate({
-                path: 'wishlist',
-                populate: { path: 'destinationId', select: 'name' }
-            })
-            .select('wishlist');
-
-        if (!user) {
-            return res.status(404).json({ 
-                message: 'Không tìm thấy người dùng' 
-            });
-        }
-
-        res.json({
-            wishlist: user.wishlist,
-            count: user.wishlist.length
+        const user = await NguoiDung.findById(req.user.id).populate({
+            path: 'danh_sach_yeu_thich',
+            populate: { path: 'id_diem_den', select: 'quoc_gia thanh_pho' }
         });
-
-    } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi lấy wishlist', 
-            error: error.message 
-        });
-    }
+        if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+        res.json({ wishlist: user.danh_sach_yeu_thich, count: user.danh_sach_yeu_thich.length });
+    } catch (error) { res.status(500).json({ message: 'Lỗi khi lấy wishlist', error: error.message }); }
 };
 
-// Add tour to wishlist
 export const addToWishlist = async (req, res) => {
     try {
-        const userId = req.user.id;
         const { tourId } = req.body;
+        if (!tourId) return res.status(400).json({ message: 'Thiếu tourId' });
+        
+        const tour = await TourVi.findById(tourId);
+        if (!tour) return res.status(404).json({ message: 'Không tìm thấy tour' });
 
-        if (!tourId) {
-            return res.status(400).json({ 
-                message: 'Thiếu tourId' 
-            });
+        const user = await NguoiDung.findById(req.user.id);
+        if (user.danh_sach_yeu_thich.includes(tourId)) {
+            return res.status(400).json({ message: 'Tour đã có trong wishlist' });
         }
 
-        // Check if tour exists
-        const tour = await Tour.findById(tourId);
-        if (!tour) {
-            return res.status(404).json({ 
-                message: 'Không tìm thấy tour' 
-            });
-        }
-
-        const user = await User.findById(userId);
-
-        // Check if already in wishlist
-        if (user.wishlist.includes(tourId)) {
-            return res.status(400).json({ 
-                message: 'Tour đã có trong wishlist' 
-            });
-        }
-
-        user.wishlist.push(tourId);
+        user.danh_sach_yeu_thich.push(tourId);
         await user.save();
-
-        res.json({
-            message: 'Thêm vào wishlist thành công',
-            wishlistCount: user.wishlist.length
-        });
-
-    } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi thêm vào wishlist', 
-            error: error.message 
-        });
-    }
+        res.json({ message: 'Thêm vào wishlist thành công', wishlistCount: user.danh_sach_yeu_thich.length });
+    } catch (error) { res.status(500).json({ message: 'Lỗi khi thêm vào wishlist', error: error.message }); }
 };
 
-// Remove tour from wishlist
 export const removeFromWishlist = async (req, res) => {
     try {
-        const userId = req.user.id;
         const { tourId } = req.params;
+        const user = await NguoiDung.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
 
-        const user = await User.findById(userId);
+        const initialLength = user.danh_sach_yeu_thich.length;
+        user.danh_sach_yeu_thich = user.danh_sach_yeu_thich.filter(id => id.toString() !== tourId);
 
-        if (!user) {
-            return res.status(404).json({ 
-                message: 'Không tìm thấy người dùng' 
-            });
-        }
-
-        const initialLength = user.wishlist.length;
-        user.wishlist = user.wishlist.filter(id => id.toString() !== tourId);
-
-        if (user.wishlist.length === initialLength) {
-            return res.status(404).json({ 
-                message: 'Tour không có trong wishlist' 
-            });
+        if (user.danh_sach_yeu_thich.length === initialLength) {
+            return res.status(404).json({ message: 'Tour không có trong wishlist' });
         }
 
         await user.save();
-
-        res.json({
-            message: 'Xóa khỏi wishlist thành công',
-            wishlistCount: user.wishlist.length
-        });
-
-    } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi xóa khỏi wishlist', 
-            error: error.message 
-        });
-    }
+        res.json({ message: 'Xóa khỏi wishlist thành công', wishlistCount: user.danh_sach_yeu_thich.length });
+    } catch (error) { res.status(500).json({ message: 'Lỗi khi xóa khỏi wishlist', error: error.message }); }
 };
 
-// Check if tour is in wishlist
 export const checkWishlist = async (req, res) => {
     try {
-        const userId = req.user.id;
-        const { tourId } = req.params;
-
-        const user = await User.findById(userId).select('wishlist');
-
-        const isInWishlist = user.wishlist.some(id => id.toString() === tourId);
-
-        res.json({
-            tourId,
-            isInWishlist
-        });
-
-    } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi kiểm tra wishlist', 
-            error: error.message 
-        });
-    }
+        const user = await NguoiDung.findById(req.user.id).select('danh_sach_yeu_thich');
+        const isInWishlist = user.danh_sach_yeu_thich.some(id => id.toString() === req.params.tourId);
+        res.json({ tourId: req.params.tourId, isInWishlist });
+    } catch (error) { res.status(500).json({ message: 'Lỗi khi kiểm tra wishlist', error: error.message }); }
 };
 
-// Clear entire wishlist
 export const clearWishlist = async (req, res) => {
     try {
-        const userId = req.user.id;
-
-        const user = await User.findByIdAndUpdate(
-            userId,
-            { wishlist: [] },
-            { new: true }
-        );
-
-        res.json({
-            message: 'Xóa toàn bộ wishlist thành công',
-            wishlistCount: 0
-        });
-
-    } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi xóa wishlist', 
-            error: error.message 
-        });
-    }
+        await NguoiDung.findByIdAndUpdate(req.user.id, { danh_sach_yeu_thich: [] });
+        res.json({ message: 'Xóa toàn bộ wishlist thành công', wishlistCount: 0 });
+    } catch (error) { res.status(500).json({ message: 'Lỗi khi xóa wishlist', error: error.message }); }
 };
 
-// Get wishlist count (for header badge)
 export const getWishlistCount = async (req, res) => {
     try {
-        const userId = req.user.id;
-
-        const user = await User.findById(userId).select('wishlist');
-
-        res.json({
-            count: user.wishlist.length
-        });
-
-    } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi lấy số lượng wishlist', 
-            error: error.message 
-        });
-    }
+        const user = await NguoiDung.findById(req.user.id).select('danh_sach_yeu_thich');
+        res.json({ count: user.danh_sach_yeu_thich.length });
+    } catch (error) { res.status(500).json({ message: 'Lỗi khi lấy số lượng wishlist', error: error.message }); }
 };

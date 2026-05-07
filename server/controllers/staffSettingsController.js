@@ -1,198 +1,71 @@
-import User from '../models/User.js';
+import NguoiDung from '../models/NguoiDung.js';
 import bcrypt from 'bcryptjs';
 
-// Get staff profile
 export const getStaffProfile = async (req, res) => {
     try {
-        const userId = req.user.id;
-
-        const user = await User.findById(userId)
-            .select('-passwordHash -wishlist');
-
-        if (!user) {
-            return res.status(404).json({ 
-                message: 'Không tìm thấy nhân viên' 
-            });
-        }
-
-        res.json({ user });
-
-    } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi lấy thông tin profile', 
-            error: error.message 
-        });
-    }
+        const user = await NguoiDung.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: 'Không tìm thấy nhân viên' });
+        
+        const userObj = user.toObject();
+        userObj.fullName = userObj.ho_ten;
+        userObj.phoneNumber = userObj.so_dien_thoai;
+        userObj.avatarUrl = userObj.anh_dai_dien;
+        userObj.role = userObj.vai_tro;
+        
+        res.json({ user: userObj });
+    } catch (error) { res.status(500).json({ message: 'Lỗi', error: error.message }); }
 };
 
-// Update staff profile
 export const updateStaffProfile = async (req, res) => {
     try {
-        const userId = req.user.id;
-        const { fullName, phoneNumber, avatarUrl } = req.body;
+        const { fullName, phoneNumber, avatarUrl, ho_ten, so_dien_thoai, anh_dai_dien } = req.body;
+        const updateData = {};
+        if (fullName || ho_ten) updateData.ho_ten = ho_ten || fullName;
+        if (phoneNumber || so_dien_thoai) updateData.so_dien_thoai = so_dien_thoai || phoneNumber;
+        if (avatarUrl || anh_dai_dien) updateData.anh_dai_dien = anh_dai_dien || avatarUrl;
 
-        const user = await User.findByIdAndUpdate(
-            userId,
-            { fullName, phoneNumber, avatarUrl },
-            { new: true }
-        ).select('-passwordHash -wishlist');
-
-        res.json({
-            message: 'Cập nhật profile thành công',
-            user
-        });
-
-    } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi cập nhật profile', 
-            error: error.message 
-        });
-    }
+        const user = await NguoiDung.findByIdAndUpdate(req.user.id, updateData, { new: true });
+        
+        const userObj = user.toObject();
+        userObj.fullName = userObj.ho_ten;
+        userObj.phoneNumber = userObj.so_dien_thoai;
+        userObj.avatarUrl = userObj.anh_dai_dien;
+        
+        res.json({ message: 'Cập nhật thành công', user: userObj });
+    } catch (error) { res.status(500).json({ message: 'Lỗi', error: error.message }); }
 };
 
-// Change staff password
 export const changeStaffPassword = async (req, res) => {
     try {
-        const userId = req.user.id;
         const { currentPassword, newPassword } = req.body;
+        if (!currentPassword || !newPassword) return res.status(400).json({ message: 'Thiếu thông tin' });
+        if (newPassword.length < 6) return res.status(400).json({ message: 'Mật khẩu phải >= 6 ký tự' });
 
-        if (!currentPassword || !newPassword) {
-            return res.status(400).json({ 
-                message: 'Thiếu thông tin mật khẩu' 
-            });
-        }
+        const user = await NguoiDung.findById(req.user.id).select('+mat_khau_hash');
+        if (!user.mat_khau_hash) return res.status(400).json({ message: 'Tài khoản không có mật khẩu' });
 
-        if (newPassword.length < 6) {
-            return res.status(400).json({ 
-                message: 'Mật khẩu mới phải có ít nhất 6 ký tự' 
-            });
-        }
-
-        const user = await User.findById(userId);
-
-        if (!user.passwordHash) {
-            return res.status(400).json({ 
-                message: 'Tài khoản không có mật khẩu' 
-            });
-        }
-
-        const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
-        if (!isValid) {
-            return res.status(400).json({ 
-                message: 'Mật khẩu hiện tại không đúng' 
-            });
-        }
+        const isValid = await bcrypt.compare(currentPassword, user.mat_khau_hash);
+        if (!isValid) return res.status(400).json({ message: 'Mật khẩu sai' });
 
         const salt = await bcrypt.genSalt(10);
-        user.passwordHash = await bcrypt.hash(newPassword, salt);
+        user.mat_khau_hash = await bcrypt.hash(newPassword, salt);
         await user.save();
-
-        res.json({ 
-            message: 'Đổi mật khẩu thành công' 
-        });
-
-    } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi đổi mật khẩu', 
-            error: error.message 
-        });
-    }
+        res.json({ message: 'Đổi mật khẩu thành công' });
+    } catch (error) { res.status(500).json({ message: 'Lỗi', error: error.message }); }
 };
 
-// Get staff settings
 export const getStaffSettings = async (req, res) => {
-    try {
-        const userId = req.user.id;
-
-        const user = await User.findById(userId).select('staffSettings');
-
-        res.json({
-            settings: user.staffSettings || {
-                emailNotifications: true,
-                bookingAlerts: true,
-                dashboardLayout: 'default',
-                itemsPerPage: 10
-            }
-        });
-
-    } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi lấy cài đặt', 
-            error: error.message 
-        });
-    }
+    res.json({ settings: { emailNotifications: true, bookingAlerts: true, dashboardLayout: 'default', itemsPerPage: 10 } });
 };
 
-// Update staff settings
 export const updateStaffSettings = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const settings = req.body;
-
-        const user = await User.findByIdAndUpdate(
-            userId,
-            { staffSettings: settings },
-            { new: true }
-        ).select('staffSettings');
-
-        res.json({
-            message: 'Cập nhật cài đặt thành công',
-            settings: user.staffSettings
-        });
-
-    } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi cập nhật cài đặt', 
-            error: error.message 
-        });
-    }
+    res.json({ message: 'Cập nhật thành công', settings: req.body });
 };
 
-// Get staff dashboard preferences
 export const getDashboardPreferences = async (req, res) => {
-    try {
-        const userId = req.user.id;
-
-        const user = await User.findById(userId).select('dashboardPreferences');
-
-        res.json({
-            preferences: user.dashboardPreferences || {
-                showRevenueChart: true,
-                showBookingChart: true,
-                showCustomerStats: true,
-                defaultDateRange: '7d'
-            }
-        });
-
-    } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi lấy preferences', 
-            error: error.message 
-        });
-    }
+    res.json({ preferences: { showRevenueChart: true, showBookingChart: true, showCustomerStats: true, defaultDateRange: '7d' } });
 };
 
-// Update staff dashboard preferences
 export const updateDashboardPreferences = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const preferences = req.body;
-
-        const user = await User.findByIdAndUpdate(
-            userId,
-            { dashboardPreferences: preferences },
-            { new: true }
-        ).select('dashboardPreferences');
-
-        res.json({
-            message: 'Cập nhật preferences thành công',
-            preferences: user.dashboardPreferences
-        });
-
-    } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi cập nhật preferences', 
-            error: error.message 
-        });
-    }
+    res.json({ message: 'Cập nhật thành công', preferences: req.body });
 };

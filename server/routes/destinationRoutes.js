@@ -1,12 +1,12 @@
 import express from 'express';
-import Destination from '../models/Destination.js';
+import DiemDen from '../models/DiemDen.js';
 
 const router = express.Router();
 
 // Lấy danh sách tất cả điểm đến
 router.get('/', async (req, res) => {
     try {
-        const destinations = await Destination.find();
+        const destinations = await DiemDen.find();
         res.json(destinations);
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi lấy danh sách điểm đến', error: error.message });
@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
 // Lấy chi tiết một điểm đến
 router.get('/:id', async (req, res) => {
     try {
-        const destination = await Destination.findById(req.params.id);
+        const destination = await DiemDen.findById(req.params.id);
         if (!destination) {
             return res.status(404).json({ message: 'Không tìm thấy điểm đến' });
         }
@@ -29,7 +29,7 @@ router.get('/:id', async (req, res) => {
 // Tạo điểm đến mới
 router.post('/', async (req, res) => {
     try {
-        const newDestination = new Destination(req.body);
+        const newDestination = new DiemDen(req.body);
         const savedDestination = await newDestination.save();
         res.status(201).json(savedDestination);
     } catch (error) {
