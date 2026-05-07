@@ -1,4 +1,4 @@
-import User from '../models/User.js';
+import NguoiDung from '../models/NguoiDung.js';
 
 // Simple session storage (in production, use Redis or database)
 const sessions = new Map();
@@ -30,8 +30,8 @@ export const requireAuth = (roles = []) => {
                 });
             }
             
-            // Get user from database
-            const user = await User.findById(session.userId).select('-passwordHash');
+            // Get user from database (include mat_khau_hash=false by default via schema)
+            const user = await NguoiDung.findById(session.userId);
             if (!user) {
                 sessions.delete(sessionId);
                 return res.status(401).json({ 
@@ -40,14 +40,30 @@ export const requireAuth = (roles = []) => {
             }
             
             // Check role authorization if roles are specified
-            if (roles.length > 0 && !roles.includes(user.role)) {
+            if (roles.length > 0 && !roles.includes(user.vai_tro)) {
                 return res.status(403).json({ 
                     message: 'Không có quyền truy cập tính năng này' 
                 });
             }
             
-            // Attach user to request
-            req.user = user;
+            // Attach user to request with backwards-compatible properties
+            req.user = {
+                id: user._id,
+                _id: user._id,
+                email: user.email,
+                ho_ten: user.ho_ten,
+                vai_tro: user.vai_tro,
+                so_dien_thoai: user.so_dien_thoai,
+                anh_dai_dien: user.anh_dai_dien,
+                danh_sach_yeu_thich: user.danh_sach_yeu_thich,
+                ngay_tao: user.ngay_tao,
+                ngay_cap_nhat: user.ngay_cap_nhat,
+                // Backwards compat for frontend
+                fullName: user.ho_ten,
+                role: user.vai_tro,
+                avatarUrl: user.anh_dai_dien,
+                phoneNumber: user.so_dien_thoai
+            };
             req.sessionId = sessionId;
             next();
             
@@ -92,4 +108,4 @@ setInterval(() => {
     if (expiredSessions.length > 0) {
         console.log(`Cleaned up ${expiredSessions.length} expired sessions`);
     }
-}, 60 * 60 * 1000); // Run every hour
+}, 60 * 60 * 1000);

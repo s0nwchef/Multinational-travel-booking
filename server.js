@@ -46,6 +46,7 @@ async function connectDB() {
 
     try {
         await mongoose.connect(MONGODB_URI, {
+            dbName: 'multinational-travel-booking',
             serverSelectionTimeoutMS: 5000,
             socketTimeoutMS: 45000,
             maxPoolSize: 10,

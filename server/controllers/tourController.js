@@ -1,9 +1,9 @@
-import Tour from '../models/Tour.js';
+import TourVi from '../models/TourVi.js';
 import mongoose from 'mongoose';
 
 export const getAllTours = async (req, res) => {
     try {
-        const tours = await Tour.find().populate('destinationId');
+        const tours = await TourVi.find().populate('id_diem_den');
         res.json(tours);
     } catch (error) {
         console.error('getAllTours error:', error);
@@ -14,13 +14,10 @@ export const getAllTours = async (req, res) => {
 export const getTourById = async (req, res) => {
     try {
         const { id } = req.params;
-        
-        // Validate MongoDB ObjectId format
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: 'ID tour không hợp lệ' });
         }
-        
-        const tour = await Tour.findById(id).populate('destinationId');
+        const tour = await TourVi.findById(id).populate('id_diem_den');
         if (!tour) {
             return res.status(404).json({ message: 'Không tìm thấy tour' });
         }
@@ -33,7 +30,7 @@ export const getTourById = async (req, res) => {
 
 export const createTour = async (req, res) => {
     try {
-        const newTour = new Tour(req.body);
+        const newTour = new TourVi(req.body);
         const savedTour = await newTour.save();
         res.status(201).json(savedTour);
     } catch (error) {
@@ -43,7 +40,7 @@ export const createTour = async (req, res) => {
 
 export const updateTour = async (req, res) => {
     try {
-        const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        const updatedTour = await TourVi.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
         if (!updatedTour) {
             return res.status(404).json({ message: 'Không tìm thấy tour để cập nhật' });
         }
@@ -55,7 +52,7 @@ export const updateTour = async (req, res) => {
 
 export const deleteTour = async (req, res) => {
     try {
-        const deletedTour = await Tour.findByIdAndDelete(req.params.id);
+        const deletedTour = await TourVi.findByIdAndDelete(req.params.id);
         if (!deletedTour) {
             return res.status(404).json({ message: 'Không tìm thấy tour để xóa' });
         }

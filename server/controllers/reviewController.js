@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
-import Review from '../models/Review.js';
-import Tour from '../models/Tour.js';
-import Booking from '../models/Booking.js';
+import DanhGia from '../models/DanhGia.js';
+import TourVi from '../models/TourVi.js';
+import DatTour from '../models/DatTour.js';
 
 // Get reviews for a tour
 export const getTourReviews = async (req, res) => {
@@ -14,46 +14,31 @@ export const getTourReviews = async (req, res) => {
             return res.status(400).json({ message: 'ID tour không hợp lệ' });
         }
 
-        let sortOption = { createdAt: -1 }; // newest first
-        if (sort === 'oldest') sortOption = { createdAt: 1 };
-        if (sort === 'highest') sortOption = { rating: -1 };
-        if (sort === 'lowest') sortOption = { rating: 1 };
+        let sortOption = { ngay_tao: -1 };
+        if (sort === 'oldest') sortOption = { ngay_tao: 1 };
+        if (sort === 'highest') sortOption = { diem: -1 };
+        if (sort === 'lowest') sortOption = { diem: 1 };
 
-        const reviews = await Review.find({ tourId })
-            .populate('userId', 'fullName avatarUrl')
-            .skip(skip)
-            .limit(parseInt(limit))
-            .sort(sortOption);
+        const reviews = await DanhGia.find({ id_tour: tourId })
+            .populate('id_nguoi_dung', 'ho_ten anh_dai_dien')
+            .skip(skip).limit(parseInt(limit)).sort(sortOption);
 
-        const total = await Review.countDocuments({ tourId });
+        const total = await DanhGia.countDocuments({ id_tour: tourId });
 
-        // Get rating distribution
-        const ratingStats = await Review.aggregate([
-            { $match: { tourId: new mongoose.Types.ObjectId(tourId) } },
-            { $group: { _id: '$rating', count: { $sum: 1 } } }
+        const ratingStats = await DanhGia.aggregate([
+            { $match: { id_tour: new mongoose.Types.ObjectId(tourId) } },
+            { $group: { _id: '$diem', count: { $sum: 1 } } }
         ]);
 
         const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-        ratingStats.forEach(stat => {
-            distribution[stat._id] = stat.count;
-        });
+        ratingStats.forEach(stat => { distribution[stat._id] = stat.count; });
 
         res.json({
-            reviews,
-            distribution,
-            pagination: {
-                page: parseInt(page),
-                limit: parseInt(limit),
-                total,
-                pages: Math.ceil(total / limit)
-            }
+            reviews, distribution,
+            pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) }
         });
-
     } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi lấy đánh giá', 
-            error: error.message 
-        });
+        res.status(500).json({ message: 'Lỗi khi lấy đánh giá', error: error.message });
     }
 };
 
@@ -61,74 +46,51 @@ export const getTourReviews = async (req, res) => {
 export const createReview = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { tourId, rating, title, content, photos, isAnonymous, detailedRatings } = req.body;
+        const { tourId, rating, title, content, photos, detailedRatings } = req.body;
 
         if (!tourId || !rating || !content) {
-            return res.status(400).json({ 
-                message: 'Thiếu thông tin bắt buộc' 
-            });
+            return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
         }
-
-        // Check if rating is valid
         if (rating < 1 || rating > 5) {
-            return res.status(400).json({ 
-                message: 'Rating phải từ 1 đến 5' 
-            });
+            return res.status(400).json({ message: 'Rating phải từ 1 đến 5' });
         }
 
-        // Check if user has completed booking for this tour
-        const booking = await Booking.findOne({
-            userId,
-            tourId,
-            status: 'completed'
-        });
-
+        const booking = await DatTour.findOne({ id_nguoi_dung: userId, id_tour: tourId, trang_thai: 'completed' });
         if (!booking) {
-            return res.status(403).json({ 
-                message: 'Bạn cần hoàn thành chuyến đi để đánh giá' 
-            });
+            return res.status(403).json({ message: 'Bạn cần hoàn thành chuyến đi để đánh giá' });
         }
 
-        // Check if user already reviewed this tour
-        const existingReview = await Review.findOne({ userId, tourId });
+        const existingReview = await DanhGia.findOne({ id_nguoi_dung: userId, id_tour: tourId });
         if (existingReview) {
-            return res.status(400).json({ 
-                message: 'Bạn đã đánh giá tour này rồi' 
-            });
+            return res.status(400).json({ message: 'Bạn đã đánh giá tour này rồi' });
         }
 
-        const review = new Review({
-            userId,
-            tourId,
-            title: title || '',
-            rating,
-            content,
-            photos: photos || [],
-            isAnonymous: Boolean(isAnonymous),
-            detailedRatings: detailedRatings || {}
-        });
+        const chiTietDiem = detailedRatings ? {
+            chat_luong: detailedRatings.service || detailedRatings.chat_luong || 0,
+            gia_tri: detailedRatings.value || detailedRatings.gia_tri || 0,
+            huong_dan_vien: detailedRatings.guide || detailedRatings.huong_dan_vien || 0,
+            phuong_tien: detailedRatings.transport || detailedRatings.phuong_tien || 0
+        } : null;
 
+        const review = new DanhGia({
+            id_nguoi_dung: userId, id_tour: tourId, id_dat_tour: booking._id,
+            diem: rating, chi_tiet_diem: chiTietDiem,
+            tieu_de: title || '', noi_dung: content,
+            danh_sach_media: photos || [], da_xac_minh: true
+        });
         await review.save();
 
-        // Update tour's average rating
-        const tourReviews = await Review.find({ tourId });
-        const avgRating = tourReviews.reduce((sum, r) => sum + r.rating, 0) / tourReviews.length;
-        
-        await Tour.findByIdAndUpdate(tourId, {
-            averageRating: Math.round(avgRating * 10) / 10,
-            totalReviews: tourReviews.length
+        // Update tour average rating
+        const tourReviews = await DanhGia.find({ id_tour: tourId });
+        const avgRating = tourReviews.reduce((sum, r) => sum + r.diem, 0) / tourReviews.length;
+        await TourVi.findByIdAndUpdate(tourId, {
+            diem_trung_binh: Math.round(avgRating * 10) / 10,
+            so_luong_danh_gia: tourReviews.length
         });
 
-        res.status(201).json({
-            message: 'Đánh giá thành công',
-            review
-        });
-
+        res.status(201).json({ message: 'Đánh giá thành công', review });
     } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi tạo đánh giá', 
-            error: error.message 
-        });
+        res.status(500).json({ message: 'Lỗi khi tạo đánh giá', error: error.message });
     }
 };
 
@@ -137,44 +99,32 @@ export const updateReview = async (req, res) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
-        const { rating, title, content, photos, isAnonymous, detailedRatings } = req.body;
+        const { rating, title, content, photos, detailedRatings } = req.body;
 
-        const review = await Review.findOne({ _id: id, userId });
+        const review = await DanhGia.findOne({ _id: id, id_nguoi_dung: userId });
+        if (!review) return res.status(404).json({ message: 'Không tìm thấy đánh giá' });
 
-        if (!review) {
-            return res.status(404).json({ 
-                message: 'Không tìm thấy đánh giá' 
-            });
+        if (rating) review.diem = rating;
+        if (title !== undefined) review.tieu_de = title;
+        if (content) review.noi_dung = content;
+        if (photos) review.danh_sach_media = photos;
+        if (detailedRatings) {
+            review.chi_tiet_diem = {
+                chat_luong: detailedRatings.service || detailedRatings.chat_luong || 0,
+                gia_tri: detailedRatings.value || detailedRatings.gia_tri || 0,
+                huong_dan_vien: detailedRatings.guide || detailedRatings.huong_dan_vien || 0,
+                phuong_tien: detailedRatings.transport || detailedRatings.phuong_tien || 0
+            };
         }
-
-        // Update fields
-        if (rating) review.rating = rating;
-        if (title !== undefined) review.title = title;
-        if (content) review.content = content;
-        if (photos) review.photos = photos;
-        if (typeof isAnonymous === 'boolean') review.isAnonymous = isAnonymous;
-        if (detailedRatings) review.detailedRatings = detailedRatings;
-
         await review.save();
 
-        // Update tour's average rating
-        const tourReviews = await Review.find({ tourId: review.tourId });
-        const avgRating = tourReviews.reduce((sum, r) => sum + r.rating, 0) / tourReviews.length;
-        
-        await Tour.findByIdAndUpdate(review.tourId, {
-            averageRating: Math.round(avgRating * 10) / 10
-        });
+        const tourReviews = await DanhGia.find({ id_tour: review.id_tour });
+        const avgRating = tourReviews.reduce((sum, r) => sum + r.diem, 0) / tourReviews.length;
+        await TourVi.findByIdAndUpdate(review.id_tour, { diem_trung_binh: Math.round(avgRating * 10) / 10 });
 
-        res.json({
-            message: 'Cập nhật đánh giá thành công',
-            review
-        });
-
+        res.json({ message: 'Cập nhật đánh giá thành công', review });
     } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi cập nhật đánh giá', 
-            error: error.message 
-        });
+        res.status(500).json({ message: 'Lỗi khi cập nhật đánh giá', error: error.message });
     }
 };
 
@@ -182,36 +132,17 @@ export const updateReview = async (req, res) => {
 export const deleteReview = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { id } = req.params;
+        const review = await DanhGia.findOneAndDelete({ _id: req.params.id, id_nguoi_dung: userId });
+        if (!review) return res.status(404).json({ message: 'Không tìm thấy đánh giá' });
 
-        const review = await Review.findOneAndDelete({ _id: id, userId });
-
-        if (!review) {
-            return res.status(404).json({ 
-                message: 'Không tìm thấy đánh giá' 
-            });
-        }
-
-        // Update tour's average rating
-        const tourReviews = await Review.find({ tourId: review.tourId });
-        const avgRating = tourReviews.length > 0 
-            ? tourReviews.reduce((sum, r) => sum + r.rating, 0) / tourReviews.length 
-            : 0;
-        
-        await Tour.findByIdAndUpdate(review.tourId, {
-            averageRating: Math.round(avgRating * 10) / 10,
-            totalReviews: tourReviews.length
+        const tourReviews = await DanhGia.find({ id_tour: review.id_tour });
+        const avgRating = tourReviews.length > 0 ? tourReviews.reduce((sum, r) => sum + r.diem, 0) / tourReviews.length : 0;
+        await TourVi.findByIdAndUpdate(review.id_tour, {
+            diem_trung_binh: Math.round(avgRating * 10) / 10, so_luong_danh_gia: tourReviews.length
         });
-
-        res.json({ 
-            message: 'Xóa đánh giá thành công' 
-        });
-
+        res.json({ message: 'Xóa đánh giá thành công' });
     } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi xóa đánh giá', 
-            error: error.message 
-        });
+        res.status(500).json({ message: 'Lỗi khi xóa đánh giá', error: error.message });
     }
 };
 
@@ -221,54 +152,25 @@ export const getUserReviews = async (req, res) => {
         const userId = req.user.id;
         const { page = 1, limit = 10 } = req.query;
         const skip = (page - 1) * limit;
-
-        const reviews = await Review.find({ userId })
-            .populate('tourId', 'title images')
-            .skip(skip)
-            .limit(parseInt(limit))
-            .sort({ createdAt: -1 });
-
-        const total = await Review.countDocuments({ userId });
-
-        res.json({
-            reviews,
-            pagination: {
-                page: parseInt(page),
-                limit: parseInt(limit),
-                total,
-                pages: Math.ceil(total / limit)
-            }
-        });
-
+        const reviews = await DanhGia.find({ id_nguoi_dung: userId })
+            .populate('id_tour', 'ten_tour danh_sach_anh')
+            .skip(skip).limit(parseInt(limit)).sort({ ngay_tao: -1 });
+        const total = await DanhGia.countDocuments({ id_nguoi_dung: userId });
+        res.json({ reviews, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) } });
     } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi lấy đánh giá của bạn', 
-            error: error.message 
-        });
+        res.status(500).json({ message: 'Lỗi khi lấy đánh giá của bạn', error: error.message });
     }
 };
 
 // Get review by ID
 export const getReviewById = async (req, res) => {
     try {
-        const { id } = req.params;
-
-        const review = await Review.findById(id)
-            .populate('userId', 'fullName avatarUrl')
-            .populate('tourId', 'title');
-
-        if (!review) {
-            return res.status(404).json({ 
-                message: 'Không tìm thấy đánh giá' 
-            });
-        }
-
+        const review = await DanhGia.findById(req.params.id)
+            .populate('id_nguoi_dung', 'ho_ten anh_dai_dien')
+            .populate('id_tour', 'ten_tour');
+        if (!review) return res.status(404).json({ message: 'Không tìm thấy đánh giá' });
         res.json({ review });
-
     } catch (error) {
-        res.status(500).json({ 
-            message: 'Lỗi khi lấy đánh giá', 
-            error: error.message 
-        });
+        res.status(500).json({ message: 'Lỗi khi lấy đánh giá', error: error.message });
     }
 };
