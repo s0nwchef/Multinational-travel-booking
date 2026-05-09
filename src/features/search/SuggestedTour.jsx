@@ -1,137 +1,169 @@
-import React from "react";
-import { ArrowRight, Star } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Star, Heart, MapPin } from "lucide-react";
+import { motion } from "framer-motion";
+import tourService from "../../services/Tours/tourService";
+import { useNavigate } from "react-router-dom";
 
-// Fallback mock data for suggested tours
-const defaultTours = [
-  {
-    id: 4,
-    title: "Paris, France",
-    location: "PARIS",
-    image:
-      "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=800",
-    rating: 4.8,
-    reviews: "8,500",
-    duration: "5 nights",
-    guests: "2 Adults",
-    originalPrice: 580,
-    price: 450,
-    badge: "POPULAR",
-    badgeType: "orange",
-    type: "CITY TOUR",
-  },
-  {
-    id: 5,
-    title: "Bali, Indonesia",
-    location: "BALI",
-    image:
-      "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&q=80&w=800",
-    rating: 4.9,
-    reviews: "15,200",
-    duration: "7 nights",
-    guests: "All Inclusive",
-    originalPrice: 750,
-    price: 620,
-    badge: "TOP RATED",
-    badgeType: "blue",
-    type: "BEACH HOLIDAY",
-  },
-  {
-    id: 6,
-    title: "Tokyo, Japan",
-    location: "TOKYO",
-    image:
-      "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&q=80&w=800",
-    rating: 4.7,
-    reviews: "10,100",
-    duration: "4 nights",
-    guests: "City Center",
-    originalPrice: 890,
-    price: 780,
-    badge: "CULTURE",
-    badgeType: "purple",
-    type: "DISCOVERY",
-  },
-  {
-    id: 7,
-    title: "Rome, Italy",
-    location: "ROME",
-    image:
-      "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&q=80&w=800",
-    rating: 4.6,
-    reviews: "5,400",
-    duration: "3 nights",
-    guests: "Historic",
-    originalPrice: 600,
-    price: 510,
-    badge: "HISTORY",
-    badgeType: "orange",
-    type: "LANDMARK",
-  },
-];
+const VerticalTourCard = ({ tour }) => {
+  const [isFavorite, setIsFavorite] = useState(false);
+  const navigate = useNavigate();
 
-function VerticalCard({ tour }) {
+  const handleGoToDetail = () => {
+    navigate(`/tour/${tour.id}`);
+    window.scrollTo(0, 0);
+  };
+
   return (
-    <div className="group cursor-pointer">
-      <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-4">
+    <motion.div
+      whileHover={{ y: -10 }}
+      onClick={handleGoToDetail}
+      className="group cursor-pointer bg-white rounded-[2rem] overflow-hidden shadow-sm border border-gray-100 flex flex-col h-full transition-all duration-300"
+    >
+      {/* PHẦN ẢNH & BADGE & HEART */}
+      <div className="relative h-48">
         <img
           src={tour.image}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           alt={tour.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute top-3 right-3 bg-white px-2 py-1 rounded-md text-[13px] font-bold flex items-center gap-1 shadow-sm">
-          {tour.rating}
-          <Star size={12} className="fill-gray-900 text-gray-900" />
-        </div>
+
+        {tour.badge && (
+          <span
+            className={`absolute top-4 left-4 text-white text-[10px] font-bold px-3 py-1 rounded-lg uppercase shadow-lg ${
+              tour.badgeType === "orange"
+                ? "bg-orange-500"
+                : tour.badgeType === "purple"
+                  ? "bg-purple-600"
+                  : "bg-blue-500"
+            }`}
+          >
+            {tour.badge}
+          </span>
+        )}
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsFavorite(!isFavorite);
+          }}
+          className={`absolute top-4 right-4 p-2 backdrop-blur-md rounded-full shadow-sm transition-all duration-300 ${
+            isFavorite
+              ? "bg-red-50 text-red-500"
+              : "bg-white/80 text-gray-400 hover:text-red-500"
+          }`}
+        >
+          <Heart size={16} className={isFavorite ? "fill-current" : ""} />
+        </button>
       </div>
 
-      <div className="flex justify-between items-start px-1">
-        <div>
-          <h4 className="text-[17px] font-bold text-gray-900 mb-1">
-            {tour.title}
-          </h4>
-          <p className="text-[13px] text-gray-500 font-medium">
-            {tour.duration} • {tour.guests}
-          </p>
+      {/* PHẦN NỘI DUNG */}
+      <div className="p-5 flex flex-col flex-1">
+        <div className="flex items-center gap-1.5 text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-2">
+          <MapPin size={14} className="text-orange-500" />
+          <span>{tour.location || "Global"}</span>
         </div>
-        <div className="text-right">
-          {tour.originalPrice && (
-            <p className="text-[13px] text-gray-400 line-through mb-0.5">
-              ${tour.originalPrice}
-            </p>
-          )}
-          <p className="text-[18px] font-bold text-[#FF7029]">${tour.price}</p>
+
+        <h3 className="text-lg font-extrabold text-gray-900 mb-3 group-hover:text-orange-500 transition-colors duration-300 leading-tight">
+          {tour.title}
+        </h3>
+
+        <div className="flex items-center gap-1 mb-4">
+          <Star size={14} className="fill-amber-400 text-amber-400" />
+          <span className="text-xs font-bold">{tour.rating || "5.0"}</span>
+          <span className="text-[10px] text-gray-400">
+            ({tour.totalReviews || 0} reviews)
+          </span>
+        </div>
+
+        {/* PHẦN GIÁ & DETAIL */}
+        <div className="mt-auto flex justify-between items-end">
+          <div className="flex flex-col">
+            {tour.originalPrice && (
+              <span className="text-[10px] text-gray-400 font-bold uppercase line-through">
+                $ {tour.originalPrice.toLocaleString()}
+              </span>
+            )}
+
+            <span className="text-xl font-black text-gray-900">
+              $ {(tour.basePrice || tour.price)?.toLocaleString() || "0"}
+            </span>
+          </div>
+
+          <button
+            className="text-[14px] font-black text-orange-500 hover:underline flex items-center gap-1"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleGoToDetail();
+            }}
+          >
+            Detail →
+          </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
-}
+};
 
 export default function SuggestedTours() {
-  // Use fallback mock data for suggested tours (id 4-7)
-  const displayTours = defaultTours.filter((tour) => {
-    const rawId = tour.id ?? tour._id;
-    const n = Number(rawId);
-    if (!Number.isNaN(n)) return n >= 4 && n <= 7;
-    return false;
-  });
+  const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      try {
+        setLoading(true);
+        const data = await tourService.getTours();
+        setSuggestions(data.slice(0, 4));
+      } catch (error) {
+        console.error("Error fetching suggested tours:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSuggestions();
+  }, []);
+
+  const handleNavigateAllTours = () => {
+    navigate("/tours");
+    window.scrollTo(0, 0);
+  };
+
+  if (loading)
+    return (
+      <div className="p-20 text-center text-gray-400 animate-pulse font-bold">
+        Finding suggestions for you...
+      </div>
+    );
+
+  if (suggestions.length === 0) return null;
 
   return (
-    <div className="w-full mt-16 px-2">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-2xl font-bold text-gray-900">
-          Or Explore Top Destinations
-        </h3>
-        <button className="flex items-center gap-1 text-[#FF7029] font-semibold text-sm hover:underline">
-          View all <ArrowRight size={16} />
+    <section className="bg-gray-100/80 p-8 rounded-[3rem] mb-12">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+          <h2 className="text-3xl font-black text-gray-900 tracking-tight">
+            Suggested Tours
+          </h2>
+          <p className="text-sm text-gray-500 font-medium mt-1">
+            Handpicked destinations just for your next trip
+          </p>
+        </div>
+
+        <button
+          onClick={handleNavigateAllTours}
+          className="text-orange-500 font-bold text-sm hover:underline"
+        >
+          See more →
         </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {displayTours.map((tour) => {
-          const key = tour.id || tour._id;
-          return <VerticalCard key={key} tour={tour} />;
-        })}
+        {suggestions.map((tour) => (
+          <VerticalTourCard key={tour.id || tour._id} tour={tour} />
+        ))}
       </div>
-    </div>
+    </section>
   );
 }
