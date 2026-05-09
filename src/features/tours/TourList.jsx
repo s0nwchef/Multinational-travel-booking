@@ -1,349 +1,219 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import TourCard from "./TourCard";
 import TourFilters from "./TourFilters";
+import EmptyResultsPage from "../../pages/EmptyResultPage";
+import { useLocation, useNavigate } from "react-router-dom";
+import tourService from "../../services/Tours/tourService";
+import MapModal from "../../components/MapModal";
 import {
-  List,
-  LayoutGrid,
   Map as MapIcon,
-  ChevronDown,
-  X,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
 } from "lucide-react";
-import EmptyResultsPage from "../../pages/EmptyResultPage";
-import { useLocation } from "react-router-dom";
-import tourService from "../../services/tourService";
-
-// Fallback mock data in case API fails
-const mockToursData = [
-  {
-    id: 1,
-    badge: "BEST SELLER",
-    badgeType: "orange",
-    image:
-      "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&q=80&w=800",
-    title: "Colosseum, Roman Forum & Palatine Hill Priority Access Guide",
-    location: "ROME",
-    type: "HISTORICAL TOUR",
-    rating: 4.8,
-    reviews: "12,403",
-    duration: "3 hours",
-    infoItems: [{ icon: "Languages", text: "English, Spanish +3" }],
-    highlight: { text: "Instant Confirmation", type: "instant" },
-    price: 55.0,
-    originalPrice: 65.0,
-    guests: "Group Tour",
-  },
-  {
-    id: 2,
-    badge: "KLOOK EXCLUSIVE",
-    badgeType: "blue",
-    image:
-      "https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&q=80&w=800",
-    title: "Venice Gondola Ride with Audio Guide",
-    location: "VENICE",
-    type: "WATER ACTIVITY",
-    rating: 4.5,
-    reviews: "4,800",
-    duration: "30 mins",
-    infoItems: [{ icon: "Headphones", text: "Audio Guide" }],
-    highlight: { text: "Free Cancellation", type: "free" },
-    price: 32.5,
-    originalPrice: 40.0,
-    guests: "Private Tour",
-  },
-  {
-    id: 3,
-    badge: "SMALL GROUP",
-    badgeType: "purple",
-    image:
-      "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&q=80&w=800",
-    title: "Tuscany Day Trip from Florence with Chianti Wine Tasting",
-    location: "FLORENCE",
-    type: "DAY TRIP",
-    rating: 4.9,
-    reviews: "2,100",
-    duration: "10 hours",
-    infoItems: [
-      { icon: "Utensils", text: "Lunch Included" },
-      { icon: "Bus", text: "Transport" },
-    ],
-    highlight: null,
-    price: 89.0,
-    originalPrice: 110.0,
-    guests: "Max 15 people",
-  },
-  {
-    id: 4,
-    title: "Paris, France",
-    location: "PARIS",
-    image:
-      "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=800",
-    rating: 4.8,
-    reviews: "8,500",
-    duration: "5 nights",
-    guests: "2 Adults",
-    originalPrice: 580,
-    price: 450,
-    badge: "POPULAR",
-    badgeType: "orange",
-    type: "CITY TOUR",
-  },
-  {
-    id: 5,
-    title: "Bali, Indonesia",
-    location: "BALI",
-    image:
-      "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&q=80&w=800",
-    rating: 4.9,
-    reviews: "15,200",
-    duration: "7 nights",
-    guests: "All Inclusive",
-    originalPrice: 750,
-    price: 620,
-    badge: "TOP RATED",
-    badgeType: "blue",
-    type: "BEACH HOLIDAY",
-  },
-  {
-    id: 6,
-    title: "Tokyo, Japan",
-    location: "TOKYO",
-    image:
-      "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&q=80&w=800",
-    rating: 4.7,
-    reviews: "10,100",
-    duration: "4 nights",
-    guests: "City Center",
-    originalPrice: 890,
-    price: 780,
-    badge: "CULTURE",
-    badgeType: "purple",
-    type: "DISCOVERY",
-  },
-  {
-    id: 7,
-    title: "Rome, Italy",
-    location: "ROME",
-    image:
-      "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&q=80&w=800",
-    rating: 4.6,
-    reviews: "5,400",
-    duration: "3 nights",
-    guests: "Historic",
-    originalPrice: 600,
-    price: 510,
-    badge: "HISTORY",
-    badgeType: "orange",
-    type: "LANDMARK",
-  },
-  {
-    id: 8,
-    badge: "TRENDING",
-    badgeType: "blue",
-    image:
-      "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&q=80&w=800",
-    title: "Santorini Sunset Cruise with Dinner and Greek Wine",
-    location: "SANTORINI",
-    type: "WATER ACTIVITY",
-    rating: 4.9,
-    reviews: "3,200",
-    duration: "5 hours",
-    infoItems: [
-      { icon: "Utensils", text: "Buffet Dinner" },
-      { icon: "Languages", text: "English, Greek" },
-    ],
-    highlight: { text: "Best Sunset View", type: "instant" },
-    price: 125.0,
-    originalPrice: 160.0,
-    guests: "Couple Friendly",
-  },
-  {
-    id: 9,
-    badge: "CULTURAL",
-    badgeType: "purple",
-    image:
-      "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&q=80&w=800",
-    title: "Kyoto Private Tour: Fushimi Inari and Arashiyama Bamboo Grove",
-    location: "KYOTO",
-    type: "DISCOVERY",
-    rating: 4.7,
-    reviews: "6,850",
-    duration: "8 hours",
-    infoItems: [
-      { icon: "Bus", text: "Private Transport" },
-      { icon: "Camera", text: "Photo Spots" },
-    ],
-    highlight: null,
-    price: 98.0,
-    originalPrice: 130.0,
-    guests: "Small Group",
-  },
-  {
-    id: 10,
-    badge: "TOP PICK",
-    badgeType: "orange",
-    image:
-      "https://images.unsplash.com/photo-1534430480872-3498386e7a56?auto=format&fit=crop&q=80&w=800",
-    title: "Statue of Liberty & Ellis Island Guided Tour with Ferry",
-    location: "NEW YORK",
-    type: "LANDMARK",
-    rating: 4.6,
-    reviews: "21,000",
-    duration: "4 hours",
-    infoItems: [
-      { icon: "Ticket", text: "Ferry Ticket Included" },
-      { icon: "Headphones", text: "Audio Guide" },
-    ],
-    highlight: { text: "Free Cancellation", type: "free" },
-    price: 79.0,
-    originalPrice: 95.0,
-    guests: "All Ages",
-  },
-];
-
-// Export for other components that need mock data
-export const toursData = mockToursData;
 
 export default function TourList() {
   const location = useLocation();
-  const searchQuery = (location.state?.query || "").trim();
-  const [showMap, setShowMap] = useState(false);
-  const [viewMode, setViewMode] = useState("list");
+  const navigate = useNavigate();
+  const searchQuery = location.state?.query || "";
+  const [isMapOpen, setIsMapOpen] = useState(false);
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const [filters, setFilters] = useState({
-    price: 5000,
-    category: "",
+    price: 10000,
+    category: "All Tours",
     duration: [],
     startDate: "",
     endDate: "",
     ratings: 0,
+    location: "",
   });
 
+  const [sortBy, setSortBy] = useState("recommended");
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const sortOptions = [
+    { value: "recommended", label: "Recommended" },
+    { value: "price-asc", label: "Price: Low to High" },
+    { value: "price-desc", label: "Price: High to Low" },
+    { value: "rating", label: "Top Rated" },
+  ];
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
 
-  // Fetch tours from API
   useEffect(() => {
     const fetchTours = async () => {
       try {
         setLoading(true);
-        const data = await tourService.getAllTours();
-        
-        // Transform API data to match TourCard format
-        const transformedTours = data.map((tour) => ({
-          id: tour._id, // Use MongoDB _id
-          title: tour.title,
-          location: tour.destinationId?.name || 'Unknown',
-          image: tour.images?.[0] || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=800',
-          rating: tour.averageRating || 0,
-          reviews: (tour.totalReviews || 0).toString(),
-          duration: `${tour.duration || 0} days`,
-          price: tour.basePrice || 0,
-          originalPrice: (tour.basePrice || 0) * 1.2, // Calculate original price
-          type: 'TOUR',
-          guests: 'Group Tour',
-          badge: tour.status === 'active' ? 'FEATURED' : '',
-          badgeType: 'orange',
-          highlight: { text: 'Instant Confirmation', type: 'instant' },
-          description: tour.description,
-        }));
-        
-        setTours(transformedTours);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching tours:', err);
-        setError(err.message);
-        // Fall back to mock data
-        setTours(mockToursData);
+        const data = await tourService.getTours();
+        setTours(data);
+      } catch (error) {
+        console.error("Error fetching API:", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchTours();
-  }, []);
+  }, [searchQuery]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [filters, searchQuery]);
+  }, [filters, searchQuery, sortBy]);
 
   const handleResetFilters = () => {
     setFilters({
-      price: 5000,
-      category: "",
+      price: 10000,
+      category: "All Tours",
       duration: [],
       startDate: "",
       endDate: "",
       ratings: 0,
     });
+    setSortBy("recommended");
+
+    navigate("/tours", { replace: true, state: {} });
+
+    setCurrentPage(1);
   };
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  // Use tours from API or fallback to mock data
-  const toursData = tours.length > 0 ? tours : mockToursData;
+  const dynamicCategories = [
+    "All Tours",
+    ...new Set(tours.map((tour) => tour.city).filter(Boolean)),
+  ];
 
-  const filteredTours = toursData.filter((tour) => {
-    const searchableText = [
-      tour.title,
-      tour.location,
-      tour.type,
-      tour.description,
-      tour.badge,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
+  // 1. FILTER DATA
+  const escapeRegex = (str = "") => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const filteredTours = useMemo(() => {
+    const searchTerm = searchQuery.toLowerCase().trim();
 
-    const matchesSearch =
-      searchQuery === "" ||
-      searchableText.includes(searchQuery.toLowerCase());
-    const matchesPrice = tour.price <= filters.price;
-    const matchesCategory =
-      !filters.category ||
-      tour.type.toLowerCase().includes(filters.category.toLowerCase());
-    const matchesRatings = !filters.ratings || tour.rating >= filters.ratings;
+    const safeSearch = escapeRegex(searchTerm);
 
-    return matchesSearch && matchesPrice && matchesCategory && matchesRatings;
+    const regex = new RegExp(`\\b${safeSearch}`, "i");
+
+    return tours.filter((tour) => {
+      const matchesSearch =
+        searchTerm === "" ||
+        regex.test(tour.title) ||
+        regex.test(tour.location) ||
+        regex.test(tour.description);
+
+      const matchesPrice = tour.departures?.length
+        ? tour.departures.some((d) => (d.giaNguoiLon || 0) <= filters.price)
+        : (tour.basePrice || 0) <= filters.price;
+
+      const matchesCategory =
+        filters.category === "All Tours" ||
+        tour.city?.toLowerCase() === filters.category?.toLowerCase() ||
+        tour.country?.toLowerCase() === filters.category?.toLowerCase();
+
+      const matchesDuration =
+        filters.duration.length === 0 ||
+        filters.duration.some((d) => {
+          const days = tour.soNgay || 0;
+
+          if (d === "Less than 1 day") return days < 1;
+          if (d === "1 day") return days === 1;
+          if (d === "2-3 days") return days >= 2 && days <= 3;
+          if (d === "4+ days") return days >= 4;
+
+          return true;
+        });
+
+      const matchesDate = (() => {
+        if (!filters.startDate || !filters.endDate) return true;
+        const userStart = new Date(filters.startDate).setHours(0, 0, 0, 0);
+        const userEnd = new Date(filters.endDate).setHours(23, 59, 59, 999);
+
+        return tour.departures?.some((d) => {
+          const s = new Date(d.ngayKhoiHanh).getTime();
+          const e = new Date(d.ngayVe).getTime();
+          return s >= userStart && e <= userEnd;
+        });
+      })();
+      const matchesRating =
+        filters.ratings === 0 || tour.rating >= filters.ratings;
+
+      const matchesLocation = filters.location
+        ? tour.location
+            .toLowerCase()
+            .includes(filters.location.toLowerCase()) ||
+          tour.title.toLowerCase().includes(filters.location.toLowerCase())
+        : true;
+
+      return (
+        matchesSearch &&
+        matchesPrice &&
+        matchesCategory &&
+        matchesDuration &&
+        matchesDate &&
+        matchesRating &&
+        matchesLocation
+      );
+    });
+  }, [tours, searchQuery, filters]);
+
+  const durationCounts = useMemo(() => {
+    const counts = {
+      "Less than 1 day": 0,
+      "1 day": 0,
+      "2-3 days": 0,
+      "4+ days": 0,
+    };
+
+    filteredTours.forEach((tour) => {
+      const days = tour.soNgay;
+
+      if (days < 1) counts["Less than 1 day"]++;
+      else if (days === 1) counts["1 day"]++;
+      else if (days >= 2 && days <= 3) counts["2-3 days"]++;
+      else if (days >= 4) counts["4+ days"]++;
+    });
+
+    return counts;
+  }, [filteredTours]);
+
+  // 2. SORT DATA
+  const getMinPrice = (tour) => tour.basePrice || 0;
+
+  const sortedTours = [...filteredTours].sort((a, b) => {
+    if (sortBy === "price-asc") {
+      return getMinPrice(a) - getMinPrice(b);
+    }
+
+    if (sortBy === "price-desc") {
+      return getMinPrice(b) - getMinPrice(a);
+    }
+
+    if (sortBy === "rating") return b.rating - a.rating;
+
+    return 0;
   });
 
-  const totalPages = Math.ceil(filteredTours.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedTours.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentTours = filteredTours.slice(indexOfFirstItem, indexOfLastItem);
+  const currentTours = sortedTours.slice(indexOfFirstItem, indexOfLastItem);
 
-  // Show loading state
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-8 w-full text-center">
-        <p className="text-gray-500">Đang tải danh sách tours...</p>
+      <div className="text-center py-20 font-bold text-gray-500">
+        Loading Tour...
       </div>
     );
   }
 
-  // Show error state but continue with mock data
-  if (error && tours.length === 0) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-8 w-full text-center">
-        <p className="text-orange-600 mb-4">⚠️ {error}</p>
-        <p className="text-gray-500">Hiển thị dữ liệu mặc định...</p>
-      </div>
-    );
-  }
-
-  if (filteredTours.length === 0) {
+  if (sortedTours.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-8 w-full">
         <EmptyResultsPage
           searchTerm={searchQuery || "your filters"}
           onReset={handleResetFilters}
-          suggestedData={toursData}
+          suggestedData={tours}
         />
       </div>
     );
@@ -354,53 +224,79 @@ export default function TourList() {
       <header className="mb-10">
         <nav className="flex items-center gap-2 text-[12px] text-gray-400 mb-3">
           <span>Tours</span> <span className="text-[10px]">/</span>
-          <span>Europe</span> <span className="text-[10px]">/</span>
-          <span className="text-gray-900 font-semibold">Italy</span>
+          <span className="text-gray-900 font-semibold">
+            {searchQuery ? "Search Results" : "All Destinations"}
+          </span>
         </nav>
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-black text-[#1A202C] tracking-tight">
-              Discover Italy
+              {searchQuery
+                ? `Searching: "${searchQuery}"`
+                : "Explore All Tours"}
             </h1>
             <p className="text-gray-500 text-sm mt-1">
-              Experience La Dolce Vita with our curated selection of{" "}
+              We found{" "}
               <span className="font-bold text-gray-900">
-                {filteredTours.length} tours.
-              </span>
+                {sortedTours.length} tours
+              </span>{" "}
+              matching your criteria.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="bg-white border border-gray-100 px-4 py-2 rounded-xl shadow-sm flex items-center gap-8 cursor-pointer hover:bg-gray-50 transition-colors">
-              <div className="flex flex-col">
-                <span className="text-[9px] text-gray-400 uppercase font-black tracking-tighter">
-                  Sort by:
-                </span>
-                <span className="text-[13px] font-bold text-gray-700">
-                  Recommended
-                </span>
+            {/* SORT BY */}
+            <div className="relative min-w-[200px]">
+              <div
+                onClick={() => setIsSortOpen(!isSortOpen)}
+                className="bg-white border border-gray-100 px-4 py-2 rounded-2xl shadow-sm flex items-center justify-between cursor-pointer hover:border-orange-200 transition-all group"
+              >
+                <div className="flex flex-col items-start">
+                  <span className="text-[9px] text-gray-400 uppercase font-black tracking-widest leading-none mb-1">
+                    Sort by:
+                  </span>
+                  <span className="text-[13px] font-bold text-gray-800">
+                    {sortOptions.find((o) => o.value === sortBy)?.label}
+                  </span>
+                </div>
+                <ChevronDown
+                  size={16}
+                  className={`text-orange-500 transition-transform duration-300 ${isSortOpen ? "rotate-180" : ""}`}
+                />
               </div>
-              <ChevronDown size={14} className="text-gray-400" />
-            </div>
 
-            <div className="flex bg-white border border-gray-100 p-1 rounded-xl shadow-sm">
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-orange-50 text-orange-600" : "text-gray-300"}`}
-              >
-                <List size={18} />
-              </button>
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-orange-50 text-orange-600" : "text-gray-300"}`}
-              >
-                <LayoutGrid size={18} />
-              </button>
-            </div>
+              {isSortOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-[60]"
+                    onClick={() => setIsSortOpen(false)}
+                  />
 
+                  <div className="absolute top-[calc(100%+8px)] right-0 w-full bg-white border border-gray-50 rounded-2xl shadow-xl z-[70] overflow-hidden py-1 animate-in fade-in slide-in-from-top-2">
+                    {sortOptions.map((option) => (
+                      <div
+                        key={option.value}
+                        onClick={() => {
+                          setSortBy(option.value);
+                          setIsSortOpen(false);
+                        }}
+                        className={`px-4 py-3 text-[13px] font-bold cursor-pointer transition-all ${
+                          sortBy === option.value
+                            ? "bg-orange-50 text-orange-600"
+                            : "text-gray-600 hover:bg-orange-50/50 hover:text-orange-500"
+                        }`}
+                      >
+                        {option.label}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+            {/* BUTTON MAP */}
             <button
-              onClick={() => setShowMap(true)}
+              onClick={() => setIsMapOpen(true)}
               className="bg-white border border-gray-100 px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 text-[13px] font-black text-gray-800 hover:bg-gray-50 transition-all active:scale-95 shadow-orange-50"
             >
               <MapIcon
@@ -416,34 +312,26 @@ export default function TourList() {
 
       <div className="flex flex-col lg:flex-row gap-12 w-full items-start">
         <div className="w-full lg:w-[400px] shrink-0">
-          <TourFilters filters={filters} onFilterChange={handleFilterChange} />
+          <TourFilters
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            durationCounts={durationCounts}
+            categories={dynamicCategories}
+            tours={tours}
+            isMapOpen={isMapOpen}
+            setIsMapOpen={setIsMapOpen}
+          />{" "}
         </div>
 
         <div className="flex-1 min-w-0">
-          {searchQuery && (
-            <div className="mb-6 text-xl text-gray-700 font-medium">
-              Results for:{" "}
-              <span className="font-black text-orange-500">
-                "{searchQuery}"
-              </span>
-            </div>
-          )}
+          {/* CATEGORY */}
           <div className="flex flex-wrap gap-2 mb-8">
-            {[
-              "All Tours",
-              "Historical",
-              "Water Activity",
-              "Day Trip",
-              "City Tour",
-            ].map((cat) => (
+            {dynamicCategories.map((cat) => (
               <button
                 key={cat}
-                onClick={() =>
-                  handleFilterChange("category", cat === "All Tours" ? "" : cat)
-                }
+                onClick={() => handleFilterChange("category", cat)}
                 className={`px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all ${
-                  filters.category === cat ||
-                  (cat === "All Tours" && !filters.category)
+                  filters.category === cat
                     ? "bg-orange-500 text-white shadow-lg shadow-orange-100"
                     : "bg-white text-gray-400 border border-gray-100 hover:bg-gray-50"
                 }`}
@@ -453,15 +341,9 @@ export default function TourList() {
             ))}
           </div>
 
-          <div
-            className={
-              viewMode === "grid"
-                ? "grid grid-cols-1 md:grid-cols-2 gap-6"
-                : "grid grid-cols-1 gap-6"
-            }
-          >
+          <div className="grid grid-cols-1 gap-6">
             {currentTours.map((tour) => (
-              <TourCard key={tour.id} tour={tour} />
+              <TourCard key={tour.id} tour={tour} filters={filters} />
             ))}
           </div>
 
@@ -471,7 +353,11 @@ export default function TourList() {
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((prev) => prev - 1)}
-                className={`p-2 rounded-lg border border-gray-200 ${currentPage === 1 ? "opacity-30 cursor-not-allowed" : "hover:bg-gray-50"}`}
+                className={`p-2 rounded-lg border border-gray-200 ${
+                  currentPage === 1
+                    ? "opacity-30 cursor-not-allowed"
+                    : "hover:bg-gray-50"
+                }`}
               >
                 <ChevronLeft size={20} />
               </button>
@@ -491,7 +377,11 @@ export default function TourList() {
               <button
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage((prev) => prev + 1)}
-                className={`p-2 rounded-lg border border-gray-200 ${currentPage === totalPages ? "opacity-30 cursor-not-allowed" : "hover:bg-gray-50"}`}
+                className={`p-2 rounded-lg border border-gray-200 ${
+                  currentPage === totalPages
+                    ? "opacity-30 cursor-not-allowed"
+                    : "hover:bg-gray-50"
+                }`}
               >
                 <ChevronRight size={20} />
               </button>
@@ -500,26 +390,11 @@ export default function TourList() {
         </div>
       </div>
 
-      {/*  MODAL BẢN ĐỒ*/}
-      {showMap && (
-        <div className="fixed inset-0 z-[1000] bg-black/40 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-6xl h-[85vh] rounded-[3rem] overflow-hidden relative shadow-2xl flex flex-col">
-            <button
-              onClick={() => setShowMap(false)}
-              className="absolute top-6 right-6 z-10 p-3 bg-white/90 hover:bg-red-500 hover:text-white rounded-2xl transition-all"
-            >
-              <X size={24} />
-            </button>
-            <iframe
-              title="Italy Tour Map"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835434509364!2d144.9537353153403!3d-37.816279742021234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad642af0f11fd81%3A0xf577d1a32f9b1b0!2sMelbourne!5e0!3m2!1sen!2sau!4v1531814675542"
-              className="w-full h-full border-0"
-              allowFullScreen=""
-              loading="lazy"
-            ></iframe>
-          </div>
-        </div>
-      )}
+      <MapModal
+        isOpen={isMapOpen}
+        onClose={() => setIsMapOpen(false)}
+        tours={sortedTours}
+      />
     </div>
   );
 }

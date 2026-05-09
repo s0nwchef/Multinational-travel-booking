@@ -1,15 +1,13 @@
 import React from "react";
 import {
   Calendar,
-  Clock,
   MapPin,
-  Moon,
-  Plane,
   FileText,
-  Download,
   Repeat,
-  CheckCircle,
   Star,
+  Users,
+  AlertCircle,
+  Clock,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -21,11 +19,13 @@ const InfoRow = ({ icon: Icon, text }) => (
   </div>
 );
 
-const BookingCard = ({ item }) => {
+const BookingCard = ({ item, onCancel }) => {
   const navigate = useNavigate();
-  const isCompleted = item.category === "completed";
-  const isCancelled = item.category === "cancelled";
-  const tourId = item.tourId || item.id;
+
+  // Logic dựa trên tabGroup từ service trả về
+  const isCompleted = item.tabGroup === "completed";
+  const isCancelled = item.tabGroup === "cancelled";
+  const isUpcoming = item.tabGroup === "upcoming";
 
   return (
     <motion.div
@@ -34,17 +34,16 @@ const BookingCard = ({ item }) => {
       animate={{ opacity: 1, y: 0 }}
       className="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 flex flex-col xl:flex-row shadow-sm hover:shadow-xl transition-all group"
     >
+      {/* IMAGE SECTION */}
       <div className="relative xl:w-72 h-52 xl:h-auto shrink-0 overflow-hidden">
         <img
-          src={item.image}
+          src={item.tourImage}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-          alt={item.title}
+          alt={item.tourTitle}
         />
         <span className="absolute top-5 left-5 bg-orange-500 text-white text-[9px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest shadow-lg flex items-center gap-1.5">
-          {item.type === "Stay" && <Moon size={10} />}
-          {item.type === "Flight" && <Plane size={10} />}
-          {item.type === "Tour" && <MapPin size={10} />}
-          {item.type}
+          <MapPin size={10} />
+          TOUR
         </span>
       </div>
 
@@ -64,76 +63,70 @@ const BookingCard = ({ item }) => {
                 {item.status}
               </span>
               <span className="text-[9px] text-gray-400 font-bold tracking-wider">
-                ID: {item.id}
+                CODE: {item.bookingCode}
               </span>
             </div>
+
             <h3 className="text-xl font-black text-gray-900 group-hover:text-orange-500 transition-colors">
-              {item.title}
+              {item.tourTitle}
             </h3>
             <p className="text-[12px] text-gray-400 font-medium line-clamp-1">
-              {item.description}
+              Customer: {item.customerName}
             </p>
           </div>
 
           <div className="text-right shrink-0">
             <span className="text-2xl font-black text-gray-900">
-              ${item.price}
+              {item.totalPrice?.toLocaleString("vi-VN")} VND
             </span>
             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
-              {item.priceNote}
+              {item.paymentStatus}
             </p>
           </div>
         </div>
 
+        {/* INFO ROWS */}
         <div className="flex flex-wrap gap-x-8 gap-y-3 py-6 border-y border-gray-50 my-2">
+          <InfoRow icon={Calendar} text={`Booked on: ${item.bookingDate}`} />
           <InfoRow
-            icon={Calendar}
-            text={`${item.startDate}${item.nights > 0 ? ` - ${item.endDate}` : ""}`}
+            icon={Users}
+            text={`${item.travelers?.length || 0} Travelers`}
           />
-          {item.location && <InfoRow icon={MapPin} text={item.location} />}
-          {item.airline && <InfoRow icon={Plane} text={item.airline} />}
-          {item.nights > 0 && (
-            <InfoRow icon={Moon} text={`${item.nights} Nights`} />
-          )}
-          {item.type === "Tour" && (
-            <InfoRow icon={CheckCircle} text={`${item.adults} Adults`} />
-          )}
-          {item.time && item.type === "Tour" && (
-            <InfoRow icon={Clock} text={item.time} />
+          {item.travelers?.[0]?.seatNumber && (
+            <InfoRow
+              icon={Clock}
+              text={`Seat: ${item.travelers[0].seatNumber}`}
+            />
           )}
         </div>
 
+        {/* ACTION BUTTONS */}
         <div className="mt-6 flex justify-between items-center">
           <div className="flex gap-6">
             {isCompleted ? (
               <button
-                onClick={() => navigate(`/review/${tourId}`)}
+                onClick={() => navigate(`/review/${item.id}`)}
                 className="text-[11px] font-black text-orange-500 hover:underline flex items-center gap-1.5 uppercase tracking-wider"
               >
                 <Star size={14} className="fill-orange-500" /> Rate Experience
               </button>
+            ) : isUpcoming ? (
+              <button
+                onClick={() => onCancel(item.id)}
+                className="text-[11px] font-black text-red-400 hover:text-red-600 flex items-center gap-1.5 uppercase tracking-wider transition-colors"
+              >
+                <AlertCircle size={14} /> Cancel Booking
+              </button>
             ) : (
-              !isCancelled && (
-                <button className="text-[11px] font-black text-orange-500 hover:underline flex items-center gap-1.5 uppercase tracking-wider">
-                  <Download size={14} /> Itinerary
-                </button>
-              )
+              <button className="text-[11px] font-black text-gray-400 hover:text-gray-900 flex items-center gap-1.5 uppercase tracking-wider">
+                Support Details
+              </button>
             )}
-
-            <button
-              onClick={() => navigate("/help")}
-              className="text-[11px] font-black text-gray-400 hover:text-gray-900 flex items-center gap-1.5 uppercase tracking-wider"
-            >
-              Support
-            </button>
           </div>
 
           <div className="flex gap-3">
             {isCompleted ? (
-              <button
-                onClick={() => navigate(`/checkout/${tourId}`)}
-                className="bg-orange-500 text-white text-[10px] font-black px-7 py-3.5 rounded-2xl hover:bg-orange-600 shadow-lg shadow-orange-100 flex items-center gap-2 transition-all active:scale-95"
-              >
+              <button className="bg-orange-500 text-white text-[10px] font-black px-7 py-3.5 rounded-2xl hover:bg-orange-600 shadow-lg shadow-orange-100 flex items-center gap-2 transition-all active:scale-95">
                 <Repeat size={14} /> REBOOK
               </button>
             ) : isCancelled ? (

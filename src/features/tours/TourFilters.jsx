@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { ChevronUp, ChevronDown, Map, Calendar, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import MapModal from "../../components/MapModal";
 
-const FilterHeader = ({ title, section, isOpen, onToggle }) => (
+const FilterHeader = ({ title, section, isOpen, onToggle, tours }) => (
   <div
     className="flex items-center justify-between mb-6 cursor-pointer group"
     onClick={() => onToggle(section)}
@@ -18,7 +19,16 @@ const FilterHeader = ({ title, section, isOpen, onToggle }) => (
   </div>
 );
 
-export default function TourFilters({ filters, onFilterChange }) {
+export default function TourFilters({
+  filters,
+  onFilterChange,
+  durationCounts,
+  categories,
+  tours,
+}) {
+  const startRef = useRef();
+  const endRef = useRef();
+
   const [openSections, setOpenSections] = useState({
     price: true,
     availability: true,
@@ -31,26 +41,10 @@ export default function TourFilters({ filters, onFilterChange }) {
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
+  const today = new Date().toISOString().split("T")[0];
+
   return (
     <aside className="w-full lg:w-[400px] shrink-0 flex flex-col gap-6 sticky top-4">
-      {/* 1. Bản đồ*/}
-      <motion.div
-        whileHover={{ scale: 1.02 }}
-        className="relative group cursor-pointer overflow-hidden rounded-[2.5rem] h-32 border-4 border-white shadow-xl shadow-orange-100/50"
-      >
-        <img
-          src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=400&auto=format&fit=crop"
-          alt="Map Preview"
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-        />
-        <div className="absolute inset-0 bg-black/5 flex items-center justify-center">
-          <button className="bg-white px-5 py-2.5 rounded-2xl shadow-lg flex items-center gap-2 font-black text-[10px] text-gray-800 uppercase tracking-wider transition-transform hover:scale-105">
-            <Map size={18} className="text-orange-500" />
-            Show on Map
-          </button>
-        </div>
-      </motion.div>
-
       <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-2xl shadow-gray-200/40 space-y-8">
         {/* 2. Price Range */}
         <section>
@@ -69,15 +63,17 @@ export default function TourFilters({ filters, onFilterChange }) {
               >
                 <input
                   type="range"
-                  min="50"
-                  max="5000"
+                  min="20"
+                  max="10000"
                   value={filters.price}
-                  onChange={(e) => onFilterChange("price", e.target.value)}
+                  onChange={(e) =>
+                    onFilterChange("price", Number(e.target.value))
+                  }
                   className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-orange-500 mb-6"
                 />
                 <div className="flex items-center gap-3">
                   <div className="flex-1 border border-gray-50 bg-gray-50/50 rounded-2xl p-3 text-[11px] text-gray-400 font-bold">
-                    $ 50
+                    $ 20
                   </div>
                   <span className="text-gray-200">-</span>
                   <div className="flex-1 relative">
@@ -87,8 +83,9 @@ export default function TourFilters({ filters, onFilterChange }) {
                     <input
                       type="number"
                       value={filters.price}
-                      onChange={(e) => onFilterChange("price", e.target.value)}
-                      max="5000"
+                      onChange={(e) =>
+                        onFilterChange("price", Number(e.target.value))
+                      }
                       className="w-full pl-6 pr-3 py-3 border border-orange-100 bg-orange-50/20 rounded-2xl text-xs text-orange-600 font-black focus:outline-none focus:ring-1 focus:ring-orange-500"
                     />
                   </div>
@@ -119,25 +116,29 @@ export default function TourFilters({ filters, onFilterChange }) {
                   <label className="text-[10px] font-black text-gray-400 uppercase mb-2 block tracking-widest">
                     Start Date
                   </label>
+
                   <div className="relative group">
                     <Calendar
                       size={16}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-orange-500 transition-colors"
+                      onClick={() => startRef.current?.showPicker()}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-hover:text-orange-500 cursor-pointer"
                     />
+
                     <input
-                      type="text"
-                      placeholder="MM/DD/YYYY"
-                      maxLength={10}
+                      ref={startRef}
+                      type="date"
+                      value={filters.startDate}
+                      min={today}
                       onChange={(e) => {
-                        let v = e.target.value.replace(/\D/g, "");
-
-                        if (v.length > 2) v = v.slice(0, 2) + "/" + v.slice(2);
-                        if (v.length > 5)
-                          v = v.slice(0, 5) + "/" + v.slice(5, 9);
-
-                        e.target.value = v;
+                        const value = e.target.value;
+                        if (value) {
+                          onFilterChange("startDate", value);
+                          if (filters.endDate && value > filters.endDate) {
+                            onFilterChange("endDate", "");
+                          }
+                        }
                       }}
-                      className="w-full pl-12 pr-4 py-3 border border-gray-100 rounded-2xl text-xs text-gray-600 outline-none focus:border-orange-200 focus:bg-orange-50/10 transition-all font-bold"
+                      className="w-full pl-12 pr-4 py-3 border border-orange-100 bg-orange-50/20 rounded-2xl text-xs text-gray-600 focus:border-orange-200 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all font-bold appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0"
                     />
                   </div>
                 </div>
@@ -147,23 +148,30 @@ export default function TourFilters({ filters, onFilterChange }) {
                   <label className="text-[10px] font-black text-gray-400 uppercase mb-2 block tracking-widest">
                     End Date
                   </label>
+
                   <div className="relative group">
                     <Calendar
                       size={16}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-orange-500 transition-colors"
+                      onClick={() => endRef.current?.showPicker()}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-hover:text-orange-500 cursor-pointer"
                     />
+
                     <input
-                      type="text"
-                      placeholder="MM/DD/YYYY"
-                      maxLength={10}
+                      ref={endRef}
+                      type="date"
+                      value={filters.endDate}
+                      min={filters.startDate || today}
                       onChange={(e) => {
-                        let v = e.target.value.replace(/\D/g, "");
-                        if (v.length > 2) v = v.slice(0, 2) + "/" + v.slice(2);
-                        if (v.length > 5)
-                          v = v.slice(0, 5) + "/" + v.slice(5, 9);
-                        e.target.value = v;
+                        const value = e.target.value;
+                        if (value) {
+                          if (filters.startDate && value < filters.startDate) {
+                            alert("End date must be after start date");
+                            return;
+                          }
+                          onFilterChange("endDate", value);
+                        }
                       }}
-                      className="w-full pl-12 pr-4 py-3 border border-gray-100 rounded-2xl text-xs text-gray-600 outline-none focus:border-orange-200 focus:bg-orange-50/10 transition-all font-bold"
+                      className="w-full pl-12 pr-4 py-3 border border-orange-100 bg-orange-50/20 rounded-2xl text-xs text-gray-600 focus:border-orange-200 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all font-bold appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0"
                     />
                   </div>
                 </div>
@@ -188,21 +196,19 @@ export default function TourFilters({ filters, onFilterChange }) {
                 exit={{ height: 0, opacity: 0 }}
                 className="flex flex-wrap gap-2"
               >
-                {["Day trips", "Boat tours", "Hiking", "Wild-life"].map(
-                  (cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => onFilterChange("category", cat)}
-                      className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${
-                        filters.category === cat
-                          ? "bg-orange-500 text-white shadow-lg"
-                          : "bg-gray-50 text-gray-400 hover:bg-gray-100"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ),
-                )}
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => onFilterChange("category", cat)}
+                    className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${
+                      filters.category === cat
+                        ? "bg-orange-500 text-white shadow-lg"
+                        : "bg-gray-50 text-gray-400 hover:bg-gray-100"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
               </motion.div>
             )}
           </AnimatePresence>
@@ -225,10 +231,13 @@ export default function TourFilters({ filters, onFilterChange }) {
                 className="space-y-4"
               >
                 {[
-                  { label: "Less than 1 day", count: 450 },
-                  { label: "1 day", count: 320 },
-                  { label: "2-3 days", count: 150 },
-                  { label: "4+ days", count: 80 },
+                  {
+                    label: "Less than 1 day",
+                    count: durationCounts["Less than 1 day"] || 0,
+                  },
+                  { label: "1 day", count: durationCounts["1 day"] || 0 },
+                  { label: "2-3 days", count: durationCounts["2-3 days"] || 0 },
+                  { label: "4+ days", count: durationCounts["4+ days"] || 0 },
                 ].map((item) => (
                   <label
                     key={item.label}
@@ -237,14 +246,29 @@ export default function TourFilters({ filters, onFilterChange }) {
                     <div className="flex items-center gap-3">
                       <input
                         type="checkbox"
-                        className="w-5 h-5 rounded-lg border-gray-200 text-orange-500 focus:ring-orange-500 cursor-pointer"
+                        checked={filters.duration.includes(item.label)}
+                        onChange={(e) => {
+                          let newDuration;
+
+                          if (e.target.checked) {
+                            newDuration = [...filters.duration, item.label];
+                          } else {
+                            newDuration = filters.duration.filter(
+                              (d) => d !== item.label,
+                            );
+                          }
+
+                          onFilterChange("duration", newDuration);
+                        }}
+                        className="w-5 h-5 accent-orange-500 rounded-lg border-gray-200 text-orange-500 focus:ring-orange-500 cursor-pointer"
                       />
+
                       <span className="text-xs font-bold text-gray-500 group-hover:text-gray-900 transition-colors">
                         {item.label}
                       </span>
                     </div>
                     <span className="text-[10px] font-black text-gray-300 bg-gray-50 px-2 py-1 rounded-lg group-hover:bg-orange-50 group-hover:text-orange-400 transition-colors">
-                      {item.count}
+                      {durationCounts?.[item.label] || 0}
                     </span>
                   </label>
                 ))}
