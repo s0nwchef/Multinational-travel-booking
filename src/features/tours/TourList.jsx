@@ -58,6 +58,13 @@ export default function TourList() {
   }, [searchQuery]);
 
   useEffect(() => {
+    const prefill = location.state?.prefillFilters;
+    if (prefill && !loading) {
+      setFilters((prev) => ({ ...prev, ...prefill }));
+    }
+  }, [location.state?.prefillFilters, loading]);
+
+  useEffect(() => {
     setCurrentPage(1);
   }, [filters, searchQuery, sortBy]);
 
@@ -100,7 +107,7 @@ export default function TourList() {
         searchTerm === "" ||
         regex.test(tour.title) ||
         regex.test(tour.location) ||
-        regex.test(tour.description);
+        regex.test(tour.country);
 
       const matchesPrice = tour.departures?.length
         ? tour.departures.some((d) => (d.giaNguoiLon || 0) <= filters.price)

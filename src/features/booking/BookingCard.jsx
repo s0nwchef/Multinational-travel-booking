@@ -7,7 +7,7 @@ import {
   Star,
   Users,
   AlertCircle,
-  Clock,
+  CreditCard,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -22,13 +22,28 @@ const InfoRow = ({ icon: Icon, text }) => (
 const BookingCard = ({ item, onCancel }) => {
   const navigate = useNavigate();
 
-  // Logic dựa trên tabGroup từ service trả về
+  // Logic based on tabGroup provided by the service mapping
   const isCompleted = item.tabGroup === "completed";
   const isCancelled = item.tabGroup === "cancelled";
   const isUpcoming = item.tabGroup === "upcoming";
 
+  // Calculate total passengers from real data fields
+  const totalPassengers = (item.numAdults || 0) + (item.numChildren || 0);
+
+  const formatDateRange = (dep, ret) => {
+    if (!dep || dep === "TBA") return "TBA";
+    const fmt = (dateStr) => {
+      const [day, month, year] = dateStr.split("/");
+      return new Date(year, month - 1, day)
+        .toLocaleDateString("en-US", { month: "short", day: "numeric" })
+        .toUpperCase();
+    };
+    return ret ? `${fmt(dep)} - ${fmt(ret)}` : fmt(dep);
+  };
+
   return (
     <motion.div
+      id={`booking-${item.id}`}
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -38,8 +53,13 @@ const BookingCard = ({ item, onCancel }) => {
       <div className="relative xl:w-72 h-52 xl:h-auto shrink-0 overflow-hidden">
         <img
           src={item.tourImage}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           alt={item.tourTitle}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src =
+              "https://img.freepik.com/free-vector/illustration-gallery-icon_53876-27002.jpg";
+          }}
         />
         <span className="absolute top-5 left-5 bg-orange-500 text-white text-[9px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest shadow-lg flex items-center gap-1.5">
           <MapPin size={10} />
@@ -53,51 +73,52 @@ const BookingCard = ({ item, onCancel }) => {
             <div className="flex items-center gap-2 mb-1">
               <span
                 className={`text-[9px] font-black px-3 py-1 rounded-lg uppercase ${
-                  isCompleted
+                  item.tabGroup === "completed"
                     ? "bg-gray-100 text-gray-500"
-                    : isCancelled
+                    : item.tabGroup === "cancelled"
                       ? "bg-red-50 text-red-500"
-                      : "bg-green-50 text-green-600"
+                      : item.status === "confirmed"
+                        ? "bg-green-50 text-green-600"
+                        : "bg-yellow-50 text-yellow-500"
                 }`}
               >
-                {item.status}
+                {item.tabGroup === "completed" ? "completed" : item.status}
               </span>
               <span className="text-[9px] text-gray-400 font-bold tracking-wider">
-                CODE: {item.bookingCode}
+                ID: {item.bookingCode}
               </span>
             </div>
 
             <h3 className="text-xl font-black text-gray-900 group-hover:text-orange-500 transition-colors">
               {item.tourTitle}
             </h3>
-            <p className="text-[12px] text-gray-400 font-medium line-clamp-1">
-              Customer: {item.customerName}
+
+            <p className="flex items-center gap-1.5 bg-blue-50 text-blue-600 text-[11px] font-bold px-3 py-1.5 rounded-xl border border-blue-100 w-fit">
+              📅 {formatDateRange(item.departureDate, item.returnDate)}
             </p>
           </div>
 
           <div className="text-right shrink-0">
             <span className="text-2xl font-black text-gray-900">
-              {item.totalPrice?.toLocaleString("vi-VN")} VND
+              {item.totalPrice?.toLocaleString("en-US")} $
             </span>
             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
-              {item.paymentStatus}
+              {item.paymentStatus === "paid" ? "Paid" : "Pending Payment"}
             </p>
           </div>
         </div>
 
-        {/* INFO ROWS */}
+        {/* INFO ROWS - Using Real Data Fields */}
         <div className="flex flex-wrap gap-x-8 gap-y-3 py-6 border-y border-gray-50 my-2">
-          <InfoRow icon={Calendar} text={`Booked on: ${item.bookingDate}`} />
+          <InfoRow icon={Calendar} text={`Booking Date: ${item.bookingDate}`} />
           <InfoRow
             icon={Users}
-            text={`${item.travelers?.length || 0} Travelers`}
+            text={`${totalPassengers} ${totalPassengers > 1 ? "Travelers" : "Traveler"} (${item.numAdults}A, ${item.numChildren}C)`}
           />
-          {item.travelers?.[0]?.seatNumber && (
-            <InfoRow
-              icon={Clock}
-              text={`Seat: ${item.travelers[0].seatNumber}`}
-            />
-          )}
+          <InfoRow
+            icon={CreditCard}
+            text={`Method: ${item.paymentStatus === "paid" ? "Digital Payment" : "To be confirmed"}`}
+          />
         </div>
 
         {/* ACTION BUTTONS */}
@@ -118,8 +139,11 @@ const BookingCard = ({ item, onCancel }) => {
                 <AlertCircle size={14} /> Cancel Booking
               </button>
             ) : (
-              <button className="text-[11px] font-black text-gray-400 hover:text-gray-900 flex items-center gap-1.5 uppercase tracking-wider">
-                Support Details
+              <button
+                onClick={() => navigate(`/help`)}
+                className="text-[11px] font-black text-gray-400 hover:text-gray-900 flex items-center gap-1.5 uppercase tracking-wider"
+              >
+                Support Center
               </button>
             )}
           </div>
@@ -127,10 +151,30 @@ const BookingCard = ({ item, onCancel }) => {
           <div className="flex gap-3">
             {isCompleted ? (
               <button className="bg-orange-500 text-white text-[10px] font-black px-7 py-3.5 rounded-2xl hover:bg-orange-600 shadow-lg shadow-orange-100 flex items-center gap-2 transition-all active:scale-95">
-                <Repeat size={14} /> REBOOK
+                <Repeat size={14} /> BOOK AGAIN
               </button>
             ) : isCancelled ? (
-              <button className="bg-gray-900 text-white text-[10px] font-black px-7 py-3.5 rounded-2xl hover:bg-black transition-all active:scale-95">
+              <button
+                onClick={() =>
+                  navigate("/tours", {
+                    state: {
+                      query: item.city || "",
+                      prefillFilters: {
+                        price: Math.round(item.totalPrice * 1.2),
+                        duration:
+                          item.soNgay >= 4
+                            ? ["4+ days"]
+                            : item.soNgay >= 2
+                              ? ["2-3 days"]
+                              : item.soNgay === 1
+                                ? ["1 day"]
+                                : [],
+                      },
+                    },
+                  })
+                }
+                className="bg-gray-900 text-white text-[10px] font-black px-7 py-3.5 rounded-2xl hover:bg-black transition-all active:scale-95"
+              >
                 FIND ALTERNATIVE
               </button>
             ) : (

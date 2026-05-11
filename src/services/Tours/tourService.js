@@ -71,7 +71,7 @@ const tourService = {
 
             soNgay: tour.so_ngay,
             soDem: tour.so_dem,
-            duration: `${tour.so_ngay} ngày ${tour.so_dem} đêm`,
+            duration: `${tour.so_ngay} D / ${tour.so_dem} N`,
 
             image:
               tour.anh_dai_dien ||
@@ -154,7 +154,7 @@ const tourService = {
 
         soNgay: tour.so_ngay,
         soDem: tour.so_dem,
-        duration: `${tour.so_ngay} ngày ${tour.so_dem} đêm`,
+        duration: `${tour.so_ngay} D / ${tour.so_dem} N`,
 
         image: tour.anh_dai_dien,
         gallery: [tour.anh_dai_dien, ...(tour.danh_sach_anh || [])],

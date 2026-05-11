@@ -1,27 +1,40 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, AlertCircle, ChevronDown, CircleX } from "lucide-react";
+import bookingService from "../../services/bookings/bookingService"; // ✅ đúng đường dẫn
 
 export default function CancelBookingModal({
   isOpen = true,
   onClose,
   bookingData,
+  onCancelSuccess, // ✅ thêm vào props
 }) {
   const [reason, setReason] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const refundDetails = {
-    originalPrice: 450.0,
-    cancellationFee: 50.0,
-    refundAmount: 400.0,
-    cardEnding: "4242",
+  // ✅ Dùng data thật từ bookingData
+  const originalPrice = bookingData?.totalPrice || 0;
+  const cancellationFee = 0;
+  const refundAmount = originalPrice - cancellationFee;
+
+  const handleConfirmCancel = async () => {
+    if (!reason) return alert("Vui lòng chọn lý do hủy!");
+    setLoading(true);
+    try {
+      await bookingService.cancelBooking(bookingData.id, reason);
+      onCancelSuccess(); // ✅ đã có trong props
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <AnimatePresence>
-      {/* {isOpen && ( */}
-      <>
+      {isOpen && ( // ✅ bỏ comment để modal đóng/mở đúng
         <motion.div
-          initial={{ opacity: 1 }}
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
@@ -47,7 +60,7 @@ export default function CancelBookingModal({
             </div>
 
             <div className="p-8 space-y-6">
-              {/* Cancellation Policy Alert */}
+              {/* ✅ Dùng tên tour thật */}
               <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 flex gap-4">
                 <AlertCircle className="text-orange-500 shrink-0" size={24} />
                 <div className="space-y-1">
@@ -55,23 +68,23 @@ export default function CancelBookingModal({
                     Cancellation Policy
                   </h3>
                   <p className="text-orange-800/80 text-xs leading-relaxed">
-                    You are cancelling your booking for the{" "}
+                    You are cancelling your booking for{" "}
                     <span className="font-bold text-orange-900">
-                      Grand Hotel
+                      {bookingData?.tourTitle || "this tour"}
                     </span>
-                    . According to the policy, cancelling less than 48 hours
-                    before check-in incurs a fee.
+                    . This action cannot be undone.
                   </p>
                 </div>
               </div>
 
+              {/* ✅ Dùng giá thật */}
               <div className="bg-[#F8F9FB] rounded-[2rem] p-8 space-y-4">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-gray-500 font-medium">
                     Original Price
                   </span>
                   <span className="text-gray-900 font-bold">
-                    ${refundDetails.originalPrice.toFixed(2)}
+                    {originalPrice.toLocaleString("en-US")} $
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
@@ -82,21 +95,22 @@ export default function CancelBookingModal({
                     <AlertCircle size={14} className="text-gray-300" />
                   </div>
                   <span className="text-red-500 font-bold">
-                    -${refundDetails.cancellationFee.toFixed(2)}
+                    {cancellationFee > 0
+                      ? `-${cancellationFee.toLocaleString("en-US")} $`
+                      : "Free"}
                   </span>
                 </div>
-
                 <div className="border-t border-dashed border-gray-200 pt-4 mt-4 flex justify-between items-end">
                   <div className="space-y-1">
                     <span className="text-sm text-gray-500 font-medium">
                       Refund Amount
                     </span>
                     <p className="text-[10px] text-gray-400">
-                      Refunded to Visa ending in {refundDetails.cardEnding}
+                      Booking: {bookingData?.bookingCode}
                     </p>
                   </div>
                   <span className="text-3xl font-black text-orange-500">
-                    ${refundDetails.refundAmount.toFixed(2)}
+                    {refundAmount.toLocaleString("en-US")} $
                   </span>
                 </div>
               </div>
@@ -132,15 +146,18 @@ export default function CancelBookingModal({
               >
                 Keep My Booking
               </button>
-              <button className="flex-1 py-4 px-6 rounded-2xl bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-200 active:scale-95">
+              <button
+                onClick={handleConfirmCancel}
+                disabled={loading}
+                className="flex-1 py-4 px-6 rounded-2xl bg-[#E53935] hover:bg-[#D32F2F] text-white font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-200 active:scale-95 disabled:opacity-60"
+              >
                 <CircleX size={20} />
-                Confirm Cancellation
+                {loading ? "Đang hủy..." : "Confirm Cancellation"}
               </button>
             </div>
           </motion.div>
         </motion.div>
-      </>
-      {/* )} */}
+      )}
     </AnimatePresence>
   );
 }
