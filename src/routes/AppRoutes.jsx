@@ -67,8 +67,22 @@ export default function AppRoutes() {
         <Route path="flights/search" element={<FlightSearchPage />} />
         <Route path="flights/:flightId/seats" element={<SeatSelectionPage />} />
         <Route path="tour/:tourId" element={<TourDetailPage />} />
-        <Route path="checkout/:tourId" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
-        <Route path="review/:tourId" element={<ProtectedRoute><WriteReviewPage /></ProtectedRoute>} />
+        <Route
+          path="checkout/:tourId"
+          element={
+            <ProtectedRoute>
+              <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="review/:tourId"
+          element={
+            <ProtectedRoute>
+              <WriteReviewPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Other */}
         <Route path="notifications" element={<Notifications />} />
@@ -92,46 +106,70 @@ export default function AppRoutes() {
 
       {/* Staff Routes */}
       <Route element={<StaffLayout />}>
-        <Route path="/staff/dashboard" element={
-          <ProtectedRoute roles={['tour_operator', 'admin']}>
-            <StaffDashboardPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/staff/tours" element={
-          <ProtectedRoute roles={['tour_operator', 'admin']}>
-            <TourManagementPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/staff/bookings" element={
-          <ProtectedRoute roles={['tour_operator', 'admin']}>
-            <BookingManagementPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/staff/customers" element={
-          <ProtectedRoute roles={['tour_operator', 'admin']}>
-            <CustomerManagementPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/staff/analytics" element={
-          <ProtectedRoute roles={['tour_operator', 'admin']}>
-            <AnalyticsPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/staff/settings" element={
-          <ProtectedRoute roles={['tour_operator', 'admin']}>
-            <StaffSettingsPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/staff/tours/new" element={
-          <ProtectedRoute roles={['tour_operator', 'admin']}>
-            <TourEditorPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/staff/tours/:id/edit" element={
-          <ProtectedRoute roles={['tour_operator', 'admin']}>
-            <TourEditorPage />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/staff/dashboard"
+          element={
+            <ProtectedRoute roles={["tour_operator", "admin"]}>
+              <StaffDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/tours"
+          element={
+            <ProtectedRoute roles={["tour_operator", "admin"]}>
+              <TourManagementPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/bookings"
+          element={
+            <ProtectedRoute roles={["tour_operator", "admin"]}>
+              <BookingManagementPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/customers"
+          element={
+            <ProtectedRoute roles={["tour_operator", "admin"]}>
+              <CustomerManagementPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/analytics"
+          element={
+            <ProtectedRoute roles={["tour_operator", "admin"]}>
+              <AnalyticsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/settings"
+          element={
+            <ProtectedRoute roles={["tour_operator", "admin"]}>
+              <StaffSettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/tours/new"
+          element={
+            <ProtectedRoute roles={["tour_operator", "admin"]}>
+              <TourEditorPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/tours/:id/edit"
+          element={
+            <ProtectedRoute roles={["tour_operator", "admin"]}>
+              <TourEditorPage />
+            </ProtectedRoute>
+          }
+        />
       </Route>
     </Routes>
   );
