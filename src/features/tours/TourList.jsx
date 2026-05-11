@@ -16,13 +16,14 @@ export default function TourList() {
   const location = useLocation();
   const navigate = useNavigate();
   const searchQuery = location.state?.query || "";
+  const initialCategory = location.state?.category || "All Tours";
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [filters, setFilters] = useState({
     price: 10000,
-    category: "All Tours",
+    category: initialCategory,
     duration: [],
     startDate: "",
     endDate: "",
@@ -58,6 +59,13 @@ export default function TourList() {
   }, [searchQuery]);
 
   useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      category: initialCategory,
+    }));
+  }, [initialCategory]);
+
+  useEffect(() => {
     setCurrentPage(1);
   }, [filters, searchQuery, sortBy]);
 
@@ -69,6 +77,7 @@ export default function TourList() {
       startDate: "",
       endDate: "",
       ratings: 0,
+      location: "",
     });
     setSortBy("recommended");
 
