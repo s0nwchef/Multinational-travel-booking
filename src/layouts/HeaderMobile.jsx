@@ -36,8 +36,8 @@ const HeaderMobile = ({
                     className="lg:hidden overflow-hidden"
                 >
                     <div className="p-6 pt-2 space-y-8">
-                        {/* Nav Links Group - Hidden on tablet (md) because they are in the header pill */}
-                        <div className="space-y-1 md:hidden">
+                        {/* Nav Links Group - Show on mobile and tablet when menu is open */}
+                        <div className="space-y-1">
                             <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 px-4">Navigation</div>
                             {navLinks.map((link) => (
                                 <NavLink
