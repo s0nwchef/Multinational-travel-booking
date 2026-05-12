@@ -1,5 +1,6 @@
 import DatTour from '../models/DatTour.js';
 import NguoiDung from '../models/NguoiDung.js';
+import { sendNotification } from '../utils/notificationHelper.js';
 
 export const processPayment = async (req, res) => {
     try {
@@ -21,6 +22,22 @@ export const processPayment = async (req, res) => {
         booking.trang_thai = 'confirmed';
         booking.phuong_thuc_thanh_toan = paymentMethod === 'credit_card' ? 'card' : paymentMethod === 'bank_transfer' ? 'banking' : paymentMethod;
         await booking.save();
+
+        // Send payment success notification
+        try {
+            const tourName = booking.id_tour?.ten_tour || 'Tour';
+            const amountFormatted = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(booking.tong_tien_cuoi);
+            
+            await sendNotification(userId, {
+                title: 'Thanh toán thành công',
+                message: `Thanh toán ${amountFormatted} cho tour "${tourName}" (Mã booking: ${booking.ma_dat_tour}) đã thành công.`,
+                type: 'thanh_toan_thanh_cong',
+                link: `/bookings/${booking._id}`
+            });
+        } catch (notificationError) {
+            // Don't fail payment if notification fails
+            console.error('Failed to send payment notification:', notificationError.message);
+        }
 
         const pointsEarned = Math.floor(booking.tong_tien_cuoi / 1000);
         // Assuming loyalty points exists or handle gracefully

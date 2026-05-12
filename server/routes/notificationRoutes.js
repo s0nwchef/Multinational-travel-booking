@@ -18,6 +18,7 @@ const router = express.Router();
 router.use(requireAuth());
 
 // Get user's notifications
+// Query params: page, limit, unreadOnly, type (bookings|promotions|account)
 router.get('/', getNotifications);
 
 // Get unread count

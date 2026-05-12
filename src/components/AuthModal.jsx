@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Mail, Lock, User, Sun, Palmtree, Umbrella, Waves, Phone } from 'lucide-react';
+import { useNotification } from '../contexts/NotificationContext';
 
 const SummerElement = ({ children, className, delay = 0 }) => (
     <motion.div
@@ -103,6 +104,7 @@ export default function AuthModal({ isOpen, onClose }) {
     password: '',
     phone: ''
   });
+  const { success, error } = useNotification();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -130,9 +132,11 @@ export default function AuthModal({ isOpen, onClose }) {
           avatar: result.user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name || 'default'}`
         }));
         
-        alert('Đăng ký thành công!');
-        window.dispatchEvent(new Event('auth-change'));
-        onClose();
+        success('Đăng ký thành công! Chào mừng bạn đến với chúng tôi');
+        setTimeout(() => {
+          window.dispatchEvent(new Event('auth-change'));
+          onClose();
+        }, 1500);
         return;
       }
       
@@ -149,20 +153,23 @@ export default function AuthModal({ isOpen, onClose }) {
         role: result.user.role
       }));
 
-      // Redirect based on user role
+      success('Đăng nhập thành công! Chào mừng bạn quay lại');
+
+      // Redirect based on user role with delay to show toast
       const userRole = result.user.role;
-      if (userRole === 'tour_operator' || userRole === 'admin') {
-        window.location.href = '/staff/dashboard';
-        return;
-      } else if (userRole === 'user') {
-        window.location.href = '/dashboard';
-        return;
-      }
-      
-      window.dispatchEvent(new Event('auth-change'));
-      onClose();
-    } catch (error) {
-      alert(error.message || 'Đăng nhập thất bại');
+      setTimeout(() => {
+        if (userRole === 'tour_operator' || userRole === 'admin') {
+          window.location.href = '/staff/dashboard';
+        } else if (userRole === 'user') {
+          window.location.href = '/dashboard';
+        } else {
+          window.dispatchEvent(new Event('auth-change'));
+          onClose();
+        }
+      }, 1500);
+      return;
+    } catch (err) {
+      error(err.message || 'Đăng nhập thất bại. Vui lòng thử lại');
     }
   };
 

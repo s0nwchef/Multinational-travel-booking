@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "./routes/AppRoutes";
+import { NotificationProvider } from "./contexts/NotificationContext";
+import ToastContainer from "./components/ui/ToastContainer";
 
 const App = () => {
   useEffect(() => {
@@ -36,9 +38,12 @@ const App = () => {
   }, []);
 
   return (
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
+      <NotificationProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+        <ToastContainer />
+      </NotificationProvider>
   );
 };
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   PlaneTakeoff,
   Menu,
@@ -25,45 +25,10 @@ export default function Header({
   const [hoveredPath, setHoveredPath] = useState(null);
   const location = useLocation();
   const navigate = useNavigate(); // Thêm dòng này
-  const [isSearching, setIsSearching] = useState(false); // Thêm dòng này
-  const [searchVal, setSearchVal] = useState(""); // Thêm dòng này
-  const [isOverlapping, setIsOverlapping] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchVal, setSearchVal] = useState("");
   const navRef = useRef(null);
   const searchRef = useRef(null);
-
-  // Kiểm tra va chạm giữa thanh tìm kiếm và thanh điều hướng
-  useEffect(() => {
-    const checkOverlap = () => {
-      // Nếu không tìm kiếm, reset trạng thái va chạm
-      if (!isSearching) {
-        setIsOverlapping(false);
-        return;
-      }
-
-      // Nếu đã bị va chạm rồi (đang ở view 3 thẻ), không cần xét kích thước nữa
-      // Điều này giúp giữ nguyên view 3 thẻ cho đến khi tắt tìm kiếm
-      if (isOverlapping) return;
-
-      if (!navRef.current || !searchRef.current) return;
-
-      const navRect = navRef.current.getBoundingClientRect();
-      const searchRect = searchRef.current.getBoundingClientRect();
-
-      // Kiểm tra xem thanh tìm kiếm có chạm vào thanh điều hướng (đang đầy đủ 5 thẻ) không
-      if (searchRect.left < navRect.right + 25) {
-        setIsOverlapping(true);
-      }
-    };
-
-    checkOverlap();
-    window.addEventListener("resize", checkOverlap);
-    const interval = setInterval(checkOverlap, 100);
-
-    return () => {
-      window.removeEventListener("resize", checkOverlap);
-      clearInterval(interval);
-    };
-  }, [isSearching, isOverlapping]);
 
   useEffect(() => {
     const checkUser = () => {
@@ -95,7 +60,6 @@ export default function Header({
     { path: "/tours", label: "Tours" },
     { path: "/flights", label: "Flights" },
     { path: "/help", label: "Help" },
-    { path: "/blog", label: "Blog" },
   ];
 
   const activeIndicatorPath = hoveredPath || location.pathname;
@@ -126,13 +90,7 @@ export default function Header({
                 className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-1 bg-white dark:bg-gray-800/50 p-1 rounded-full shadow-sm z-10 transition-all duration-300"
                 onMouseLeave={() => setHoveredPath(null)}
             >
-              {navLinks
-                  .filter(
-                      (link) =>
-                          !(isSearching && isOverlapping) ||
-                          (link.label !== "Help" && link.label !== "Blog")
-                  )
-                  .map((link) => {
+              {navLinks.map((link) => {
                     const isIndicatorActive = activeIndicatorPath === link.path;
                     const isActive = location.pathname === link.path;
                     const isHovered = hoveredPath === link.path;
