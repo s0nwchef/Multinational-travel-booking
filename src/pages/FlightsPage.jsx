@@ -1,10 +1,10 @@
 import React from 'react';
-import HeroSection from '../features/home/HeroSection';
+import FlightHeroSection from '../features/home/FlightHeroSection';
 
 const FlightsPage = () => {
     return (
         <>
-            <HeroSection />
+            <FlightHeroSection />
         </>
     );
 };

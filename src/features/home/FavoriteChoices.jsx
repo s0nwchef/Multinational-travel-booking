@@ -27,7 +27,7 @@ const FavoriteChoices = () => {
           description: tour.mo_ta,
           rating: tour.diem_trung_binh ? tour.diem_trung_binh.toFixed(1) : (4.2 + Math.random() * 0.7).toFixed(1),
           reviews: tour.so_luong_danh_gia ? `${tour.so_luong_danh_gia}+` : (Math.floor(Math.random() * 10) + 1) + 'k+',
-          price: `VNĐ ${tour.gia_nguoi_lon ? tour.gia_nguoi_lon.toLocaleString('vi-VN') : 'Liên hệ'}`,
+          price: `$ ${tour.gia_nguoi_lon ? tour.gia_nguoi_lon.toLocaleString('vi-VN') : 'Liên hệ'}`,
           badge: index === 0 ? 'RECOMMENDED' : index === 2 ? 'MUST SEE' : null,
           badgeColor: index === 0 ? 'bg-indigo-600' : 'bg-rose-600'
         };

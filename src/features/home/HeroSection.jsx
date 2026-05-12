@@ -1,163 +1,165 @@
-import React, { useState } from "react";
-import { Map, Bus, Search, ArrowRight, Plane, ArrowRightLeft, User, Calendar } from "lucide-react";
-import { motion } from "motion/react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from 'react';
+import { Map, Search, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { getDestinations } from '../../services/destinationService.js';
 
 export default function HeroSection() {
-  const [activeTab, setActiveTab] = useState("flights");
-  const [tripType, setTripType] = useState("round-trip");
+  const [destinations, setDestinations] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3,
-      },
-    },
+  const fallbackImages = [
+    'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=2074&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2070&auto=format&fit=crop',
+  ];
+
+  // Fetch popular destinations with cover images
+  useEffect(() => {
+    const fetchDestinations = async () => {
+      try {
+        const allDestinations = await getDestinations();
+        // Filter popular destinations with cover image
+        const popularDestinations = allDestinations.filter(
+          dest => dest.pho_bien === true && dest.anh_bia && dest.anh_bia.trim() !== ''
+        );
+        setDestinations(popularDestinations);
+      } catch (error) {
+        console.error('Failed to load destinations:', error);
+      }
+    };
+
+    fetchDestinations();
+  }, []);
+
+  // Get current image
+  const getCurrentImage = useCallback(() => {
+    if (destinations.length > 0 && destinations[currentImageIndex]?.anh_bia) {
+      return destinations[currentImageIndex].anh_bia;
+    }
+    return fallbackImages[currentImageIndex % fallbackImages.length];
+  }, [destinations, currentImageIndex]);
+
+  // Auto-transition between images with fade effect every 3 seconds
+  useEffect(() => {
+    if (destinations.length <= 1 && fallbackImages.length <= 1) return;
+
+    const totalImages = destinations.length > 0 ? destinations.length : fallbackImages.length;
+    
+    const interval = setInterval(() => {
+      setIsTransitioning(true);
+      
+      // After fade out completes, change the image
+      setTimeout(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % totalImages);
+        setIsTransitioning(false);
+      }, 1000); // Fade duration
+    }, 3000); // Auto-change every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [destinations.length]);
+
+  const handleToursClick = () => {
+    navigate('/tours');
   };
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
-    },
-  };
-
-  const handleSearch = () => {
-    // Navigate to flights or tours based on active tab
-    if (activeTab === "tours") {
-      navigate("/tours");
-    } else if (activeTab === "flights") {
-      navigate("/flights/search");
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/tours?search=${encodeURIComponent(searchQuery.trim())}`);
     } else {
-      navigate("/tours");
+      navigate('/tours');
     }
   };
 
+  const currentImage = getCurrentImage();
+
   return (
-      <motion.div
-          initial="hidden"
-          animate="visible"
-          className="relative w-full min-h-[calc(100vh-120px)] rounded-3xl mb-12 overflow-hidden group"
-      >
-        <motion.img
-            initial={{ scale: 1.1 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 1.5, ease: "easeOut" }}
-            alt="Plane wing in the sky"
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074&auto=format&fit=crop"
-            referrerPolicy="no-referrer"
+    <div className="relative w-full h-[550px] rounded-3xl overflow-hidden group">
+      {/* Background Image with Fade Transition */}
+      <div className="absolute inset-0">
+        <img
+          key={currentImageIndex}
+          alt={destinations[currentImageIndex]?.thanh_pho || destinations[currentImageIndex]?.quoc_gia || "Beautiful destination"}
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-in-out ${
+            isTransitioning ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
+          }`}
+          style={{ transition: 'opacity 1s ease-in-out, transform 8s ease-out' }}
+          src={currentImage}
+          referrerPolicy="no-referrer"
+          onError={(e) => {
+            e.target.src = fallbackImages[0];
+          }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60"></div>
-
-        <div className="absolute inset-0 flex flex-col justify-center items-center px-4 z-10 pt-10">
-          <motion.div variants={itemVariants} className="text-center mb-8">
-            <h1 className="text-5xl md:text-7xl font-black text-white mb-4 tracking-tight drop-shadow-md">
-              Book Flights <span className="text-primary">Easily.</span><br />
-              Travel <span className="text-primary">Smarter.</span>
-            </h1>
-          </motion.div>
-
-          {/* Search Widget */}
-          <motion.div
-              variants={itemVariants}
-              className="w-full max-w-5xl bg-[#3A3F58]/90 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-white/10"
-          >
-            {/* Trip Type */}
-            <div className="flex items-center gap-6 mb-6">
-              <label className="flex items-center gap-2 text-white/90 cursor-pointer group">
-                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${tripType === 'one-way' ? 'border-primary' : 'border-white/50 group-hover:border-white'}`}>
-                  {tripType === 'one-way' && <div className="w-2 h-2 rounded-full bg-primary" />}
-                </div>
-                <input type="radio" name="tripType" className="hidden" checked={tripType === 'one-way'} onChange={() => setTripType('one-way')} />
-                <span className="text-sm font-medium">One Way <ArrowRight className="inline w-3 h-3 ml-1" /></span>
-              </label>
-              <label className="flex items-center gap-2 text-white cursor-pointer group">
-                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${tripType === 'round-trip' ? 'border-primary' : 'border-white/50 group-hover:border-white'}`}>
-                  {tripType === 'round-trip' && <div className="w-2 h-2 rounded-full bg-primary" />}
-                </div>
-                <input type="radio" name="tripType" className="hidden" checked={tripType === 'round-trip'} onChange={() => setTripType('round-trip')} />
-                <span className="text-sm font-medium text-primary">Round Trip <ArrowRightLeft className="inline w-3 h-3 ml-1" /></span>
-              </label>
-              <label className="flex items-center gap-2 text-white/90 cursor-pointer group">
-                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${tripType === 'multi-city' ? 'border-primary' : 'border-white/50 group-hover:border-white'}`}>
-                  {tripType === 'multi-city' && <div className="w-2 h-2 rounded-full bg-primary" />}
-                </div>
-                <input type="radio" name="tripType" className="hidden" checked={tripType === 'multi-city'} onChange={() => setTripType('multi-city')} />
-                <span className="text-sm font-medium">Multi City <ArrowRightLeft className="inline w-3 h-3 ml-1" /></span>
-              </label>
-            </div>
-
-            {/* Inputs */}
-            <div className="flex flex-col md:flex-row gap-2">
-              {/* From / To */}
-              <div className="flex-1 flex flex-col md:flex-row bg-white/10 rounded-2xl p-1 relative">
-                <div className="flex-1 px-4 py-3 hover:bg-white/5 rounded-xl transition-colors cursor-pointer">
-                  <p className="text-white/60 text-xs font-medium mb-1">Flying From</p>
-                  <div className="flex items-center gap-2">
-                    <Plane className="w-5 h-5 text-primary" />
-                    <p className="text-white font-bold truncate">Ho Chi Minh <span className="text-primary">(SGN)</span></p>
-                  </div>
-                </div>
-
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-[#4A5073] rounded-full flex items-center justify-center z-10 border-2 border-[#3A3F58] cursor-pointer hover:bg-[#5A6083] transition-colors">
-                  <ArrowRightLeft className="w-4 h-4 text-white" />
-                </div>
-
-                <div className="flex-1 px-4 py-3 hover:bg-white/5 rounded-xl transition-colors cursor-pointer pl-8 md:pl-6">
-                  <p className="text-white/60 text-xs font-medium mb-1">Flying To</p>
-                  <div className="flex items-center gap-2">
-                    <Plane className="w-5 h-5 text-white/50" style={{ transform: 'rotate(90deg)' }} />
-                    <p className="text-white font-bold truncate">Hanoi <span className="text-primary">(HAN)</span></p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Dates */}
-              <div className="flex-[0.8] flex bg-white/10 rounded-2xl p-1">
-                <div className="flex-1 px-4 py-3 hover:bg-white/5 rounded-xl transition-colors cursor-pointer border-r border-white/10">
-                  <p className="text-white/60 text-xs font-medium mb-1">Journey Date</p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-white font-bold text-xl">7</span>
-                    <span className="text-white/90 text-sm font-medium">Apr 26</span>
-                  </div>
-                </div>
-                <div className="flex-1 px-4 py-3 hover:bg-white/5 rounded-xl transition-colors cursor-pointer">
-                  <p className="text-white/60 text-xs font-medium mb-1">Return Date</p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-white font-bold text-xl">9</span>
-                    <span className="text-white/90 text-sm font-medium">Apr 26</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Traveler */}
-              <div className="flex-[0.6] bg-white/10 rounded-2xl p-1">
-                <div className="w-full h-full px-4 py-3 hover:bg-white/5 rounded-xl transition-colors cursor-pointer flex flex-col justify-center">
-                  <p className="text-white/60 text-xs font-medium mb-1">Traveler, Class</p>
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-primary" />
-                    <p className="text-white font-bold text-sm">1 Traveler(s)</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Search Button */}
-              <button
-                  onClick={handleSearch}
-                  className="w-full md:w-auto px-8 bg-primary hover:bg-primary-dark text-white rounded-2xl flex items-center justify-center transition-colors shadow-lg shadow-primary/30 min-h-[64px]"
-              >
-                <Search className="w-6 h-6" />
-              </button>
-            </div>
-          </motion.div>
+      </div>
+      
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10"></div>
+      
+      {/* Image Indicator Dots */}
+      {((destinations.length > 1) || fallbackImages.length > 1) && (
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+          {(destinations.length > 0 ? destinations : fallbackImages).slice(0, 5).map((_, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                setIsTransitioning(true);
+                setTimeout(() => {
+                  setCurrentImageIndex(index);
+                  setIsTransitioning(false);
+                }, 500);
+              }}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                index === currentImageIndex % (destinations.length || fallbackImages.length)
+                  ? 'bg-white w-6'
+                  : 'bg-white/40 hover:bg-white/60'
+              }`}
+            />
+          ))}
         </div>
-      </motion.div>
+      )}
+      
+      {/* Tours Button - Top Right */}
+      <div className="absolute top-6 right-6 flex gap-2 overflow-x-auto max-w-full pb-2 hide-scrollbar z-20">
+        <button
+          onClick={handleToursClick}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold shadow-lg transition-colors bg-white/90 backdrop-blur-md text-gray-900 hover:bg-white"
+        >
+          <Map className="w-4 h-4" /> Tours
+        </button>
+      </div>
+      
+      {/* Hero Content - Center */}
+      <div className="absolute inset-0 flex flex-col justify-center items-center px-4 text-center z-10">
+        <h1
+          className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-xl tracking-tight"
+          style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic' }}
+        >
+          Yours To Explore
+        </h1>
+        
+        {/* Search Bar */}
+        <form onSubmit={handleSearch} className="w-full max-w-2xl bg-white/10 backdrop-blur-md border border-white/20 p-2 rounded-full flex items-center gap-2 shadow-2xl">
+          <div className="flex-1 flex items-center px-4">
+            <Search className="text-white/70 mr-3 w-5 h-5" />
+            <input
+              type="text"
+              className="w-full bg-transparent border-none focus:ring-0 focus:outline-none text-white placeholder-white/70 text-lg"
+              placeholder="Where do you want to go?"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <button
+            type="submit"
+            className="bg-primary hover:bg-primary-dark text-white w-12 h-12 rounded-full flex items-center justify-center transition-colors shadow-lg"
+          >
+            <ArrowRight className="w-6 h-6" />
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }
