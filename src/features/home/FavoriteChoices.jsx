@@ -19,13 +19,15 @@ const FavoriteChoices = () => {
       const detailedChoices = selectedTours.map((tour, index) => {
         return {
           id: tour._id,
-          image: tour.images && tour.images.length > 0 ? tour.images[0] : 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=800&auto=format&fit=crop',
-          location: tour.destinationId?.name ? tour.destinationId.name : tour.destinationName || 'Vietnam',
-          title: tour.title,
-          description: tour.description,
-          rating: tour.averageRating ? tour.averageRating.toFixed(1) : (4.2 + Math.random() * 0.7).toFixed(1),
-          reviews: tour.totalReviews ? `${tour.totalReviews}+` : (Math.floor(Math.random() * 10) + 1) + 'k+',
-          price: `VNĐ ${tour.basePrice ? tour.basePrice.toLocaleString('vi-VN') : 'Liên hệ'}`,
+          image: tour.danh_sach_anh && tour.danh_sach_anh.length > 0 
+            ? tour.danh_sach_anh[0] 
+            : tour.anh_dai_dien || 'https://images.unsplash.com/photo-1469474968028-56623-f02e42e?q=80&w=800&auto=format&fit=crop',
+          location: tour.id_diem_den?.quoc_gia || tour.id_diem_den?.thanh_pho || 'Vietnam',
+          title: tour.ten_tour,
+          description: tour.mo_ta,
+          rating: tour.diem_trung_binh ? tour.diem_trung_binh.toFixed(1) : (4.2 + Math.random() * 0.7).toFixed(1),
+          reviews: tour.so_luong_danh_gia ? `${tour.so_luong_danh_gia}+` : (Math.floor(Math.random() * 10) + 1) + 'k+',
+          price: `VNĐ ${tour.gia_nguoi_lon ? tour.gia_nguoi_lon.toLocaleString('vi-VN') : 'Liên hệ'}`,
           badge: index === 0 ? 'RECOMMENDED' : index === 2 ? 'MUST SEE' : null,
           badgeColor: index === 0 ? 'bg-indigo-600' : 'bg-rose-600'
         };
