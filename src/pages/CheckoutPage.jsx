@@ -5,6 +5,7 @@ import PaymentDetails from '../features/checkout/PaymentDetails';
 import OrderSummary from '../features/checkout/OrderSummary';
 import tourService from '../services/tourService.js';
 import bookingService from '../services/bookingService.js';
+import paymentService from '../services/paymentService.js';
 import authService from '../services/authService.js';
 
 const formatDepartureDate = (value) => {
@@ -87,11 +88,14 @@ const CheckoutPage = () => {
 
   const handleBackClick = () => navigate(-1);
 
-  const normalizePaymentMethod = (method) => {
-    if (method === 'creditCard') return 'credit_card';
-    if (method === 'paypal') return 'paypal';
-    if (method === 'payLater') return 'bank_transfer';
-    return 'credit_card';
+  const getBookingPaymentState = (method) => {
+    const selectedMethod = method || 'card';
+
+    if (['card', 'banking', 'momo'].includes(selectedMethod)) {
+      return { trang_thai: 'pending', trang_thai_thanh_toan: 'unpaid', phuong_thuc_thanh_toan: selectedMethod };
+    }
+
+    return { trang_thai: 'pending', trang_thai_thanh_toan: 'unpaid', phuong_thuc_thanh_toan: '' };
   };
 
   const handleCompleteBooking = async () => {
@@ -146,6 +150,9 @@ const CheckoutPage = () => {
 
     try {
       setSubmitting(true);
+      const paymentMethod = paymentData.method || 'card';
+      const paymentState = getBookingPaymentState(paymentMethod);
+
       const payload = {
         customerName: fullName,
         email: travelerData.email,
@@ -153,9 +160,16 @@ const CheckoutPage = () => {
         itemId: scheduleId,
         travelers,
         promoCode: promoData.code,
+        paymentMethod,
+        ...paymentState,
       };
 
-      await bookingService.createBooking(payload);
+      const createdBooking = await bookingService.createBooking(payload);
+
+      if (paymentMethod !== 'payLater') {
+        await paymentService.processPayment(createdBooking._id, paymentMethod);
+      }
+
       navigate('/my-bookings');
     } catch (err) {
       console.error('Booking failed', err);

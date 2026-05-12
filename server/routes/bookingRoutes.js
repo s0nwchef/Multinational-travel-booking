@@ -40,9 +40,12 @@ router.post("/", requireAuth(), async (req, res) => {
 
   try {
     const userId = req.user._id;
-    const { itemId, travelers, customerName, email, phone, promoCode } = req.body;
-    
-    console.log('[BOOKING] Extracted:', { itemId, customerName, email, phone, travelersCount: travelers?.length });
+    const { itemId, travelers, customerName, email, phone, promoCode, paymentMethod } = req.body;
+    const normalizedPaymentMethod = ['card', 'banking', 'momo', 'payLater'].includes(paymentMethod)
+      ? paymentMethod
+      : 'card';
+
+    console.log('[BOOKING] Extracted:', { itemId, customerName, email, phone, travelersCount: travelers?.length, paymentMethod: normalizedPaymentMethod });
 
     // Validate required contact info from request or user
     const contactEmail = email || req.user.email;
@@ -173,6 +176,13 @@ router.post("/", requireAuth(), async (req, res) => {
     }
 
     // 4. Lưu thông tin đặt tour
+    const bookingState = (() => {
+      if (['card', 'banking', 'momo'].includes(normalizedPaymentMethod)) {
+        return { trang_thai: 'pending', trang_thai_thanh_toan: 'unpaid', phuong_thuc_thanh_toan: normalizedPaymentMethod };
+      }
+      return { trang_thai: 'pending', trang_thai_thanh_toan: 'unpaid', phuong_thuc_thanh_toan: '' };
+    })();
+
     const newBooking = new DatTour({
       ma_dat_tour: bookingCode,
       id_nguoi_dung: userId,
@@ -193,8 +203,7 @@ router.post("/", requireAuth(), async (req, res) => {
       tong_tien_cuoi: finalTotal,
       id_ma_giam_gia: appliedCoupon?._id || null,
       ma_giam_gia_da_dung: appliedCoupon?.ma || "",
-      trang_thai: "pending",
-      trang_thai_thanh_toan: "unpaid",
+      ...bookingState,
     });
 
     const savedBooking = await newBooking.save({ session });
