@@ -27,6 +27,7 @@ import WishlistPage from "../pages/WishlistPage.jsx";
 import CancelBookingModal from "../pages/Modal/CancelBookingModal.jsx";
 import RefundStatusPage from "../pages/RefundStatusPage.jsx";
 import MyBookingsPage from "../pages/MyBookingPage.jsx";
+import OAuthCallbackPage from "../pages/OAuthCallbackPage.jsx";
 
 // Staff Pages
 import StaffDashboardPage from "../pages/staff/StaffDashboardPage.jsx";
@@ -46,6 +47,9 @@ export default function AppRoutes() {
     <Routes>
       {/* Landing Page */}
       <Route path="/" element={<LandingPage />} />
+
+      {/* OAuth Callback - outside MainLayout to avoid header/footer */}
+      <Route path="/auth/callback" element={<OAuthCallbackPage />} />
 
       <Route element={<MainLayout />}>
         {/* Homepage */}

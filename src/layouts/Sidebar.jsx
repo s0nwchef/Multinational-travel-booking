@@ -9,12 +9,27 @@ import {
   FiLogOut,
 } from "react-icons/fi";
 import { NavLink, useNavigate } from "react-router-dom";
+import { useCurrentUserProfile } from "../hooks/useCurrentUserProfile.js";
+import { formatPoints, getLoyaltyStatus } from "../utils/loyalty.js";
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const { user } = useCurrentUserProfile();
+  const displayName = user?.ho_ten || user?.fullName || user?.name || "Traveler";
+  const avatarUrl =
+    user?.anh_dai_dien ||
+    user?.avatarUrl ||
+    user?.avatar ||
+    `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`;
+  const createdAt = user?.ngay_tao || user?.createdAt;
+  const memberSince = createdAt
+    ? new Date(createdAt).getFullYear()
+    : "New member";
+  const loyalty = getLoyaltyStatus(user?.diem || user?.loyaltyPoints || 0);
 
   const handleLogout = (e) => {
     e.preventDefault();
+    localStorage.removeItem("travel_session");
     localStorage.removeItem("currentUser");
     window.dispatchEvent(new Event("auth-change"));
     navigate("/");
@@ -35,14 +50,16 @@ const Sidebar = () => {
       <div className="flex flex-col items-center mb-8">
         <div className="w-16 h-16 bg-gray-300 rounded-full mb-2 overflow-hidden">
           <img
-            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex"
-            alt="User"
+            src={avatarUrl}
+            alt={displayName}
             className="w-full h-full object-cover"
           />
         </div>
-        <h3 className="text-lg font-semibold">Alex Johnson</h3>
+        <h3 className="text-lg font-semibold text-center line-clamp-1">
+          {displayName}
+        </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Member since 2021
+          {createdAt ? `Member since ${memberSince}` : memberSince}
         </p>
       </div>
 
@@ -81,10 +98,22 @@ const Sidebar = () => {
       </nav>
 
       {/* Bottom Card */}
-      <div className="bg-gradient-to-r from-orange-400 to-orange-600 text-white p-4 rounded-lg">
-        <h4 className="text-sm font-semibold">Travel Points</h4>
-        <p className="text-2xl font-bold">2,450 pts</p>
-        <p className="text-xs">Next reward at 3,000 pts</p>
+      <div
+        className={`${loyalty.currentTier.cardClass} p-4 rounded-lg border shadow-sm`}
+      >
+        <h4 className="text-sm font-semibold">{loyalty.currentTierName}</h4>
+        <p className="text-2xl font-bold">{formatPoints(loyalty.points)} pts</p>
+        <div className="mt-2 h-1.5 rounded-full bg-white/70 overflow-hidden">
+          <div
+            className={`h-full rounded-full ${loyalty.currentTier.progressClass}`}
+            style={{ width: `${loyalty.progressPercent}%` }}
+          />
+        </div>
+        <p className="text-xs mt-2 opacity-75">
+          {loyalty.nextTier
+            ? `${formatPoints(loyalty.pointsToNextTier)} pts to ${loyalty.nextTierName}`
+            : "Top reward tier reached"}
+        </p>
       </div>
     </div>
   );

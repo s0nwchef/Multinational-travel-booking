@@ -33,6 +33,7 @@ export default function MyBookingsPage() {
       setBookings(data);
     } catch (error) {
       console.error("Failed to load bookings:", error);
+      setBookings([]);
     } finally {
       setLoading(false);
     }
@@ -71,12 +72,22 @@ export default function MyBookingsPage() {
   };
 
   const filteredData = useMemo(() => {
-    const regex = searchTerm ? new RegExp(`\\b${searchTerm}`, "i") : null;
+    const query = searchTerm.trim().toLowerCase();
 
     const filtered = bookings.filter((item) => {
       const matchesTab = item.tabGroup === activeTab;
+      const searchableText = [
+        item.tourTitle,
+        item.bookingCode,
+        item.status,
+        item.paymentStatus,
+        item.city,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
       const matchesSearch =
-        !regex || regex.test(item.tourTitle) || regex.test(item.bookingCode);
+        !query || searchableText.includes(query);
       return matchesTab && matchesSearch;
     });
 
@@ -97,6 +108,10 @@ export default function MyBookingsPage() {
 
     return filtered;
   }, [bookings, activeTab, searchTerm]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const currentItems = filteredData.slice(
