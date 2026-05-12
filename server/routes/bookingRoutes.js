@@ -16,11 +16,8 @@ router.get("/", requireAuth(), async (req, res) => {
       .populate("id_nguoi_dung", "ho_ten email")
       .populate({
         path: "id_tour",
-        select: "ten_tour anh_dai_dien gia_nguoi_lon so_ngay id_diem_den",
-        populate: {
-          path: "id_diem_den",
-          select: "thanh_pho quoc_gia",
-        },
+        select: "ten_tour anh_dai_dien gia_nguoi_lon id_diem_den so_ngay",
+        populate: { path: "id_diem_den", select: "thanh_pho quoc_gia" },
       })
       .populate("id_lich_khoi_hanh")
       .sort({ ngay_tao: -1 })

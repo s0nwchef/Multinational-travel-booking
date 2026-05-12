@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import TourCard from "./TourCard";
 import TourFilters from "./TourFilters";
 import EmptyResultsPage from "../../pages/EmptyResultPage";
@@ -20,6 +20,25 @@ export default function TourList() {
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
+  const categoryRef = useRef(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+
+  const handleMouseDown = (e) => {
+    isDragging.current = true;
+    startX.current = e.pageX - categoryRef.current.offsetLeft;
+    scrollLeft.current = categoryRef.current.scrollLeft;
+  };
+  const handleMouseMove = (e) => {
+    if (!isDragging.current) return;
+    e.preventDefault();
+    const x = e.pageX - categoryRef.current.offsetLeft;
+    categoryRef.current.scrollLeft = scrollLeft.current - (x - startX.current);
+  };
+  const handleMouseUp = () => {
+    isDragging.current = false;
+  };
 
   const [filters, setFilters] = useState({
     price: 10000,
@@ -30,7 +49,6 @@ export default function TourList() {
     ratings: 0,
     location: "",
   });
-
 
   const [sortBy, setSortBy] = useState("recommended");
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -341,13 +359,25 @@ export default function TourList() {
         </div>
 
         <div className="flex-1 min-w-0">
+          <style>{`
+            .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+            .scrollbar-hide::-webkit-scrollbar { display: none; }
+          `}</style>
           {/* CATEGORY */}
-          <div className="flex flex-wrap gap-2 mb-8">
+          <div
+            ref={categoryRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            className="flex gap-2 mb-8 overflow-x-auto scrollbar-hide pb-1 cursor-grab active:cursor-grabbing select-none"
+          >
+            {" "}
             {dynamicCategories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => handleFilterChange("category", cat)}
-                className={`px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all ${
+                className={`shrink-0 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all ${
                   filters.category === cat
                     ? "bg-orange-500 text-white shadow-lg shadow-orange-100"
                     : "bg-white text-gray-400 border border-gray-100 hover:bg-gray-50"

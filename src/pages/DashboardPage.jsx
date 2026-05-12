@@ -3,10 +3,16 @@ import Sidebar from "../layouts/Sidebar.jsx";
 import UpcomingTrip from "../features/dashboard/UpcomingTrip.jsx";
 import WishlistWidget from "../features/dashboard/WishlistWidget.jsx";
 import RecommendSection from "../features/dashboard/RecommendSection.jsx";
-import FavoriteChoices from "../features/home/FavoriteChoices.jsx";
-import { Search, Bell, Award } from "lucide-react";
+import { Search, Award } from "lucide-react";
+import { useCurrentUserProfile } from "../hooks/useCurrentUserProfile.js";
+import { formatPoints, getLoyaltyStatus } from "../utils/loyalty.js";
 
 const Dashboard = () => {
+  const { user } = useCurrentUserProfile();
+  const displayName =
+    user?.ho_ten || user?.fullName || user?.name || "Traveler";
+  const loyalty = getLoyaltyStatus(user?.diem || user?.loyaltyPoints || 0);
+
   return (
     <div className="flex min-h-screen bg-[#F8F9FA]">
       <div className="fixed inset-y-0 left-0 z-50">
@@ -17,7 +23,7 @@ const Dashboard = () => {
         <header className="flex items-center justify-between mb-10">
           <div className="mb-10">
             <h1 className="text-4xl font-black text-gray-900 tracking-tight">
-              Hello!
+              Hello, {displayName}!
             </h1>
             <p className="text-gray-400 mt-2 font-medium">
               Welcome back to your travel hub. Here's what's happening.
@@ -37,7 +43,7 @@ const Dashboard = () => {
                   Traveler Level
                 </span>
                 <span className="text-base font-black text-gray-900">
-                  Platinum Member
+                  {loyalty.currentTierName} Member
                 </span>
               </div>
 
@@ -46,7 +52,7 @@ const Dashboard = () => {
                   Points
                 </span>
                 <span className="text-xl font-black text-orange-500">
-                  2,450
+                  {formatPoints(loyalty.points)}
                 </span>
               </div>
             </div>
