@@ -21,6 +21,7 @@ export const getTourReviews = async (req, res) => {
 
         const reviews = await DanhGia.find({ id_tour: tourId })
             .populate('id_nguoi_dung', 'ho_ten anh_dai_dien')
+            .populate('phan_hoi.id_nguoi_phan_hoi', 'ho_ten anh_dai_dien')
             .skip(skip).limit(parseInt(limit)).sort(sortOption);
 
         const total = await DanhGia.countDocuments({ id_tour: tourId });
@@ -198,11 +199,49 @@ export const getUserReviews = async (req, res) => {
     }
 };
 
+// Reply to a review
+export const replyToReview = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { id } = req.params;
+        const { comment } = req.body;
+
+        if (!comment || typeof comment !== 'string' || !comment.trim()) {
+            return res.status(400).json({ message: 'Nội dung phản hồi là bắt buộc' });
+        }
+
+        const review = await DanhGia.findById(id);
+        if (!review) {
+            return res.status(404).json({ message: 'Không tìm thấy đánh giá' });
+        }
+
+        review.phan_hoi = Array.isArray(review.phan_hoi) ? review.phan_hoi : review.phan_hoi ? [review.phan_hoi] : [];
+        review.phan_hoi.push({
+            id_nguoi_phan_hoi: userId,
+            noi_dung: comment.trim(),
+            ngay_phan_hoi: new Date()
+        });
+
+        await review.save();
+
+        const savedReview = await DanhGia.findById(id)
+            .populate('id_nguoi_dung', 'ho_ten anh_dai_dien')
+            .populate('phan_hoi.id_nguoi_phan_hoi', 'ho_ten anh_dai_dien')
+            .populate('id_tour', 'ten_tour');
+
+        res.json({ message: 'Phản hồi đánh giá thành công', review: savedReview });
+    } catch (error) {
+        console.error('replyToReview error:', error);
+        res.status(500).json({ message: 'Lỗi khi phản hồi đánh giá', error: error.message });
+    }
+};
+
 // Get review by ID
 export const getReviewById = async (req, res) => {
     try {
         const review = await DanhGia.findById(req.params.id)
             .populate('id_nguoi_dung', 'ho_ten anh_dai_dien')
+            .populate('phan_hoi.id_nguoi_phan_hoi', 'ho_ten anh_dai_dien')
             .populate('id_tour', 'ten_tour');
         if (!review) return res.status(404).json({ message: 'Không tìm thấy đánh giá' });
         res.json({ review });

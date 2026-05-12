@@ -8,6 +8,11 @@ const chiTietDiemSchema = new mongoose.Schema({
 }, { _id: false });
 
 const phanHoiSchema = new mongoose.Schema({
+  id_nguoi_phan_hoi: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'NguoiDung',
+    required: [true, 'ID người phản hồi là bắt buộc']
+  },
   noi_dung: { type: String, required: true },
   ngay_phan_hoi: { type: Date, default: Date.now }
 }, { _id: false });
@@ -55,8 +60,8 @@ const danhGiaSchema = new mongoose.Schema({
 
   // === PHẢN HỒI ===
   phan_hoi: {
-    type: phanHoiSchema,
-    default: null
+    type: [phanHoiSchema],
+    default: []
   },
 
   // === TRẠNG THÁI ===

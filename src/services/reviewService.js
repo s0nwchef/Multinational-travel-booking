@@ -2,7 +2,9 @@ const API_BASE_URL = '/api/reviews';
 const TOUR_REVIEWS_URL = '/api/reviews/tour';
 
 const buildUrl = (baseUrl, path = '', params = {}) => {
-  const url = new URL(`${baseUrl}${path}`, window.location.origin);
+  const normalizedBase = baseUrl.replace(/\/$/, '');
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  const url = new URL(`${normalizedBase}${normalizedPath}`, window.location.origin);
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
       url.searchParams.set(key, value);
@@ -132,6 +134,24 @@ export const reviewService = {
       });
     } catch (error) {
       console.error('Error updating review:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Reply to a review
+   * @param {string} id - Review ID
+   * @param {string} comment - Reply text
+   * @returns {Promise} Updated review with replies
+   */
+  async replyReview(id, comment) {
+    try {
+      return await request(`/${id}/reply`, {
+        method: 'POST',
+        body: { comment },
+      });
+    } catch (error) {
+      console.error('Error replying to review:', error);
       throw error;
     }
   },
