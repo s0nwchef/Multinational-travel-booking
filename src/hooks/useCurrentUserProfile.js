@@ -7,7 +7,7 @@ const fallbackUser = {
   anh_dai_dien: "",
   avatarUrl: "",
   ngay_tao: null,
-  diem: 0,
+  diem: 1,
 };
 
 export function useCurrentUserProfile() {

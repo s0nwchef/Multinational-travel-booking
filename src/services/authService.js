@@ -117,7 +117,7 @@ export const authService = {
                     avatar: data.user.avatarUrl || data.user.anh_dai_dien || '',
                     role: data.user.role || data.user.vai_tro,
                     membership: 'Member',
-                    diem: data.user.diem || data.user.loyaltyPoints || 0
+                    diem: data.user.diem ?? data.user.loyaltyPoints ?? 1
                 };
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 
@@ -247,7 +247,7 @@ export const authService = {
                     avatar: data.user.avatarUrl || data.user.anh_dai_dien || '',
                     role: data.user.role || data.user.vai_tro,
                     membership: 'Member',
-                    diem: data.user.diem || data.user.loyaltyPoints || 0
+                    diem: data.user.diem ?? data.user.loyaltyPoints ?? 1
                 };
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 
@@ -297,7 +297,7 @@ export const authService = {
                 avatar: user.avatarUrl || user.anh_dai_dien || '',
                 role: user.role || user.vai_tro,
                 membership: 'Member',
-                diem: user.diem || user.loyaltyPoints || 0
+                diem: user.diem ?? user.loyaltyPoints ?? 1
             }));
             
             return user;
@@ -386,7 +386,7 @@ export const authService = {
                     avatar: data.user.avatarUrl || data.user.anh_dai_dien || '',
                     role: data.user.role || data.user.vai_tro,
                     membership: 'Member',
-                    diem: data.user.diem || data.user.loyaltyPoints || 0
+                    diem: data.user.diem ?? data.user.loyaltyPoints ?? 1
                 };
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 

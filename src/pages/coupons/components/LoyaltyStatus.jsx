@@ -14,11 +14,19 @@ const LoyaltyStatus = ( {user} ) => {
       </div>
         <div className="flex justify-between items-center mb-4 text-[#6B7280] font-bold">
             <p>Current level</p>
-            <p>NEXT: {user.nextLevel} ({user.pointsToNextLevel.toLocaleString()} pts)</p>
+            <p>
+              {user.nextLevel
+                ? `NEXT: ${user.nextLevel} (${user.nextLevelPoints.toLocaleString()} pts)`
+                : "MAX LEVEL"}
+            </p>
         </div>
-      <ProgressBar value={user.currentPoint} max={user.pointsToNextLevel} />
+      <ProgressBar value={user.progressPercent} max={100} />
       <div className="text-center mt-2  text-[#6B7280] flex justify-end">
-        <p>{(user.pointsToNextLevel - user.currentPoint).toLocaleString()} points to go!</p>
+        <p>
+          {user.nextLevel
+            ? `${user.pointsToNextLevel.toLocaleString()} points to go!`
+            : "You reached the highest tier!"}
+        </p>
       </div>
     </div>
   );

@@ -2,7 +2,9 @@ import mongoose from 'mongoose';
 
 const maGiamGiaSchema = new mongoose.Schema({
   ma: { type: String, required: true, unique: true, uppercase: true, trim: true },
+  ten_khuyen_mai: { type: String, default: '', trim: true },
   mo_ta: { type: String, required: true, trim: true },
+  diem_thuong: { type: Number, default: 0, min: 0 },
   loai_giam: { type: String, enum: ['phan_tram', 'so_tien'], required: true },
   gia_tri_giam: { type: Number, required: true, min: 0 },
   giam_toi_da: { type: Number, default: null, min: 0 },

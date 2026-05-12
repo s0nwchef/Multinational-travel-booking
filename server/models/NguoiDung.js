@@ -67,11 +67,11 @@ const nguoiDungSchema = new mongoose.Schema(
     ],
 
     // === ĐIỂM THƯỞNG ===
-    diem: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
+  diem: {
+    type: Number,
+    default: 1,
+    min: 0,
+  },
   },
   {
     timestamps: {

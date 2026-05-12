@@ -1,22 +1,41 @@
 import MaGiamGia from '../models/MaGiamGia.js';
 import DatTour from '../models/DatTour.js';
 
+const mapCoupon = (c) => ({
+    id: c._id,
+    _id: c._id,
+    title: c.ten_khuyen_mai || c.ma,
+    ten_khuyen_mai: c.ten_khuyen_mai || c.ma,
+    subtitle: c.mo_ta,
+    mo_ta: c.mo_ta,
+    code: c.ma,
+    ma: c.ma,
+    diem_thuong: c.diem_thuong || 0,
+    discountType: c.loai_giam,
+    loai_giam: c.loai_giam,
+    discountValue: c.gia_tri_giam,
+    gia_tri_giam: c.gia_tri_giam,
+    minPurchaseAmount: c.don_hang_toi_thieu,
+    don_hang_toi_thieu: c.don_hang_toi_thieu,
+    validUntil: c.hieu_luc_den,
+    hieu_luc_den: c.hieu_luc_den,
+    active: c.kich_hoat,
+    kich_hoat: c.kich_hoat,
+    remainingUses: c.con_lai,
+    con_lai: c.con_lai,
+    usageLimit: c.tong_so_luong,
+    tong_so_luong: c.tong_so_luong,
+    usedCount: c.da_su_dung,
+    da_su_dung: c.da_su_dung
+});
+
 // Get all available coupons for user
 export const getAvailableCoupons = async (req, res) => {
     try {
         const now = new Date();
         const coupons = await MaGiamGia.find({ hieu_luc_tu: { $lte: now }, hieu_luc_den: { $gte: now }, kich_hoat: true });
         const availableCoupons = coupons.filter(c => c.da_su_dung < c.tong_so_luong);
-        res.json({
-            coupons: availableCoupons.map(c => ({
-                code: c.ma, ma: c.ma,
-                discountType: c.loai_giam, loai_giam: c.loai_giam,
-                discountValue: c.gia_tri_giam, gia_tri_giam: c.gia_tri_giam,
-                minPurchaseAmount: c.don_hang_toi_thieu, don_hang_toi_thieu: c.don_hang_toi_thieu,
-                validUntil: c.hieu_luc_den, hieu_luc_den: c.hieu_luc_den,
-                remainingUses: c.con_lai, con_lai: c.con_lai
-            }))
-        });
+        res.json({ coupons: availableCoupons.map(mapCoupon) });
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi lấy danh sách coupon', error: error.message });
     }
@@ -37,6 +56,12 @@ export const validateCoupon = async (req, res) => {
         }
         if (coupon.da_su_dung >= coupon.tong_so_luong) {
             return res.status(400).json({ message: 'Mã coupon đã được sử dụng hết', valid: false });
+        }
+        if (!coupon.kich_hoat) {
+            return res.status(400).json({ message: 'Coupon is inactive', valid: false });
+        }
+        if ((coupon.diem_thuong || 0) > Math.max(req.user?.diem ?? 1, 1)) {
+            return res.status(400).json({ message: 'Not enough loyalty points for this coupon', valid: false });
         }
         if (totalAmount && totalAmount < coupon.don_hang_toi_thieu) {
             return res.status(400).json({ message: `Giá trị đơn hàng tối thiểu ${coupon.don_hang_toi_thieu} VND`, valid: false });
@@ -60,6 +85,9 @@ export const validateCoupon = async (req, res) => {
                 discountValue: coupon.gia_tri_giam,
                 maxDiscount: coupon.giam_toi_da,
                 minPurchaseAmount: coupon.don_hang_toi_thieu,
+                title: coupon.ten_khuyen_mai || coupon.ma,
+                subtitle: coupon.mo_ta,
+                diem_thuong: coupon.diem_thuong || 0,
                 discount,
             }
         });
@@ -76,6 +104,14 @@ export const applyCoupon = async (req, res) => {
 
         const coupon = await MaGiamGia.findOne({ ma: code.toUpperCase() });
         if (!coupon) return res.status(404).json({ message: 'Mã coupon không tồn tại' });
+
+        const now = new Date();
+        if (!coupon.kich_hoat || now < coupon.hieu_luc_tu || now > coupon.hieu_luc_den || coupon.da_su_dung >= coupon.tong_so_luong) {
+            return res.status(400).json({ message: 'Coupon is not available' });
+        }
+        if ((coupon.diem_thuong || 0) > Math.max(req.user?.diem ?? 1, 1)) {
+            return res.status(400).json({ message: 'Not enough loyalty points for this coupon' });
+        }
 
         const booking = await DatTour.findByIdAndUpdate(bookingId, { id_ma_giam_gia: coupon._id, ma_giam_gia_da_dung: coupon.ma }, { new: true });
         if (!booking) return res.status(404).json({ message: 'Không tìm thấy booking' });
@@ -116,7 +152,7 @@ export const getUserCoupons = async (req, res) => {
 // Create coupon (admin)
 export const createCoupon = async (req, res) => {
     try {
-        const { code, discountType, discountValue, minPurchaseAmount = 0, validFrom, validUntil, usageLimit, mo_ta } = req.body;
+        const { code, discountType, discountValue, minPurchaseAmount = 0, validFrom, validUntil, usageLimit, mo_ta, ten_khuyen_mai, diem_thuong = 0 } = req.body;
         const ma = (req.body.ma || code || '').toUpperCase();
         if (!ma || (!discountType && !req.body.loai_giam) || (!discountValue && !req.body.gia_tri_giam)) {
             return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
@@ -128,7 +164,9 @@ export const createCoupon = async (req, res) => {
         const loaiGiam = req.body.loai_giam || (discountType === 'percentage' ? 'phan_tram' : 'so_tien');
         const coupon = new MaGiamGia({
             ma,
+            ten_khuyen_mai: ten_khuyen_mai || req.body.title || ma,
             mo_ta: mo_ta || `Giảm ${req.body.gia_tri_giam || discountValue}${loaiGiam === 'phan_tram' ? '%' : ' VND'}`,
+            diem_thuong,
             loai_giam: loaiGiam,
             gia_tri_giam: req.body.gia_tri_giam || discountValue,
             don_hang_toi_thieu: req.body.don_hang_toi_thieu || minPurchaseAmount,
@@ -176,5 +214,15 @@ export const getAllCoupons = async (req, res) => {
         res.json({ coupons, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) } });
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi lấy danh sách coupon', error: error.message });
+    }
+};
+
+// Get coupon catalog for customer coupons page
+export const getCouponCatalog = async (req, res) => {
+    try {
+        const coupons = await MaGiamGia.find().sort({ hieu_luc_den: 1, ngay_tao: -1 });
+        res.json({ coupons: coupons.map(mapCoupon) });
+    } catch (error) {
+        res.status(500).json({ message: 'Lá»—i khi láº¥y danh sÃ¡ch coupon', error: error.message });
     }
 };

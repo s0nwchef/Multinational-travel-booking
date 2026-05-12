@@ -5,6 +5,7 @@ import {
     applyCoupon,
     removeCoupon,
     getUserCoupons,
+    getCouponCatalog,
     createCoupon,
     updateCoupon,
     deleteCoupon,
@@ -15,6 +16,7 @@ import { requireAuth } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 // Public routes
+router.get('/catalog', getCouponCatalog);
 router.get('/available', getAvailableCoupons);
 
 // User routes (require login)
