@@ -206,6 +206,8 @@ const buildUserResponse = (user) => {
         vai_tro: user.vai_tro,
         avatarUrl: user.anh_dai_dien,
         anh_dai_dien: user.anh_dai_dien,
+        diem: user.diem || 0,
+        loyaltyPoints: user.diem || 0,
         phoneNumber: user.so_dien_thoai,
         so_dien_thoai: user.so_dien_thoai,
         createdAt: user.ngay_tao,
