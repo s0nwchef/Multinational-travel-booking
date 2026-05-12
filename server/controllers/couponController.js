@@ -51,7 +51,18 @@ export const validateCoupon = async (req, res) => {
         }
         discount = Math.min(discount, totalAmount || discount);
 
-        res.json({ valid: true, coupon: { code: coupon.ma, ma: coupon.ma, discountType: coupon.loai_giam, discountValue: coupon.gia_tri_giam, discount } });
+        res.json({
+            valid: true,
+            coupon: {
+                code: coupon.ma,
+                ma: coupon.ma,
+                discountType: coupon.loai_giam,
+                discountValue: coupon.gia_tri_giam,
+                maxDiscount: coupon.giam_toi_da,
+                minPurchaseAmount: coupon.don_hang_toi_thieu,
+                discount,
+            }
+        });
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi validate coupon', error: error.message });
     }

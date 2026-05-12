@@ -33,7 +33,24 @@ export const tourService = {
                 throw new Error(error.message || `HTTP ${response.status}: ${response.statusText}`);
             }
             
-            return await response.json();
+            const tour = await response.json();
+
+            // Ensure schedules are populated; fallback to separate fetch if needed
+            if (!tour.lich_khoi_hanh || tour.lich_khoi_hanh.length === 0) {
+                try {
+                    const tourIdForSchedules = tour._id || id;
+                    const schedulesResponse = await fetch(`${API_BASE_URL}/tours/${tourIdForSchedules}/schedules`);
+                    if (schedulesResponse.ok) {
+                        const schedules = await schedulesResponse.json();
+                        tour.lich_khoi_hanh = Array.isArray(schedules) ? schedules : (schedules.data || []);
+                    }
+                } catch (scheduleErr) {
+                    console.warn('Fallback schedule fetch failed:', scheduleErr.message);
+                    tour.lich_khoi_hanh = [];
+                }
+            }
+
+            return tour;
         } catch (error) {
             console.error('Get tour by ID error:', error);
             throw error;
