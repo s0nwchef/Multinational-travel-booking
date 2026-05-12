@@ -36,7 +36,7 @@ const tourService = {
 
           return {
             id: tour._id,
-
+            destinationId: tour.id_diem_den?._id,
             title: tour.ten_tour,
             slug: tour.slug,
             description: tour.mo_ta || "",
