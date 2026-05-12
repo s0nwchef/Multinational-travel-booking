@@ -152,9 +152,12 @@ export default function AuthModal({ isOpen, onClose }) {
         
         // Store user in localStorage for compatibility
         localStorage.setItem('currentUser', JSON.stringify({
+          id: result.user.id || result.user._id,
           name: result.user.fullName,
           email: result.user.email,
           role: result.user.role,
+          membership: 'Member',
+          diem: result.user.diem || result.user.loyaltyPoints || 0,
           avatar: result.user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name || 'default'}`
         }));
         
@@ -172,9 +175,11 @@ export default function AuthModal({ isOpen, onClose }) {
       
       // Store user in localStorage for compatibility
       localStorage.setItem('currentUser', JSON.stringify({
+        id: result.user.id || result.user._id,
         name: result.user.fullName,
         email: result.user.email,
-        membership: result.user.loyaltyTier || 'Platinum Member',
+        membership: 'Member',
+        diem: result.user.diem || result.user.loyaltyPoints || 0,
         avatar: result.user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${result.user.fullName || 'default'}`,
         role: result.user.role
       }));

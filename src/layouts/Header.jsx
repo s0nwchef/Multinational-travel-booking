@@ -47,6 +47,7 @@ export default function Header({
   }, [location.pathname, setIsMobileMenuOpen]);
 
   const handleLogout = () => {
+    localStorage.removeItem("travel_session");
     localStorage.removeItem("currentUser");
     window.dispatchEvent(new Event("auth-change"));
     if (typeof setIsMobileMenuOpen === "function") {
