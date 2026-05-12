@@ -31,8 +31,11 @@ export const LOYALTY_TIERS = [
   },
 ];
 
-export function getLoyaltyStatus(rawPoints = 0) {
-  const points = Number.isFinite(Number(rawPoints)) ? Number(rawPoints) : 0;
+export function getLoyaltyStatus(rawPoints = 1) {
+  const points = Math.max(
+    Number.isFinite(Number(rawPoints)) ? Number(rawPoints) : 1,
+    1,
+  );
   const currentIndex = LOYALTY_TIERS.reduce((bestIndex, tier, index) => {
     return points >= tier.points ? index : bestIndex;
   }, 0);
@@ -59,6 +62,6 @@ export function getLoyaltyStatus(rawPoints = 0) {
   };
 }
 
-export function formatPoints(points = 0) {
+export function formatPoints(points = 1) {
   return Number(points || 0).toLocaleString("en-US");
 }

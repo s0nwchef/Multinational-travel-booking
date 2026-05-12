@@ -55,7 +55,7 @@ export const requireAuth = (roles = []) => {
                 vai_tro: user.vai_tro,
                 so_dien_thoai: user.so_dien_thoai,
                 anh_dai_dien: user.anh_dai_dien,
-                diem: user.diem || 0,
+                diem: user.diem ?? 1,
                 danh_sach_yeu_thich: user.danh_sach_yeu_thich,
                 ngay_tao: user.ngay_tao,
                 ngay_cap_nhat: user.ngay_cap_nhat,
@@ -64,7 +64,7 @@ export const requireAuth = (roles = []) => {
                 role: user.vai_tro,
                 avatarUrl: user.anh_dai_dien,
                 phoneNumber: user.so_dien_thoai,
-                loyaltyPoints: user.diem || 0
+                loyaltyPoints: user.diem ?? 1
             };
             req.sessionId = sessionId;
             next();

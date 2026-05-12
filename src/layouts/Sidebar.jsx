@@ -25,7 +25,7 @@ const Sidebar = () => {
   const memberSince = createdAt
     ? new Date(createdAt).getFullYear()
     : "New member";
-  const loyalty = getLoyaltyStatus(user?.diem || user?.loyaltyPoints || 0);
+  const loyalty = getLoyaltyStatus(user?.diem ?? user?.loyaltyPoints ?? 1);
 
   const handleLogout = (e) => {
     e.preventDefault();

@@ -206,11 +206,10 @@ const buildUserResponse = (user) => {
         vai_tro: user.vai_tro,
         avatarUrl: user.anh_dai_dien,
         anh_dai_dien: user.anh_dai_dien,
-        diem: user.diem || 0,
-        loyaltyPoints: user.diem || 0,
+        diem: user.diem ?? 1,
+        loyaltyPoints: user.diem ?? 1,
         phoneNumber: user.so_dien_thoai,
         so_dien_thoai: user.so_dien_thoai,
-        diem: user.diem || 0,
         createdAt: user.ngay_tao,
         ngay_tao: user.ngay_tao
     };

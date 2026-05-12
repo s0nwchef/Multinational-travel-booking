@@ -157,7 +157,7 @@ export default function AuthModal({ isOpen, onClose }) {
           email: result.user.email,
           role: result.user.role,
           membership: 'Member',
-          diem: result.user.diem || result.user.loyaltyPoints || 0,
+          diem: result.user.diem ?? result.user.loyaltyPoints ?? 1,
           avatar: result.user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name || 'default'}`
         }));
         
@@ -179,7 +179,7 @@ export default function AuthModal({ isOpen, onClose }) {
         name: result.user.fullName,
         email: result.user.email,
         membership: 'Member',
-        diem: result.user.diem || result.user.loyaltyPoints || 0,
+        diem: result.user.diem ?? result.user.loyaltyPoints ?? 1,
         avatar: result.user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${result.user.fullName || 'default'}`,
         role: result.user.role
       }));
