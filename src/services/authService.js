@@ -116,7 +116,8 @@ export const authService = {
                     email: data.user.email,
                     avatar: data.user.avatarUrl || data.user.anh_dai_dien || '',
                     role: data.user.role || data.user.vai_tro,
-                    membership: 'Member'
+                    membership: 'Member',
+                    diem: data.user.diem || data.user.loyaltyPoints || 0
                 };
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 
@@ -245,7 +246,8 @@ export const authService = {
                     email: data.user.email,
                     avatar: data.user.avatarUrl || data.user.anh_dai_dien || '',
                     role: data.user.role || data.user.vai_tro,
-                    membership: 'Member'
+                    membership: 'Member',
+                    diem: data.user.diem || data.user.loyaltyPoints || 0
                 };
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 
@@ -288,6 +290,15 @@ export const authService = {
                 timestamp: Date.now()
             };
             localStorage.setItem(SESSION_KEY, JSON.stringify(updatedSession));
+            localStorage.setItem('currentUser', JSON.stringify({
+                id: user.id || user._id,
+                name: user.fullName || user.ho_ten,
+                email: user.email,
+                avatar: user.avatarUrl || user.anh_dai_dien || '',
+                role: user.role || user.vai_tro,
+                membership: 'Member',
+                diem: user.diem || user.loyaltyPoints || 0
+            }));
             
             return user;
         } catch (error) {
@@ -374,7 +385,8 @@ export const authService = {
                     email: data.user.email,
                     avatar: data.user.avatarUrl || data.user.anh_dai_dien || '',
                     role: data.user.role || data.user.vai_tro,
-                    membership: 'Member'
+                    membership: 'Member',
+                    diem: data.user.diem || data.user.loyaltyPoints || 0
                 };
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 

@@ -26,6 +26,7 @@ const bookingService = {
     return data.map((booking) => {
       const tourData = booking.id_tour || {};
       const scheduleData = booking.id_lich_khoi_hanh || {};
+      const destinationData = tourData.id_diem_den || {};
 
       const returnDate = scheduleData.ngay_ve
         ? new Date(scheduleData.ngay_ve).toLocaleDateString("en-GB")
@@ -49,7 +50,10 @@ const bookingService = {
         status: booking.trang_thai,
         paymentStatus: booking.trang_thai_thanh_toan,
         tabGroup: this._mapStatusToTab(booking.trang_thai, returnDate),
-        city: tourData.id_diem_den?.thanh_pho || "",
+        city:
+          destinationData.thanh_pho ||
+          destinationData.quoc_gia ||
+          "",
         soNgay: tourData.so_ngay || 0,
       };
     });
