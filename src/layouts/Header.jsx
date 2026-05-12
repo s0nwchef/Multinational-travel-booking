@@ -266,7 +266,7 @@ export default function Header({
                       setIsMobileMenuOpen(!isMobileMenuOpen);
                     }
                   }}
-                  className="lg:hidden p-2 rounded-full hover:bg-orange-100 dark:hover:bg-gray-800 transition-colors"
+                  className="lg:hidden p-2 rounded-full hover:bg-orange-100 dark:hover:bg-gray-800 transition-colors relative z-50"
               >
                 {isMobileMenuOpen ? (
                     <X className="w-6 h-6 text-primary" />

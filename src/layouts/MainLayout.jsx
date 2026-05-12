@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
@@ -10,6 +10,7 @@ const MainLayout = () => {
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [isWishlistOpen, setIsWishlistOpen] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
         <div className="bg-white dark:bg-black text-text-primary-light dark:text-text-primary-dark transition-colors duration-300 min-h-screen flex flex-col font-body">
@@ -18,6 +19,8 @@ const MainLayout = () => {
                     onOpenAuth={() => setIsAuthModalOpen(true)}
                     onOpenWishlist={() => setIsWishlistOpen(true)}
                     onOpenNotifications={() => setIsNotificationOpen(true)}
+                    isMobileMenuOpen={isMobileMenuOpen}
+                    setIsMobileMenuOpen={setIsMobileMenuOpen}
                 />
             </header>
             <main className="flex-grow flex flex-col gap-4 p-4 pt-2">
