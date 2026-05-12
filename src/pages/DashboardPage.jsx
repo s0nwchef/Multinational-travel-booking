@@ -9,8 +9,7 @@ import { formatPoints, getLoyaltyStatus } from "../utils/loyalty.js";
 
 const Dashboard = () => {
   const { user } = useCurrentUserProfile();
-  const displayName =
-    user?.ho_ten || user?.fullName || user?.name || "Traveler";
+  const displayName = user?.ho_ten || user?.fullName || user?.name || "Traveler";
   const loyalty = getLoyaltyStatus(user?.diem || user?.loyaltyPoints || 0);
 
   return (
@@ -58,6 +57,15 @@ const Dashboard = () => {
             </div>
           </div>
         </header>
+
+        <div className="mb-10">
+          <h1 className="text-4xl font-black text-gray-900 tracking-tight">
+            Hello, {displayName}!
+          </h1>
+          <p className="text-gray-400 mt-2 font-medium">
+            Welcome back to your travel hub. Here's what's happening.
+          </p>
+        </div>
 
         <div className="flex flex-col lg:flex-row gap-8 mb-12">
           <div className="flex-[2]">
