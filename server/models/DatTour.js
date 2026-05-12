@@ -156,13 +156,12 @@ const datTourSchema = new mongoose.Schema({
 });
 
 // Auto-generate booking code
-datTourSchema.pre('save', function(next) {
+datTourSchema.pre('save', async function() {
   if (this.isNew && !this.ma_dat_tour) {
     const year = new Date().getFullYear();
     const random = Math.floor(Math.random() * 99999).toString().padStart(5, '0');
     this.ma_dat_tour = `BK-${year}-${random}`;
   }
-  next();
 });
 
 // Indexes

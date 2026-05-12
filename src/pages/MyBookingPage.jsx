@@ -29,17 +29,8 @@ export default function MyBookingsPage() {
   const fetchMyBookings = useCallback(async () => {
     try {
       setLoading(true);
-      const sessionStr = localStorage.getItem("travel_session");
-      if (!sessionStr) {
-        setLoading(false);
-        return;
-      }
-      const sessionData = JSON.parse(sessionStr);
-      const userId = sessionData.user?.id || sessionData.id;
-      if (userId) {
-        const data = await bookingService.getMyBookings(userId);
-        setBookings(data);
-      }
+      const data = await bookingService.getMyBookings();
+      setBookings(data);
     } catch (error) {
       console.error("Failed to load bookings:", error);
     } finally {

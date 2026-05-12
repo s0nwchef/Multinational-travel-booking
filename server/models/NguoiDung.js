@@ -58,6 +58,12 @@ const nguoiDungSchema = new mongoose.Schema({
     default: ''
   },
 
+  diem: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+
   // === DANH SÁCH YÊU THÍCH ===
   danh_sach_yeu_thich: [{
     type: mongoose.Schema.Types.ObjectId,
