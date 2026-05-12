@@ -1,4 +1,12 @@
 import NguoiDung from '../models/NguoiDung.js';
+import { processOAuthLogin } from '../services/googleOAuthService.js';
+import { createSession } from '../middleware/authMiddleware.js';
+import {
+    createOAuthError,
+    getErrorHttpStatus,
+    mapServiceErrorToKey,
+    GOOGLE_OAUTH_ERRORS
+} from '../utils/oauthErrors.js';
 
 export const getAllUsers = async (req, res) => {
     try {
@@ -152,5 +160,58 @@ export const logoutUser = async (req, res) => {
         res.json({ message: 'Đăng xuất thành công' });
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi đăng xuất', error: error.message });
+    }
+};
+
+/**
+ * Handle Google OAuth authentication
+ * POST /api/users/auth/google
+ * 
+ * Request body: { code: string, redirectUri: string }
+ * Response: { message: string, user: UserResponse, sessionId: string }
+ */
+export const googleOAuthLogin = async (req, res) => {
+    try {
+        const { code, redirectUri } = req.body;
+        
+        // Validate request body - authorization code is required
+        if (!code) {
+            const errorResponse = createOAuthError('INVALID_CODE', 'Authorization code is required');
+            return res.status(400).json(errorResponse);
+        }
+        
+        // Validate code is a non-empty string
+        if (typeof code !== 'string' || code.trim() === '') {
+            const errorResponse = createOAuthError('INVALID_CODE', 'Authorization code must be a non-empty string');
+            return res.status(400).json(errorResponse);
+        }
+
+        // Redirect URI is required - must match what was sent to Google
+        if (!redirectUri) {
+            const errorResponse = createOAuthError('INVALID_CODE', 'Redirect URI is required');
+            return res.status(400).json(errorResponse);
+        }
+        
+        // Process OAuth login via service
+        const result = await processOAuthLogin(code.trim(), redirectUri);
+        
+        // Return success response with user and session
+        res.status(result.isNewUser ? 201 : 200).json({
+            message: result.message,
+            user: result.user,
+            sessionId: result.sessionId,
+            isNewUser: result.isNewUser,
+            isLinked: result.isLinked
+        });
+        
+    } catch (error) {
+        console.error('Google OAuth login error:', error);
+        
+        // Map service error to OAuth error key
+        const errorKey = mapServiceErrorToKey(error.code);
+        const httpStatus = error.httpStatus || getErrorHttpStatus(errorKey);
+        const errorResponse = createOAuthError(errorKey, error.message);
+        
+        res.status(httpStatus).json(errorResponse);
     }
 };
