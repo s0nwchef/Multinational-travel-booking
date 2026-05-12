@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
-import { Star, Heart, MessageCircle, Share2, PencilLine, MoreVertical } from 'lucide-react';
+import { Star, MessageCircle, Share2, PencilLine, MoreVertical } from 'lucide-react';
 
-const ReviewCard = ({ review, canEdit = false, onEdit, onDelete }) => {
-  const [isHelpful, setIsHelpful] = useState(false);
-  const [helpfulCount, setHelpfulCount] = useState(review.helpfulCount);
+const ReviewCard = ({ review, canEdit = false, canReply = false, onEdit, onDelete, onReply }) => {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showReplyForm, setShowReplyForm] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [replyLoading, setReplyLoading] = useState(false);
 
-  const handleHelpful = () => {
-    if (!isHelpful) {
-      setIsHelpful(true);
-      setHelpfulCount(helpfulCount + 1);
-    } else {
-      setIsHelpful(false);
-      setHelpfulCount(helpfulCount - 1);
+  const handleReplySubmit = async () => {
+    if (!replyText.trim() || !onReply) return;
+    setReplyLoading(true);
+
+    try {
+      await onReply(review.id, replyText.trim());
+      setReplyText('');
+      setShowReplyForm(false);
+    } finally {
+      setReplyLoading(false);
     }
   };
 
@@ -102,25 +106,78 @@ const ReviewCard = ({ review, canEdit = false, onEdit, onDelete }) => {
           )}
 
           {/* Review Footer */}
-          <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
-            <button
-              onClick={handleHelpful}
-              className={`flex items-center gap-2 transition ${
-                isHelpful ? 'text-[#FF5B00]' : 'hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              <Heart size={16} className={isHelpful ? 'fill-[#FF5B00]' : ''} />
-              <span>{helpfulCount}</span>
-            </button>
-            <button className="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition">
-              <MessageCircle size={16} />
-              <span>Comment</span>
-            </button>
-            <button className="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition">
-              <Share2 size={16} />
-              <span>Share</span>
-            </button>
+          <div className="flex flex-col gap-3 text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex flex-wrap items-center gap-4">
+              <button
+                onClick={() => {
+                  if (canReply) {
+                    setShowReplyForm((prev) => !prev);
+                  }
+                }}
+                className={`flex items-center gap-2 transition ${
+                  canReply
+                    ? 'hover:text-gray-900 dark:hover:text-white'
+                    : 'cursor-not-allowed opacity-70'
+                }`}
+              >
+                <MessageCircle size={16} />
+                <span>{canReply ? 'Reply to Review' : 'Login to reply'}</span>
+              </button>
+              <button className="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white transition">
+                <Share2 size={16} />
+                <span>Share</span>
+              </button>
+            </div>
+
+            {showReplyForm && canReply && (
+              <div className="mt-3 w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 p-4">
+                <textarea
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  placeholder="Write a reply to this review"
+                  className="w-full min-h-[100px] resize-none rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-[#FF5B00] focus:ring-2 focus:ring-orange-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:focus:border-[#FF5B00] dark:focus:ring-orange-500/20"
+                />
+                <div className="mt-3 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowReplyForm(false)}
+                    className="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!replyText.trim() || replyLoading}
+                    onClick={handleReplySubmit}
+                    className="rounded-full bg-[#FF5B00] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#D64D00] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {replyLoading ? 'Sending...' : 'Send Reply'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
+
+          {review.replies?.length > 0 && (
+            <div className="mt-4 space-y-3 border-t border-gray-200 pt-4 dark:border-gray-700">
+              {review.replies.map((reply, idx) => (
+                <div key={idx} className="rounded-2xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900">
+                  <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-3">
+                    <img
+                      src={reply.avatar || 'https://i.pravatar.cc/150?img=47'}
+                      alt={reply.author || 'Member'}
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 dark:text-white truncate">{reply.author || 'Member'}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{reply.date}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{reply.content}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

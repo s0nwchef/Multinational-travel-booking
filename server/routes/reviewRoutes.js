@@ -5,7 +5,8 @@ import {
     updateReview,
     deleteReview,
     getUserReviews,
-    getReviewById
+    getReviewById,
+    replyToReview
 } from '../controllers/reviewController.js';
 import { requireAuth } from '../middleware/authMiddleware.js';
 
@@ -18,6 +19,7 @@ router.get('/:id', getReviewById);
 // Protected routes (require login)
 router.get('/my-reviews', requireAuth(), getUserReviews);
 router.post('/', requireAuth(), createReview);
+router.post('/:id/reply', requireAuth(), replyToReview);
 router.put('/:id', requireAuth(), updateReview);
 router.delete('/:id', requireAuth(), deleteReview);
 

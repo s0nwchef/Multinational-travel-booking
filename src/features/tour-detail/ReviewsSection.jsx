@@ -42,6 +42,29 @@ const ReviewsSection = ({ tour }) => {
   const currentUserId = currentUser?._id || currentUser?.id || currentUser?.userId || null;
   const ownReview = reviewsState.reviews.find((review) => String(review.ownerId) === String(currentUserId));
 
+  const handleReply = async (reviewId, comment) => {
+    try {
+      const response = await reviewService.replyReview(reviewId, comment);
+      const updatedReview = response.review || {};
+      const normalizedReplies = (updatedReview.phan_hoi || []).map((reply) => ({
+        content: reply.noi_dung,
+        author: reply.id_nguoi_phan_hoi?.ho_ten || 'Member',
+        avatar: reply.id_nguoi_phan_hoi?.anh_dai_dien || 'https://i.pravatar.cc/150?img=47',
+        date: formatReviewDate(reply.ngay_phan_hoi || reply.createdAt)
+      }));
+
+      setReviewsState((prev) => ({
+        ...prev,
+        reviews: prev.reviews.map((review) =>
+          review.id === reviewId ? { ...review, replies: normalizedReplies } : review
+        )
+      }));
+    } catch (error) {
+      console.error('Error sending reply:', error);
+      alert('Không thể gửi phản hồi. Vui lòng thử lại.');
+    }
+  };
+
   const handleEditOwnReview = () => {
     if (!tour?.id || !ownReview?.id) return;
     navigate(`/review/${tour.id}?reviewId=${ownReview.id}`);
@@ -106,6 +129,12 @@ const ReviewsSection = ({ tour }) => {
           text: review.noi_dung || '',
           images: review.danh_sach_media || review.photos || [],
           helpfulCount: review.so_luong_thich || 0,
+          replies: (Array.isArray(review.phan_hoi) ? review.phan_hoi : review.phan_hoi ? [review.phan_hoi] : []).map((reply) => ({
+            content: reply.noi_dung,
+            author: reply.id_nguoi_phan_hoi?.ho_ten || 'Member',
+            avatar: reply.id_nguoi_phan_hoi?.anh_dai_dien || 'https://i.pravatar.cc/150?img=47',
+            date: formatReviewDate(reply.ngay_phan_hoi || reply.createdAt)
+          }))
         }));
 
         const photos = reviews.flatMap((review) => review.images || []);
@@ -276,8 +305,10 @@ const ReviewsSection = ({ tour }) => {
               key={review.id}
               review={review}
               canEdit={String(review.ownerId) === String(currentUserId)}
+              canReply={!!currentUserId}
               onEdit={String(review.ownerId) === String(currentUserId) ? handleEditOwnReview : undefined}
               onDelete={String(review.ownerId) === String(currentUserId) ? handleDeleteOwnReview : undefined}
+              onReply={handleReply}
             />
           ))}
         </div>
