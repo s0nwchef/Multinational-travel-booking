@@ -61,7 +61,14 @@ const nguoiDungSchema = new mongoose.Schema({
   danh_sach_yeu_thich: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Tour'
-  }]
+  }],
+
+  // === ĐIỂM THƯỞNG ===
+  diem: {
+    type: Number,
+    default: 0,
+    min: 0
+  }
 }, {
   timestamps: {
     createdAt: 'ngay_tao',

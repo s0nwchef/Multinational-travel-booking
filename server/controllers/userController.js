@@ -77,6 +77,7 @@ export const registerUser = async (req, res) => {
             anh_dai_dien: savedUser.anh_dai_dien,
             phoneNumber: savedUser.so_dien_thoai,
             so_dien_thoai: savedUser.so_dien_thoai,
+            diem: savedUser.diem || 0,
             createdAt: savedUser.ngay_tao,
             ngay_tao: savedUser.ngay_tao
         };
@@ -127,6 +128,7 @@ export const loginUser = async (req, res) => {
             anh_dai_dien: user.anh_dai_dien,
             phoneNumber: user.so_dien_thoai,
             so_dien_thoai: user.so_dien_thoai,
+            diem: user.diem || 0,
             createdAt: user.ngay_tao,
             ngay_tao: user.ngay_tao,
             updatedAt: user.ngay_cap_nhat,
