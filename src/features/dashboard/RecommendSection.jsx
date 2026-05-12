@@ -11,7 +11,7 @@ const VerticalTourCard = ({ tour }) => {
   return (
     <motion.div
       whileHover={{ y: -10 }}
-      onClick={() => navigate(`/tour/${tour.id}`)}
+      onClick={() => navigate(`/tour/${tour.slug || tour.id}`)}
       className="group cursor-pointer bg-white rounded-[2rem] overflow-hidden shadow-sm border border-gray-100 flex flex-col h-full"
     >
       <div className="relative h-48">

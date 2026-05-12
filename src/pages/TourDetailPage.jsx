@@ -102,6 +102,37 @@ const mockTours = {
   },
 };
 
+const normalizeTourDetail = (data) => {
+  const source = data?.tour ?? data ?? {};
+  const destination = source.id_diem_den || source.destinationId || null;
+  const rawImages = [source.anh_dai_dien, ...(source.danh_sach_anh || [])].filter(Boolean);
+  const rawItinerary = source.lich_trinh || source.itinerary || [];
+  const rawHighlights = source.diem_noi_bat || source.bao_gom || source.highlights || [];
+
+  return {
+    id: source._id || source.id,
+    slug: source.slug || source._id || source.id,
+    title: source.ten_tour || source.title || "Untitled tour",
+    description: source.mo_ta || source.description || "",
+    rating: source.diem_trung_binh ?? source.averageRating ?? source.rating ?? 0,
+    reviewCount: source.so_luong_danh_gia ?? source.totalReviews ?? source.reviewCount ?? 0,
+    locations: destination
+      ? [destination.thanh_pho || destination.quoc_gia || destination.name].filter(Boolean)
+      : source.locations || [],
+    duration: source.so_ngay ?? source.duration ?? source.days ?? 0,
+    season: source.season || source.mua_phu_hop || "",
+    price: source.gia_nguoi_lon ?? source.basePrice ?? source.price ?? 0,
+    bestTime: source.bestTime || source.thoi_diem_de_xuat || "",
+    images: rawImages.length > 0 ? rawImages : source.imageUrl ? [source.imageUrl] : [],
+    highlights: Array.isArray(rawHighlights) ? rawHighlights : [],
+    itinerary: rawItinerary.map((it, index) => ({
+      day: it.ngay || it.day || index + 1,
+      title: it.tieu_de || it.title || it.activity || `Day ${index + 1}`,
+      description: it.mo_ta || it.description || "",
+    })),
+  };
+};
+
 const TourDetailPage = () => {
   const { tourId } = useParams();
   const [tour, setTour] = useState(null);
@@ -120,62 +151,9 @@ const TourDetailPage = () => {
       setLoading(true);
       setError(null);
       try {
-        // If route uses numeric mock id, use local mock data instead of API
-        if (/^\d+$/.test(tourId)) {
-          const local = mockToursData.find(
-            (t) => String(t.id) === String(tourId),
-          );
-          if (local) {
-            const normalizedLocal = {
-              id: local.id || local._id,
-              title: local.title,
-              description: local.description || local.highlight?.text || "",
-              rating: local.rating || 0,
-              reviewCount: local.reviews || 0,
-              locations: [local.location || ""],
-              duration: local.duration || 0,
-              season: "",
-              price: local.price || 0,
-              bestTime: "",
-              images: [local.image].filter(Boolean),
-              highlights: local.highlight ? [local.highlight.text] : [],
-              itinerary: [],
-            };
-            if (mounted) setTour(normalizedLocal);
-            return;
-          }
-        }
-
         // Call API using tourService
         const data = await tourService.getTourById(tourId);
-
-        // Normalize backend fields to UI expected keys
-        const normalized = {
-          id: data._id || data.id,
-          title: data.title || "Untitled tour",
-          description: data.description || "",
-          rating: data.averageRating ?? data.rating ?? 0,
-          reviewCount: data.totalReviews ?? data.reviewCount ?? 0,
-          locations: data.destinationId
-            ? [data.destinationId.name].filter(Boolean)
-            : data.locations || [],
-          duration: data.duration || data.days || 0,
-          season: data.season || "",
-          price: data.basePrice ?? data.price ?? 0,
-          bestTime: data.bestTime || "",
-          images:
-            Array.isArray(data.images) && data.images.length > 0
-              ? data.images
-              : data.imageUrl
-                ? [data.imageUrl]
-                : [],
-          highlights: data.included || data.highlights || [],
-          itinerary: (data.itinerary || []).map((it) => ({
-            day: it.day,
-            title: it.activity || it.title,
-            description: it.description || "",
-          })),
-        };
+        const normalized = normalizeTourDetail(data);
 
         if (mounted) setTour(normalized);
       } catch (err) {

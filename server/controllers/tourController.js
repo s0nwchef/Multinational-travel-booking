@@ -22,10 +22,12 @@ export const getAllTours = async (req, res) => {
 export const getTourById = async (req, res) => {
   try {
     const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "ID tour không hợp lệ" });
+    const query = { slug: id };
+    let tour = await TourVi.findOne(query).populate("id_diem_den");
+    
+    if (!tour && mongoose.Types.ObjectId.isValid(id)) {
+      tour = await TourVi.findOne({ _id: id }).populate("id_diem_den");
     }
-    const tour = await TourVi.findById(id).populate("id_diem_den");
     if (!tour) {
       return res.status(404).json({ message: "Không tìm thấy tour" });
     }

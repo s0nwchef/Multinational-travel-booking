@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 
-export default function PhotoUpload({ photos, setPhotos, isAnonymous, setIsAnonymous }) {
+export default function PhotoUpload({ photos, setPhotos }) {
   const fileInputRef = useRef(null);
 
   const handleFileSelect = (e) => {
@@ -80,16 +80,6 @@ export default function PhotoUpload({ photos, setPhotos, isAnonymous, setIsAnony
         onChange={handleFileSelect}
         className="hidden"
       />
-
-      <label className="flex items-center gap-3 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={isAnonymous}
-          onChange={(e) => setIsAnonymous(e.target.checked)}
-          className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-orange-500 focus:ring-orange-500 dark:focus:ring-orange-400"
-        />
-        <span className="text-sm text-gray-700 dark:text-gray-300">Post anonymously</span>
-      </label>
     </div>
   );
 }

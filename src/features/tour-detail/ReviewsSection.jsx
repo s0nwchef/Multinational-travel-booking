@@ -3,8 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import RatingDistribution from './RatingDistribution';
 import TravelerPhotos from './TravelerPhotos';
 import ReviewCard from './ReviewCard';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Trash2 } from 'lucide-react';
 import { reviewService } from '../../services/reviewService';
+import authService from '../../services/authService';
+
+const formatReviewDate = (value) => {
+  if (!value) return 'N/A';
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'N/A';
+
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+};
 
 const ReviewsSection = ({ tour }) => {
   const navigate = useNavigate();
@@ -22,6 +36,34 @@ const ReviewsSection = ({ tour }) => {
   const handleWriteReview = () => {
     if (!tour?.id) return;
     navigate(`/review/${tour.id}`);
+  };
+
+  const currentUser = authService.getCurrentUser();
+  const currentUserId = currentUser?._id || currentUser?.id || currentUser?.userId || null;
+  const ownReview = reviewsState.reviews.find((review) => String(review.ownerId) === String(currentUserId));
+
+  const handleEditOwnReview = () => {
+    if (!tour?.id || !ownReview?.id) return;
+    navigate(`/review/${tour.id}?reviewId=${ownReview.id}`);
+  };
+
+  const handleDeleteOwnReview = async () => {
+    if (!ownReview?.id) return;
+    
+    if (!confirm('Are you sure you want to delete your review? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await reviewService.deleteReview(ownReview.id);
+      setReviewsState((prev) => ({
+        ...prev,
+        reviews: prev.reviews.filter((r) => r.id !== ownReview.id),
+      }));
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      alert('Failed to delete review. Please try again.');
+    }
   };
 
   useEffect(() => {
@@ -49,24 +91,21 @@ const ReviewsSection = ({ tour }) => {
 
         const data = await reviewService.getTourReviews(tour.id, {
           sort: sortMap[sortBy] || 'newest',
-          limit: showMoreReviews ? 50 : 3,
+          limit: 100,
         });
 
         const reviews = (data.reviews || []).map((review) => ({
           id: review._id,
-          author: review.isAnonymous ? 'Anonymous traveler' : (review.userId?.fullName || 'Anonymous traveler'),
-          avatar: review.userId?.avatarUrl || 'https://i.pravatar.cc/150?img=12',
+          ownerId: review.id_nguoi_dung?._id || review.id_nguoi_dung?.id || review.id_nguoi_dung,
+          author: review.da_an_danh ? 'Anonymous traveler' : (review.id_nguoi_dung?.ho_ten || 'Anonymous traveler'),
+          avatar: review.id_nguoi_dung?.anh_dai_dien || 'https://i.pravatar.cc/150?img=12',
           verification: `Verified Traveler • ${tour.duration ? `${tour.duration} Days` : 'Tour'}`,
-          date: new Date(review.createdAt).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          }),
-          rating: review.rating,
-          title: review.title || (review.rating >= 5 ? 'Excellent experience' : 'Great trip'),
-          text: review.content,
-          images: review.photos || [],
-          helpfulCount: 0,
+          date: formatReviewDate(review.ngay_tao || review.createdAt),
+          rating: review.diem || 0,
+          title: review.tieu_de || (review.diem >= 5 ? 'Excellent experience' : 'Great trip'),
+          text: review.noi_dung || '',
+          images: review.danh_sach_media || review.photos || [],
+          helpfulCount: review.so_luong_thich || 0,
         }));
 
         const photos = reviews.flatMap((review) => review.images || []);
@@ -143,12 +182,36 @@ const ReviewsSection = ({ tour }) => {
               See what our global community has to say about their adventures on the {tour.title}.
             </p>
           </div>
-          <button 
-            onClick={handleWriteReview}
-            className="flex items-center gap-2 bg-[#FF5B00] hover:bg-[#D64D00] text-white px-6 py-3 rounded-full font-semibold transition whitespace-nowrap">
-            <MessageSquare size={20} />
-            Write a Review
-          </button>
+          <div className="flex flex-wrap gap-3">
+            {ownReview && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleEditOwnReview}
+                  className="flex items-center gap-2 rounded-full border border-[#FF5B00] px-6 py-3 font-semibold text-[#FF5B00] transition hover:bg-orange-50 dark:hover:bg-orange-950/30"
+                >
+                  <MessageSquare size={20} />
+                  Edit My Review
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteOwnReview}
+                  className="flex items-center gap-2 rounded-full border border-red-500 px-6 py-3 font-semibold text-red-500 transition hover:bg-red-50 dark:hover:bg-red-950/30"
+                >
+                  <Trash2 size={20} />
+                  Delete Review
+                </button>
+              </>
+            )}
+            {!ownReview && (
+              <button 
+                onClick={handleWriteReview}
+                className="flex items-center gap-2 bg-[#FF5B00] hover:bg-[#D64D00] text-white px-6 py-3 rounded-full font-semibold transition whitespace-nowrap">
+                <MessageSquare size={20} />
+                Write a Review
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Rating Distribution */}
@@ -209,7 +272,13 @@ const ReviewsSection = ({ tour }) => {
         {/* Reviews List */}
         <div className="space-y-6">
           {displayedReviews.map((review) => (
-            <ReviewCard key={review.id} review={review} />
+            <ReviewCard
+              key={review.id}
+              review={review}
+              canEdit={String(review.ownerId) === String(currentUserId)}
+              onEdit={String(review.ownerId) === String(currentUserId) ? handleEditOwnReview : undefined}
+              onDelete={String(review.ownerId) === String(currentUserId) ? handleDeleteOwnReview : undefined}
+            />
           ))}
         </div>
 

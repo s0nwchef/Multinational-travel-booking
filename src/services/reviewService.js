@@ -41,7 +41,10 @@ const request = async (path, options = {}) => {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+    const err = new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+    if (data.errors) err.errors = data.errors;
+    err.status = response.status;
+    throw err;
   }
 
   return data;

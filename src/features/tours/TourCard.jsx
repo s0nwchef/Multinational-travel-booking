@@ -8,6 +8,7 @@ export default function TourCard({ tour, filters }) {
   const navigate = useNavigate();
   const FALLBACK_IMAGE =
     "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=800&auto=format&fit=crop";
+  const slug = tour.slug || tour.id || tour._id;
 
   const formatDateRange = (start, end) => {
     if (!start) return "Flexible dates";
@@ -32,7 +33,7 @@ export default function TourCard({ tour, filters }) {
     }
   };
 
-  const uid = tour.id || tour._id;
+
   const nextDeparture =
     tour.nextDeparture ||
     (tour.lich_khoi_hanh && tour.lich_khoi_hanh.length > 0
@@ -164,7 +165,7 @@ export default function TourCard({ tour, filters }) {
 
           <motion.button
             whileTap={{ scale: 0.95 }}
-            onClick={() => navigate(`/tour/${uid}`)}
+            onClick={() => navigate(`/tour/${slug}`)}
             className="bg-orange-500 text-white px-8 py-3.5 rounded-[1.2rem] font-black text-sm flex items-center gap-2 hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20"
           >
             View Details

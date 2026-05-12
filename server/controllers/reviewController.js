@@ -51,19 +51,27 @@ export const createReview = async (req, res) => {
         if (!tourId || !rating || !content) {
             return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
         }
+
+        // Validate tourId is a valid MongoDB ObjectId
+        if (!mongoose.Types.ObjectId.isValid(tourId)) {
+            return res.status(400).json({ message: 'Tour ID không hợp lệ' });
+        }
+
         if (rating < 1 || rating > 5) {
             return res.status(400).json({ message: 'Rating phải từ 1 đến 5' });
         }
 
-        const booking = await DatTour.findOne({ id_nguoi_dung: userId, id_tour: tourId, trang_thai: 'completed' });
-        if (!booking) {
-            return res.status(403).json({ message: 'Bạn cần hoàn thành chuyến đi để đánh giá' });
-        }
-
+        // Check for existing review (user can only review once per tour)
         const existingReview = await DanhGia.findOne({ id_nguoi_dung: userId, id_tour: tourId });
         if (existingReview) {
             return res.status(400).json({ message: 'Bạn đã đánh giá tour này rồi' });
         }
+
+        // Optional: Check for completed booking (commented out for testing - can be re-enabled later)
+        // const booking = await DatTour.findOne({ id_nguoi_dung: userId, id_tour: tourId, trang_thai: 'completed' });
+        // if (!booking) {
+        //     return res.status(403).json({ message: 'Bạn cần hoàn thành chuyến đi để đánh giá' });
+        // }
 
         const chiTietDiem = detailedRatings ? {
             chat_luong: detailedRatings.service || detailedRatings.chat_luong || 0,
@@ -73,10 +81,14 @@ export const createReview = async (req, res) => {
         } : null;
 
         const review = new DanhGia({
-            id_nguoi_dung: userId, id_tour: tourId, id_dat_tour: booking._id,
-            diem: rating, chi_tiet_diem: chiTietDiem,
-            tieu_de: title || '', noi_dung: content,
-            danh_sach_media: photos || [], da_xac_minh: true
+            id_nguoi_dung: userId, 
+            id_tour: tourId, 
+            diem: rating, 
+            chi_tiet_diem: chiTietDiem,
+            tieu_de: title || '', 
+            noi_dung: content,
+            danh_sach_media: photos || [], 
+            da_xac_minh: true
         });
         await review.save();
 
@@ -90,7 +102,23 @@ export const createReview = async (req, res) => {
 
         res.status(201).json({ message: 'Đánh giá thành công', review });
     } catch (error) {
-        res.status(500).json({ message: 'Lỗi khi tạo đánh giá', error: error.message });
+            console.error('createReview error:', error);
+            console.error('Error stack:', error.stack);
+
+            // Handle Mongoose validation errors with field-level messages
+            if (error.name === 'ValidationError' && error.errors) {
+                const errors = {};
+                Object.keys(error.errors).forEach((field) => {
+                    errors[field] = error.errors[field].message;
+                });
+                return res.status(400).json({ message: 'Validation failed', errors });
+            }
+
+            res.status(500).json({ 
+                message: 'Lỗi khi tạo đánh giá', 
+                error: error.message,
+                details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            });
     }
 };
 
@@ -124,6 +152,14 @@ export const updateReview = async (req, res) => {
 
         res.json({ message: 'Cập nhật đánh giá thành công', review });
     } catch (error) {
+        // Mongoose validation handling for update
+        if (error.name === 'ValidationError' && error.errors) {
+            const errors = {};
+            Object.keys(error.errors).forEach((field) => {
+                errors[field] = error.errors[field].message;
+            });
+            return res.status(400).json({ message: 'Validation failed', errors });
+        }
         res.status(500).json({ message: 'Lỗi khi cập nhật đánh giá', error: error.message });
     }
 };

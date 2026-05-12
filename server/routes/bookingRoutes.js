@@ -14,14 +14,7 @@ router.get("/", requireAuth(), async (req, res) => {
 
     const bookings = await DatTour.find({ id_nguoi_dung: userId })
       .populate("id_nguoi_dung", "ho_ten email")
-      .populate({
-        path: "id_tour",
-        select: "ten_tour anh_dai_dien gia_nguoi_lon so_ngay id_diem_den",
-        populate: {
-          path: "id_diem_den",
-          select: "thanh_pho quoc_gia",
-        },
-      })
+      .populate("id_tour", "ten_tour anh_dai_dien gia_nguoi_lon")
       .populate("id_lich_khoi_hanh")
       .sort({ ngay_tao: -1 })
       .lean();
