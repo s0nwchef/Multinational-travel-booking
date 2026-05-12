@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Star, Heart, MessageCircle, Share2 } from 'lucide-react';
+import { Star, Heart, MessageCircle, Share2, PencilLine, MoreVertical } from 'lucide-react';
 
-const ReviewCard = ({ review }) => {
+const ReviewCard = ({ review, canEdit = false, onEdit, onDelete }) => {
   const [isHelpful, setIsHelpful] = useState(false);
   const [helpfulCount, setHelpfulCount] = useState(review.helpfulCount);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const handleHelpful = () => {
     if (!isHelpful) {
@@ -30,7 +31,43 @@ const ReviewCard = ({ review }) => {
               <h4 className="font-semibold text-gray-900 dark:text-white">{review.author}</h4>
               <p className="text-xs text-gray-500 dark:text-gray-400">{review.verification}</p>
             </div>
-            <span className="text-xs text-gray-500 dark:text-gray-400">{review.date}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500 dark:text-gray-400">{review.date}</span>
+              {canEdit && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
+                  >
+                    <MoreVertical size={16} className="text-gray-600 dark:text-gray-400" />
+                  </button>
+                  {showDropdown && (
+                    <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                      <button
+                        onClick={() => {
+                          onEdit?.();
+                          setShowDropdown(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 first:rounded-t-lg"
+                      >
+                        <PencilLine size={16} />
+                        Edit Review
+                      </button>
+                      <button
+                        onClick={() => {
+                          onDelete?.();
+                          setShowDropdown(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2 last:rounded-b-lg"
+                      >
+                        <span>🗑️</span>
+                        Delete Review
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
           
           {/* Star Rating */}

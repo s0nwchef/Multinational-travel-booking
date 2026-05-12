@@ -9,7 +9,7 @@ const VerticalTourCard = ({ tour }) => {
   const navigate = useNavigate();
 
   const handleGoToDetail = () => {
-    navigate(`/tour/${tour.id}`);
+    navigate(`/tour/${tour.slug || tour.id}`);
     window.scrollTo(0, 0);
   };
 

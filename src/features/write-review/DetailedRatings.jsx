@@ -5,9 +5,9 @@ export default function DetailedRatings({ ratings, setRatings }) {
 
   const ratingCategories = [
     { key: 'serviceQuality', label: 'Service Quality' },
-    { key: 'itinerary', label: 'Itinerary' },
     { key: 'valueForMoney', label: 'Value for Money' },
-    { key: 'guideKnowledge', label: 'Guide Knowledge' }
+    { key: 'guideKnowledge', label: 'Guide Knowledge' },
+    { key: 'transportQuality', label: 'Transport Quality' }
   ];
 
   const handleStarClick = (category, value) => {

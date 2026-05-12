@@ -26,7 +26,7 @@ const danhGiaSchema = new mongoose.Schema({
   id_dat_tour: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'DatTour',
-    required: [true, 'ID đặt tour là bắt buộc']
+    default: null
   },
 
   // === ĐÁNH GIÁ ===
