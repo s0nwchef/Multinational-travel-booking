@@ -56,6 +56,7 @@ export const requireAuth = (roles = []) => {
                 so_dien_thoai: user.so_dien_thoai,
                 anh_dai_dien: user.anh_dai_dien,
                 danh_sach_yeu_thich: user.danh_sach_yeu_thich,
+                diem: user.diem || 0,
                 ngay_tao: user.ngay_tao,
                 ngay_cap_nhat: user.ngay_cap_nhat,
                 // Backwards compat for frontend
