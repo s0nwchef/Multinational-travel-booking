@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Mail, Lock, User, Sun, Palmtree, Umbrella, Waves, Phone } from 'lucide-react';
+import { X, Mail, Lock, User, Sun, Palmtree, Umbrella, Waves, Phone, Loader2 } from 'lucide-react';
 import { useNotification } from '../contexts/NotificationContext';
+import { OAUTH_PROVIDERS } from '../config/oauthConfig.js';
+import authService from '../services/authService.js';
 
 const SummerElement = ({ children, className, delay = 0 }) => (
     <motion.div
@@ -104,11 +106,35 @@ export default function AuthModal({ isOpen, onClose }) {
     password: '',
     phone: ''
   });
-  const { success, error } = useNotification();
+  const [isLoading, setIsLoading] = useState(false);
+  const [oauthError, setOauthError] = useState(null);
+  const { success, error, info } = useNotification();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true);
+      setOauthError(null);
+      authService.loginWithGoogle();
+      // Note: The redirect will happen, so we don't need to set isLoading to false
+      // The loading state will be cleared when the page reloads or user returns
+    } catch (err) {
+      setIsLoading(false);
+      setOauthError(err.message);
+      error(err.message || 'Đăng nhập Google thất bại. Vui lòng thử lại');
+    }
+  };
+
+  const handleFacebookClick = () => {
+    info(OAUTH_PROVIDERS.facebook.message || 'Tính năng đang phát triển');
+  };
+
+  const handleAppleClick = () => {
+    info(OAUTH_PROVIDERS.apple.message || 'Tính năng đang phát triển');
   };
 
   const handleAuth = async (e) => {
@@ -273,15 +299,35 @@ export default function AuthModal({ isOpen, onClose }) {
                   {/* Social Login */}
                   <div className="flex gap-4">
                     {[
-                      { icon: "https://www.svgrepo.com/show/355037/google.svg", name: "Google" },
-                      { icon: "https://www.svgrepo.com/show/303114/facebook-3.svg", name: "Facebook" },
-                      { icon: "https://www.svgrepo.com/show/303108/apple-black.svg", name: "Apple" }
+                      { icon: "https://www.svgrepo.com/show/355037/google.svg", name: "Google", onClick: handleGoogleLogin },
+                      { icon: "https://www.svgrepo.com/show/303114/facebook-3.svg", name: "Facebook", onClick: handleFacebookClick },
+                      { icon: "https://www.svgrepo.com/show/303108/apple-black.svg", name: "Apple", onClick: handleAppleClick }
                     ].map((social) => (
-                        <button key={social.name} className="w-12 h-10 bg-white rounded-xl shadow-sm border border-orange-50 flex items-center justify-center hover:shadow-md hover:border-orange-200 transition-all">
-                          <img src={social.icon} alt={social.name} className="w-5 h-5" />
+                        <button 
+                          key={social.name} 
+                          onClick={social.onClick}
+                          disabled={isLoading && social.name === 'Google'}
+                          className="w-12 h-10 bg-white rounded-xl shadow-sm border border-orange-50 flex items-center justify-center hover:shadow-md hover:border-orange-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isLoading && social.name === 'Google' ? (
+                            <Loader2 className="w-5 h-5 text-orange-500 animate-spin" />
+                          ) : (
+                            <img src={social.icon} alt={social.name} className="w-5 h-5" />
+                          )}
                         </button>
                     ))}
                   </div>
+
+                  {/* OAuth Error Display */}
+                  {oauthError && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-3 text-xs text-red-500 text-center"
+                    >
+                      {oauthError}
+                    </motion.p>
+                  )}
 
                   {/* Footer Link */}
                   <div className="mt-8">

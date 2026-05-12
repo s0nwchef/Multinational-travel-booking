@@ -8,7 +8,6 @@ import "../css/destination.css";
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200&q=80";
 const REGIONS_PER_PAGE = 6;
-const SLIDER_SIZE = 4;
 
 const toSlug = (value = "") =>
     value
@@ -24,7 +23,6 @@ function Destination() {
     const location = useLocation();
     const [regions, setRegions] = useState([]);
     const [regionPage, setRegionPage] = useState(1);
-    const [slideIndex, setSlideIndex] = useState(0);
     const [expRef, expVisible] = useInView();
 
     useEffect(() => {
@@ -69,28 +67,10 @@ function Destination() {
         [regions]
     );
 
-    const visibleExperiences = useMemo(() => {
-        if (popularExperiences.length <= SLIDER_SIZE) {
-            return popularExperiences;
-        }
-
-        return Array.from({ length: SLIDER_SIZE }, (_, index) => {
-            const itemIndex = (slideIndex + index) % popularExperiences.length;
-            return popularExperiences[itemIndex];
-        });
-    }, [popularExperiences, slideIndex]);
-
-    useEffect(() => {
-        if (popularExperiences.length <= SLIDER_SIZE) {
-            return undefined;
-        }
-
-        const timer = setInterval(() => {
-            setSlideIndex((current) => (current + 1) % popularExperiences.length);
-        }, 3000);
-
-        return () => clearInterval(timer);
-    }, [popularExperiences.length]);
+    const sliderExperiences = useMemo(
+        () => [...popularExperiences, ...popularExperiences],
+        [popularExperiences]
+    );
 
     const handleRegionPageChange = (page) => {
         setRegionPage(page);
@@ -159,20 +139,21 @@ function Destination() {
                         <h2>Popular Experiences</h2>
                     </div>
 
-                    {expVisible && (
+                    {expVisible && popularExperiences.length > 0 && (
                         <div className="experience-slider">
-                            {visibleExperiences.map((exp, index) => (
-                                <ExperienceCard
-                                    key={`${exp._id}-${index}`}
-                                    experience={{
-                                        title: exp.name,
-                                        description: exp.city || exp.description || exp.region,
-                                        image: exp.image,
-                                    }}
-                                    className="fade-up show"
-                                    style={{ animationDelay: `${index * 0.15}s` }}
-                                />
-                            ))}
+                            <div className="experience-track">
+                                {sliderExperiences.map((exp, index) => (
+                                    <ExperienceCard
+                                        key={`${exp._id}-${index}`}
+                                        experience={{
+                                            title: exp.name,
+                                            description: exp.city || exp.description || exp.region,
+                                            image: exp.image,
+                                            slug: exp.slug,
+                                        }}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>

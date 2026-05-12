@@ -1,14 +1,41 @@
-import React from 'react';
-import { ChevronRight, Star, Share2, Heart } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { ChevronRight, Star, Share2, Heart, Loader2 } from "lucide-react";
+import wishlistService from "../../services/wishlists/wishlistService.js";
 
 export default function TourHeader({ tour }) {
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+
+  useEffect(() => {
+    if (!tour?.id) return;
+    wishlistService
+      .checkWishlist(tour.id)
+      .then((result) => setIsWishlisted(result))
+      .catch(() => {});
+  }, [tour?.id]);
+
+  const handleToggleWishlist = async () => {
+    if (wishlistLoading) return;
+    try {
+      setWishlistLoading(true);
+      await wishlistService.toggleWishlist(tour.id, isWishlisted);
+      setIsWishlisted((prev) => !prev);
+    } catch (err) {
+      console.error("Wishlist toggle error:", err);
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
   const handleShare = () => {
     if (navigator.share) {
-      navigator.share({
-        title: tour.title,
-        text: tour.description,
-        url: window.location.href,
-      }).catch(() => {});
+      navigator
+        .share({
+          title: tour.title,
+          text: tour.description,
+          url: window.location.href,
+        })
+        .catch(() => {});
     }
   };
 
@@ -22,7 +49,9 @@ export default function TourHeader({ tour }) {
         <ChevronRight className="w-4 h-4" />
         <span>Italy</span>
         <ChevronRight className="w-4 h-4" />
-        <span className="text-gray-900 dark:text-white font-semibold">{tour.title}</span>
+        <span className="text-gray-900 dark:text-white font-semibold">
+          {tour.title}
+        </span>
       </div>
 
       {/* Title and Actions */}
@@ -41,8 +70,8 @@ export default function TourHeader({ tour }) {
                     key={i}
                     className={`w-5 h-5 ${
                       i < Math.floor(tour.rating)
-                        ? 'fill-yellow-400 text-yellow-400'
-                        : 'text-gray-300 dark:text-gray-600'
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300 dark:text-gray-600"
                     }`}
                   />
                 ))}
@@ -56,8 +85,12 @@ export default function TourHeader({ tour }) {
             </div>
 
             <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-gray-700 dark:text-gray-300">
-              <span className="flex items-center gap-1">📍 {tour.locations.join(', ')}</span>
-              <span className="flex items-center gap-1">📅 {tour.duration} Days</span>
+              <span className="flex items-center gap-1">
+                📍 {tour.locations.join(", ")}
+              </span>
+              <span className="flex items-center gap-1">
+                📅 {tour.duration} Days
+              </span>
             </div>
           </div>
         </div>
@@ -71,9 +104,26 @@ export default function TourHeader({ tour }) {
             <Share2 className="w-5 h-5" />
             <span className="hidden sm:inline">Share</span>
           </button>
-          <button className="flex items-center gap-2 px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-full text-sm font-bold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-            <Heart className="w-5 h-5" />
-            <span className="hidden sm:inline">Save</span>
+          <button
+            onClick={handleToggleWishlist}
+            disabled={wishlistLoading}
+            className={`flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
+              isWishlisted
+                ? "bg-red-50 border border-red-200 text-red-500 hover:bg-red-100"
+                : "border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
+            }`}
+          >
+            {wishlistLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Heart
+                className="w-5 h-5"
+                fill={isWishlisted ? "currentColor" : "none"}
+              />
+            )}
+            <span className="hidden sm:inline">
+              {isWishlisted ? "Saved" : "Save"}
+            </span>
           </button>
         </div>
       </div>
