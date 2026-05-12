@@ -12,7 +12,6 @@ const nguoiDungSchema = new mongoose.Schema({
   },
   mat_khau_hash: {
     type: String,
-    required: [true, 'Mật khẩu là bắt buộc'],
     select: false
   },
   vai_tro: {
@@ -85,5 +84,9 @@ const nguoiDungSchema = new mongoose.Schema({
 
 // Indexes
 nguoiDungSchema.index({ vai_tro: 1 });
+
+// Note: Password validation for OAuth users is handled in the OAuth service
+// by using validateBeforeSave: false option
+// Regular registration handles password validation in the controller
 
 export default mongoose.models.NguoiDung || mongoose.model('NguoiDung', nguoiDungSchema);
