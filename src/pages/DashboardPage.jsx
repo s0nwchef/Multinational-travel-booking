@@ -15,13 +15,13 @@ const Dashboard = () => {
 
       <main className="flex-1 ml-64 p-8">
         <header className="flex items-center justify-between mb-10">
-          <div className="flex bg-white rounded-2xl px-5 py-3 shadow-sm w-[400px] border border-gray-100">
-            <Search className="text-gray-400 mr-3" size={20} />
-            <input
-              type="text"
-              placeholder="Search your next destination..."
-              className="bg-transparent outline-none text-sm w-full font-medium"
-            />
+          <div className="mb-10">
+            <h1 className="text-4xl font-black text-gray-900 tracking-tight">
+              Hello!
+            </h1>
+            <p className="text-gray-400 mt-2 font-medium">
+              Welcome back to your travel hub. Here's what's happening.
+            </p>
           </div>
 
           <div className="flex items-center">
@@ -52,15 +52,6 @@ const Dashboard = () => {
             </div>
           </div>
         </header>
-
-        <div className="mb-10">
-          <h1 className="text-4xl font-black text-gray-900 tracking-tight">
-            Hello, Alex!
-          </h1>
-          <p className="text-gray-400 mt-2 font-medium">
-            Welcome back to your travel hub. Here's what's happening.
-          </p>
-        </div>
 
         <div className="flex flex-col lg:flex-row gap-8 mb-12">
           <div className="flex-[2]">
