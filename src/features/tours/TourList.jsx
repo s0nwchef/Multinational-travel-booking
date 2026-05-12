@@ -16,19 +16,21 @@ export default function TourList() {
   const location = useLocation();
   const navigate = useNavigate();
   const searchQuery = location.state?.query || "";
+  const initialCategory = location.state?.category || "All Tours";
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [filters, setFilters] = useState({
     price: 10000,
-    category: "All Tours",
+    category: initialCategory,
     duration: [],
     startDate: "",
     endDate: "",
     ratings: 0,
     location: "",
   });
+
 
   const [sortBy, setSortBy] = useState("recommended");
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -58,6 +60,13 @@ export default function TourList() {
   }, [searchQuery]);
 
   useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      category: initialCategory,
+    }));
+  }, [initialCategory]);
+
+  useEffect(() => {
     const prefill = location.state?.prefillFilters;
     if (prefill && !loading) {
       setFilters((prev) => ({ ...prev, ...prefill }));
@@ -76,6 +85,7 @@ export default function TourList() {
       startDate: "",
       endDate: "",
       ratings: 0,
+      location: "",
     });
     setSortBy("recommended");
 

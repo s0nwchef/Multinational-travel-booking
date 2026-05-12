@@ -3,8 +3,9 @@
     width: 100%;
 }
 .container-regiondetail {
-    max-width:1600px;
+    max-width:1440px;
     margin:auto;
+    padding: 0 24px 64px;
 
 }
 .country-grid{
@@ -26,7 +27,7 @@
 }
 .country-card img{
     width:100%;
-    height:420px;
+    height:340px;
     object-fit:cover;
 }
 .country-info{
@@ -106,10 +107,27 @@
     font-size:18px;
 }
 .explore{
+    border:0;
+    background:transparent;
+    padding:0;
     color:#EC5B13;
     font-weight:bold;
     font-size:18px;
+    cursor:pointer;
 }
 
+@media (max-width: 900px) {
+    .country-grid {
+        grid-template-columns:repeat(2,1fr);
+    }
+}
 
+@media (max-width: 640px) {
+    .container-regiondetail {
+        padding:0 16px 48px;
+    }
 
+    .country-grid {
+        grid-template-columns:1fr;
+    }
+}
