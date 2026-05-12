@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CreditCard } from 'lucide-react';
 
 const PaymentDetails = ({ onPaymentChange }) => {
-  const [selectedMethod, setSelectedMethod] = useState('creditCard');
+  const [selectedMethod, setSelectedMethod] = useState('card');
   const [formData, setFormData] = useState({
     cardNumber: '',
     expiryDate: '',
@@ -15,6 +15,10 @@ const PaymentDetails = ({ onPaymentChange }) => {
     setSelectedMethod(method);
     onPaymentChange?.({ ...formData, method });
   };
+
+  useEffect(() => {
+    onPaymentChange?.({ ...formData, method: selectedMethod });
+  }, [selectedMethod]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -70,35 +74,40 @@ const PaymentDetails = ({ onPaymentChange }) => {
           Payment Method
         </label>
         <div className="grid grid-cols-3 gap-3">
-          {/* Credit Card */}
           <button
-            onClick={() => handleMethodChange('creditCard')}
+            onClick={() => handleMethodChange('card')}
             className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-colors ${
-              selectedMethod === 'creditCard'
+              selectedMethod === 'card'
                 ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
                 : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 hover:border-orange-300'
             }`}
           >
             <CreditCard className="w-5 h-5" />
-            <span className="text-sm font-medium">Credit Card</span>
+            <span className="text-sm font-medium">Card</span>
           </button>
 
-          {/* PayPal */}
           <button
-            onClick={() => handleMethodChange('paypal')}
+            onClick={() => handleMethodChange('banking')}
             className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-colors ${
-              selectedMethod === 'paypal'
+              selectedMethod === 'banking'
                 ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
                 : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 hover:border-orange-300'
             }`}
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M20.067 8.478c.492.88.556 2.014.3 3.327-.74 3.806-3.276 5.12-6.514 5.12h-.5a.805.805 0 0 0-.794.68l-.04.22-.63 4.008-.027.15a.806.806 0 0 1-.795.68h-2.61a.587.587 0 0 1-.58-.67l.04-.22.63-4.008.027-.15a.806.806 0 0 1 .794-.68h.5c3.236 0 5.773-1.314 6.514-5.12.256-1.313.192-2.447-.3-3.327-.6-.98-1.738-1.672-3.166-1.916.74-1.014 1.094-2.47.872-4.065-.216-1.595-1.24-2.71-2.705-3.004-1.466-.293-3.14.24-4.106 1.403-.966 1.162-.996 2.945.083 4.57-.49.244-1.626.936-2.226 1.916-.28.457-.456 1.024-.51 1.67-.054.646.056 1.368.328 2.15.544 1.56 1.796 2.672 3.417 2.965.188.344.456.693.794 1.042-2.22.244-4.446 1.162-5.51 3.15-.704 1.37-.94 3.035-.704 4.843.236 1.808 1.2 3.37 2.836 4.516 1.636 1.147 3.754 1.647 6.124 1.647 3.356 0 5.91-1.325 7.41-4.04 1.5-2.713 1.82-6.78.816-12.235-.524-2.89-1.85-4.89-3.7-6.06z"/>
-            </svg>
-            <span className="text-sm font-medium">PayPal</span>
+            <span className="text-sm font-medium">Banking</span>
           </button>
 
-          {/* Pay Later */}
+          <button
+            onClick={() => handleMethodChange('momo')}
+            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-colors ${
+              selectedMethod === 'momo'
+                ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
+                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 hover:border-orange-300'
+            }`}
+          >
+            <span className="text-sm font-medium">Momo</span>
+          </button>
+
           <button
             onClick={() => handleMethodChange('payLater')}
             className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-colors ${
@@ -116,7 +125,7 @@ const PaymentDetails = ({ onPaymentChange }) => {
       </div>
 
       {/* Credit Card Form */}
-      {selectedMethod === 'creditCard' && (
+      {selectedMethod === 'card' && (
         <>
           {/* Card Number */}
           <div className="mb-4">
@@ -209,10 +218,18 @@ const PaymentDetails = ({ onPaymentChange }) => {
       )}
 
       {/* PayPal Message */}
-      {selectedMethod === 'paypal' && (
+      {selectedMethod === 'banking' && (
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
           <p className="text-sm text-blue-800 dark:text-blue-200">
-            You will be redirected to PayPal to complete your payment securely.
+            Use bank transfer to complete the payment securely.
+          </p>
+        </div>
+      )}
+
+      {selectedMethod === 'momo' && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <p className="text-sm text-blue-800 dark:text-blue-200">
+            You will be redirected to Momo to complete your payment securely.
           </p>
         </div>
       )}
