@@ -2,6 +2,40 @@ import mongoose from 'mongoose';
 import DanhGia from '../models/DanhGia.js';
 import TourVi from '../models/TourVi.js';
 import DatTour from '../models/DatTour.js';
+import { uploadReviewMedia } from '../utils/cloudinary.js';
+
+const normalizeArray = (value) => {
+    if (Array.isArray(value)) {
+        return value.filter(Boolean);
+    }
+
+    if (typeof value === 'string') {
+        try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+        } catch {
+            return value ? [value].filter(Boolean) : [];
+        }
+    }
+
+    return value ? [value].filter(Boolean) : [];
+};
+
+const normalizeDetailedRatings = (value) => {
+    if (!value) {
+        return null;
+    }
+
+    if (typeof value === 'string') {
+        try {
+            return JSON.parse(value);
+        } catch {
+            return null;
+        }
+    }
+
+    return value;
+};
 
 // Get reviews for a tour
 export const getTourReviews = async (req, res) => {
@@ -47,7 +81,9 @@ export const getTourReviews = async (req, res) => {
 export const createReview = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { tourId, rating, title, content, photos, detailedRatings } = req.body;
+        const { tourId, rating, title, content } = req.body;
+        const photos = normalizeArray(req.body.photos);
+        const detailedRatings = normalizeDetailedRatings(req.body.detailedRatings);
 
         if (!tourId || !rating || !content) {
             return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
@@ -81,6 +117,9 @@ export const createReview = async (req, res) => {
             phuong_tien: detailedRatings.transport || detailedRatings.phuong_tien || 0
         } : null;
 
+        const uploadedMedia = await uploadReviewMedia(req.files);
+        const danhSachMedia = [...photos, ...uploadedMedia];
+
         const review = new DanhGia({
             id_nguoi_dung: userId, 
             id_tour: tourId, 
@@ -88,7 +127,7 @@ export const createReview = async (req, res) => {
             chi_tiet_diem: chiTietDiem,
             tieu_de: title || '', 
             noi_dung: content,
-            danh_sach_media: photos || [], 
+            danh_sach_media: danhSachMedia, 
             da_xac_minh: true
         });
         await review.save();
@@ -128,7 +167,10 @@ export const updateReview = async (req, res) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
-        const { rating, title, content, photos, detailedRatings } = req.body;
+        const { rating, title, content } = req.body;
+        const photos = normalizeArray(req.body.photos);
+        const existingMedia = req.body.existingMedia !== undefined ? normalizeArray(req.body.existingMedia) : null;
+        const detailedRatings = normalizeDetailedRatings(req.body.detailedRatings);
 
         const review = await DanhGia.findOne({ _id: id, id_nguoi_dung: userId });
         if (!review) return res.status(404).json({ message: 'Không tìm thấy đánh giá' });
@@ -136,7 +178,6 @@ export const updateReview = async (req, res) => {
         if (rating) review.diem = rating;
         if (title !== undefined) review.tieu_de = title;
         if (content) review.noi_dung = content;
-        if (photos) review.danh_sach_media = photos;
         if (detailedRatings) {
             review.chi_tiet_diem = {
                 chat_luong: detailedRatings.service || detailedRatings.chat_luong || 0,
@@ -145,6 +186,11 @@ export const updateReview = async (req, res) => {
                 phuong_tien: detailedRatings.transport || detailedRatings.phuong_tien || 0
             };
         }
+
+        const uploadedMedia = await uploadReviewMedia(req.files);
+        const preservedMedia = existingMedia !== null ? existingMedia : normalizeArray(review.danh_sach_media);
+        review.danh_sach_media = [...preservedMedia, ...photos, ...uploadedMedia];
+
         await review.save();
 
         const tourReviews = await DanhGia.find({ id_tour: review.id_tour });
@@ -233,6 +279,102 @@ export const replyToReview = async (req, res) => {
     } catch (error) {
         console.error('replyToReview error:', error);
         res.status(500).json({ message: 'Lỗi khi phản hồi đánh giá', error: error.message });
+    }
+};
+
+// Delete a reply from a review
+export const deleteReviewReply = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { id, replyIndex } = req.params;
+        console.log('deleteReviewReply called:', { id, replyIndex, userId });
+        
+        const parsedReplyIndex = Number.parseInt(replyIndex, 10);
+
+        if (Number.isNaN(parsedReplyIndex) || parsedReplyIndex < 0) {
+            return res.status(400).json({ message: 'Chỉ số phản hồi không hợp lệ' });
+        }
+
+        const review = await DanhGia.findById(id);
+        if (!review) {
+            return res.status(404).json({ message: 'Không tìm thấy đánh giá' });
+        }
+
+        review.phan_hoi = Array.isArray(review.phan_hoi) ? review.phan_hoi : [];
+
+        const reply = review.phan_hoi[parsedReplyIndex];
+        if (!reply) {
+            return res.status(404).json({ message: 'Không tìm thấy phản hồi' });
+        }
+
+        const replyOwnerId = reply.id_nguoi_phan_hoi?._id || reply.id_nguoi_phan_hoi?.id || reply.id_nguoi_phan_hoi;
+        if (String(replyOwnerId) !== String(userId)) {
+            return res.status(403).json({ message: 'Bạn chỉ có thể xóa phản hồi của chính mình' });
+        }
+
+        review.phan_hoi.splice(parsedReplyIndex, 1);
+        await review.save();
+
+        const savedReview = await DanhGia.findById(id)
+            .populate('id_nguoi_dung', 'ho_ten anh_dai_dien')
+            .populate('phan_hoi.id_nguoi_phan_hoi', 'ho_ten anh_dai_dien')
+            .populate('id_tour', 'ten_tour');
+
+        res.json({ message: 'Xóa phản hồi thành công', review: savedReview });
+    } catch (error) {
+        console.error('deleteReviewReply error:', error);
+        res.status(500).json({ message: 'Lỗi khi xóa phản hồi', error: error.message });
+    }
+};
+
+// Update review reply
+export const updateReviewReply = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { id, replyIndex } = req.params;
+        const { noi_dung } = req.body;
+        console.log('updateReviewReply called:', { id, replyIndex, userId });
+        
+        if (!noi_dung || !noi_dung.trim()) {
+            return res.status(400).json({ message: 'Nội dung phản hồi không được trống' });
+        }
+
+        const parsedReplyIndex = Number.parseInt(replyIndex, 10);
+
+        if (Number.isNaN(parsedReplyIndex) || parsedReplyIndex < 0) {
+            return res.status(400).json({ message: 'Chỉ số phản hồi không hợp lệ' });
+        }
+
+        const review = await DanhGia.findById(id);
+        if (!review) {
+            return res.status(404).json({ message: 'Không tìm thấy đánh giá' });
+        }
+
+        review.phan_hoi = Array.isArray(review.phan_hoi) ? review.phan_hoi : [];
+
+        const reply = review.phan_hoi[parsedReplyIndex];
+        if (!reply) {
+            return res.status(404).json({ message: 'Không tìm thấy phản hồi' });
+        }
+
+        const replyOwnerId = reply.id_nguoi_phan_hoi?._id || reply.id_nguoi_phan_hoi?.id || reply.id_nguoi_phan_hoi;
+        if (String(replyOwnerId) !== String(userId)) {
+            return res.status(403).json({ message: 'Bạn chỉ có thể sửa phản hồi của chính mình' });
+        }
+
+        // Update the reply content
+        reply.noi_dung = noi_dung.trim();
+        await review.save();
+
+        const savedReview = await DanhGia.findById(id)
+            .populate('id_nguoi_dung', 'ho_ten anh_dai_dien')
+            .populate('phan_hoi.id_nguoi_phan_hoi', 'ho_ten anh_dai_dien')
+            .populate('id_tour', 'ten_tour');
+
+        res.json({ message: 'Cập nhật phản hồi thành công', review: savedReview });
+    } catch (error) {
+        console.error('updateReviewReply error:', error);
+        res.status(500).json({ message: 'Lỗi khi cập nhật phản hồi', error: error.message });
     }
 };
 

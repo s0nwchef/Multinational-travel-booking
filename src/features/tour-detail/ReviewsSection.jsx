@@ -47,6 +47,7 @@ const ReviewsSection = ({ tour }) => {
       const response = await reviewService.replyReview(reviewId, comment);
       const updatedReview = response.review || {};
       const normalizedReplies = (updatedReview.phan_hoi || []).map((reply) => ({
+        ownerId: reply.id_nguoi_phan_hoi?._id || reply.id_nguoi_phan_hoi?.id || reply.id_nguoi_phan_hoi,
         content: reply.noi_dung,
         author: reply.id_nguoi_phan_hoi?.ho_ten || 'Member',
         avatar: reply.id_nguoi_phan_hoi?.anh_dai_dien || 'https://i.pravatar.cc/150?img=47',
@@ -62,6 +63,54 @@ const ReviewsSection = ({ tour }) => {
     } catch (error) {
       console.error('Error sending reply:', error);
       alert('Không thể gửi phản hồi. Vui lòng thử lại.');
+    }
+  };
+
+  const handleDeleteReply = async (reviewId, replyIndex) => {
+    try {
+      const response = await reviewService.deleteReviewReply(reviewId, replyIndex);
+      const updatedReview = response.review || {};
+      const normalizedReplies = (updatedReview.phan_hoi || []).map((reply) => ({
+        ownerId: reply.id_nguoi_phan_hoi?._id || reply.id_nguoi_phan_hoi?.id || reply.id_nguoi_phan_hoi,
+        content: reply.noi_dung,
+        author: reply.id_nguoi_phan_hoi?.ho_ten || 'Member',
+        avatar: reply.id_nguoi_phan_hoi?.anh_dai_dien || 'https://i.pravatar.cc/150?img=47',
+        date: formatReviewDate(reply.ngay_phan_hoi || reply.createdAt)
+      }));
+
+      setReviewsState((prev) => ({
+        ...prev,
+        reviews: prev.reviews.map((review) =>
+          review.id === reviewId ? { ...review, replies: normalizedReplies } : review
+        )
+      }));
+    } catch (error) {
+      console.error('Error deleting reply:', error);
+      alert('Không thể xóa phản hồi. Vui lòng thử lại.');
+    }
+  };
+
+  const handleEditReply = async (reviewId, replyIndex, newContent) => {
+    try {
+      const response = await reviewService.updateReviewReply(reviewId, replyIndex, newContent);
+      const updatedReview = response.review || {};
+      const normalizedReplies = (updatedReview.phan_hoi || []).map((reply) => ({
+        ownerId: reply.id_nguoi_phan_hoi?._id || reply.id_nguoi_phan_hoi?.id || reply.id_nguoi_phan_hoi,
+        content: reply.noi_dung,
+        author: reply.id_nguoi_phan_hoi?.ho_ten || 'Member',
+        avatar: reply.id_nguoi_phan_hoi?.anh_dai_dien || 'https://i.pravatar.cc/150?img=47',
+        date: formatReviewDate(reply.ngay_phan_hoi || reply.createdAt)
+      }));
+
+      setReviewsState((prev) => ({
+        ...prev,
+        reviews: prev.reviews.map((review) =>
+          review.id === reviewId ? { ...review, replies: normalizedReplies } : review
+        )
+      }));
+    } catch (error) {
+      console.error('Error updating reply:', error);
+      alert('Không thể cập nhật phản hồi. Vui lòng thử lại.');
     }
   };
 
@@ -130,6 +179,7 @@ const ReviewsSection = ({ tour }) => {
           images: review.danh_sach_media || review.photos || [],
           helpfulCount: review.so_luong_thich || 0,
           replies: (Array.isArray(review.phan_hoi) ? review.phan_hoi : review.phan_hoi ? [review.phan_hoi] : []).map((reply) => ({
+            ownerId: reply.id_nguoi_phan_hoi?._id || reply.id_nguoi_phan_hoi?.id || reply.id_nguoi_phan_hoi,
             content: reply.noi_dung,
             author: reply.id_nguoi_phan_hoi?.ho_ten || 'Member',
             avatar: reply.id_nguoi_phan_hoi?.anh_dai_dien || 'https://i.pravatar.cc/150?img=47',
@@ -306,9 +356,12 @@ const ReviewsSection = ({ tour }) => {
               review={review}
               canEdit={String(review.ownerId) === String(currentUserId)}
               canReply={!!currentUserId}
+              currentUserId={currentUserId}
               onEdit={String(review.ownerId) === String(currentUserId) ? handleEditOwnReview : undefined}
               onDelete={String(review.ownerId) === String(currentUserId) ? handleDeleteOwnReview : undefined}
               onReply={handleReply}
+              onDeleteReply={handleDeleteReply}
+              onEditReply={handleEditReply}
             />
           ))}
         </div>
