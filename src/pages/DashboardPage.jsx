@@ -14,7 +14,7 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-[#F8F9FA]">
-      <div className="fixed inset-y-0 left-0 z-50">
+      <div className="shrink-0">
         <Sidebar />
       </div>
 

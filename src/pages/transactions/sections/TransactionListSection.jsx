@@ -1,36 +1,61 @@
 import React from 'react';
 import TransactionTable from '../components/TransactionTable';
 import TablePagination from '../components/TablePagination';
+import bed from '../img/bed.png';
 
-const TransactionListSection = () => {
-  const transactions = [
-    {
-      date: 'Oct 24, 2023',
-      orderId: '#TRV-8921',
-      service: 'Flight',
-      paymentMethod: 'Visa',
-      amount: '$1,250.00',
-    },
-    {
-      date: 'Oct 22, 2023',
-      orderId: '#HTL-4412',
+const TransactionListSection = ({ transactions, loading, pagination, onPageChange }) => {
+  // Map database transactions to display format
+  const mappedTransactions = transactions.map(t => {
+    // Map payment status
+    const statusMap = {
+      'paid': 'Successful',
+      'unpaid': 'Processing',
+      'refunded': 'Refunded'
+    };
+
+    // Format date
+    const date = t.ngay_tao ? new Date(t.ngay_tao).toLocaleDateString('en-GB', { 
+      day: '2-digit', 
+      month: 'short', 
+      year: 'numeric' 
+    }) : 'N/A';
+
+    // Format amount
+    const amount = t.tong_tien_cuoi ? 
+      new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(t.tong_tien_cuoi) : 
+      '$0.00';
+
+    return {
+      id: t._id,
+      date,
+      orderId: t.ma_dat_tour || `#${t._id?.slice(-6)}`,
       service: 'Tour',
+      serviceImage: bed,
       paymentMethod: 'Mastercard',
-      amount: '$450.00',
-    },
-    {
-      date: 'Oct 20, 2023',
-      orderId: '#TRN-1102',
-      service: 'Train',
-      paymentMethod: 'PayPal',
-      amount: '$120.00',
-    },
-  ];
+      amount,
+      status: statusMap[t.trang_thai_thanh_toan] || 'Processing',
+      rawStatus: t.trang_thai_thanh_toan
+    };
+  });
 
   return (
     <div>
-      <TransactionTable transactions={transactions} />
-      <TablePagination />
+      {loading ? (
+        <div className="bg-white rounded-xl p-10 text-center text-gray-400">
+          Đang tải dữ liệu...
+        </div>
+      ) : mappedTransactions.length === 0 ? (
+        <div className="bg-white rounded-xl p-10 text-center text-gray-400">
+          Không có giao dịch nào
+        </div>
+      ) : (
+        <TransactionTable transactions={mappedTransactions} />
+      )}
+      <TablePagination 
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        onPageChange={onPageChange}
+      />
     </div>
   );
 };

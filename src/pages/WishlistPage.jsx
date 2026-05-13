@@ -268,11 +268,11 @@ export default function WishlistPage() {
 
   return (
     <div className="flex min-h-screen bg-[#F8F9FA]">
-      <div className="w-64 fixed inset-y-0 left-0 z-50">
+      <div className="shrink-0">
         <Sidebar />
       </div>
 
-      <main className="flex-1 ml-64 p-10">
+      <main className="flex-1 p-10">
         <div className="max-w-[1400px] mx-auto">
           {/* HEADER */}
           <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-12 gap-6">
