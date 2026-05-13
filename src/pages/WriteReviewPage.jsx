@@ -110,6 +110,7 @@ export default function WriteReviewPage() {
         setPhotos((review.danh_sach_media || []).map((src, index) => ({
           id: `${index}-${src}`,
           src,
+          isExisting: true,
           fileName: `review-image-${index + 1}`,
         })));
         setDetailedRatings({
@@ -163,26 +164,35 @@ export default function WriteReviewPage() {
       setSubmitting(true);
       setError('');
 
-      const payload = {
-        tourId: actualTourId,
-        rating,
-        title,
-        content,
-        photos: photos.map((photo) => photo.src),
-        detailedRatings: {
-          chat_luong: detailedRatings.serviceQuality || 0,
-          gia_tri: detailedRatings.valueForMoney || 0,
-          huong_dan_vien: detailedRatings.guideKnowledge || 0,
-          phuong_tien: detailedRatings.transportQuality || 0,
-        },
-      };
+      const formData = new FormData();
+      formData.append('tourId', actualTourId);
+      formData.append('rating', String(rating));
+      formData.append('title', title);
+      formData.append('content', content);
+      formData.append('detailedRatings', JSON.stringify({
+        chat_luong: detailedRatings.serviceQuality || 0,
+        gia_tri: detailedRatings.valueForMoney || 0,
+        huong_dan_vien: detailedRatings.guideKnowledge || 0,
+        phuong_tien: detailedRatings.transportQuality || 0,
+      }));
 
-      console.log('Submitting review payload:', payload);
+      const existingMedia = photos
+        .filter((photo) => !photo.file)
+        .map((photo) => photo.src)
+        .filter(Boolean);
+
+      formData.append('existingMedia', JSON.stringify(existingMedia));
+
+      photos
+        .filter((photo) => photo.file)
+        .forEach((photo) => {
+          formData.append('photos', photo.file, photo.fileName || photo.file.name);
+        });
 
       if (isEditMode) {
-        await reviewService.updateReview(reviewId, payload);
+        await reviewService.updateReview(reviewId, formData);
       } else {
-        await reviewService.createReview(payload);
+        await reviewService.createReview(formData);
       }
 
       navigate(`/tour/${tourId}`);

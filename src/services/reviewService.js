@@ -34,10 +34,17 @@ const getAuthHeaders = () => {
 };
 
 const request = async (path, options = {}) => {
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+  const headers = options.headers ? { ...options.headers } : getAuthHeaders();
+
+  if (isFormData) {
+    delete headers['Content-Type'];
+  }
+
   const response = await fetch(buildUrl(API_BASE_URL, path, options.params), {
     method: options.method || 'GET',
-    headers: options.headers || getAuthHeaders(),
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    headers,
+    body: options.body ? (isFormData ? options.body : JSON.stringify(options.body)) : undefined,
   });
 
   const data = await response.json().catch(() => ({}));
@@ -152,6 +159,42 @@ export const reviewService = {
       });
     } catch (error) {
       console.error('Error replying to review:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Delete a reply from a review
+   * @param {string} id - Review ID
+   * @param {number} replyIndex - Reply index in the review's reply array
+   * @returns {Promise} Updated review
+   */
+  async deleteReviewReply(id, replyIndex) {
+    try {
+      return await request(`/${id}/replies/${replyIndex}`, {
+        method: 'DELETE',
+      });
+    } catch (error) {
+      console.error('Error deleting review reply:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update reply in review
+   * @param {string} id - Review ID
+   * @param {number} replyIndex - Index of reply to update
+   * @param {string} noi_dung - New reply content
+   * @returns {Promise} Updated review
+   */
+  async updateReviewReply(id, replyIndex, noi_dung) {
+    try {
+      return await request(`/${id}/reply/${replyIndex}`, {
+        method: 'PUT',
+        body: { noi_dung },
+      });
+    } catch (error) {
+      console.error('Error updating review reply:', error);
       throw error;
     }
   },

@@ -5,27 +5,32 @@ export default function PhotoUpload({ photos, setPhotos }) {
 
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files || []);
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPhotos(prev => [...prev, {
-          id: Date.now(),
-          src: event.target.result,
-          fileName: file.name
-        }]);
-      };
-      reader.readAsDataURL(file);
-    });
+    const selectedPhotos = files.map((file) => ({
+      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+      file,
+      src: URL.createObjectURL(file),
+      fileName: file.name
+    }));
+
+    setPhotos((prev) => [...prev, ...selectedPhotos]);
+    e.target.value = '';
   };
 
   const removePhoto = (id) => {
-    setPhotos(prev => prev.filter(photo => photo.id !== id));
+    setPhotos((prev) => {
+      const target = prev.find((photo) => photo.id === id);
+      if (target?.src?.startsWith('blob:')) {
+        URL.revokeObjectURL(target.src);
+      }
+
+      return prev.filter((photo) => photo.id !== id);
+    });
   };
 
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Add photos & videos</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Add photos</h2>
         <span className="text-sm text-gray-600 dark:text-gray-400">Optional</span>
       </div>
 
@@ -38,7 +43,7 @@ export default function PhotoUpload({ photos, setPhotos }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
           </svg>
           <p className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Click to upload or drag and drop</p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">JPG, PNG or GIF (max. 10MB)</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">JPG, PNG or WEBP (max. 10MB)</p>
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-4 mb-4">
@@ -76,7 +81,7 @@ export default function PhotoUpload({ photos, setPhotos }) {
         ref={fileInputRef}
         type="file"
         multiple
-        accept="image/*,video/*"
+        accept="image/*"
         onChange={handleFileSelect}
         className="hidden"
       />

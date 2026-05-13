@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Star, MessageCircle, Share2, PencilLine, MoreVertical } from 'lucide-react';
+import { Star, MessageCircle, Share2, PencilLine, MoreVertical, Trash2 } from 'lucide-react';
 
-const ReviewCard = ({ review, canEdit = false, canReply = false, onEdit, onDelete, onReply }) => {
+const ReviewCard = ({ review, canEdit = false, canReply = false, currentUserId = null, onEdit, onDelete, onReply, onDeleteReply, onEditReply }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [replyLoading, setReplyLoading] = useState(false);
+  const [replyDropdownOpen, setReplyDropdownOpen] = useState(null);
+  const [editingReplyIdx, setEditingReplyIdx] = useState(null);
+  const [editingReplyText, setEditingReplyText] = useState('');
 
   const handleReplySubmit = async () => {
     if (!replyText.trim() || !onReply) return;
@@ -15,6 +18,20 @@ const ReviewCard = ({ review, canEdit = false, canReply = false, onEdit, onDelet
       await onReply(review.id, replyText.trim());
       setReplyText('');
       setShowReplyForm(false);
+    } finally {
+      setReplyLoading(false);
+    }
+  };
+
+  const handleEditReplySubmit = async (replyIdx) => {
+    if (!editingReplyText.trim() || !onEditReply) return;
+    setReplyLoading(true);
+
+    try {
+      await onEditReply(review.id, replyIdx, editingReplyText.trim());
+      setEditingReplyIdx(null);
+      setEditingReplyText('');
+      setReplyDropdownOpen(null);
     } finally {
       setReplyLoading(false);
     }
@@ -160,22 +177,99 @@ const ReviewCard = ({ review, canEdit = false, canReply = false, onEdit, onDelet
 
           {review.replies?.length > 0 && (
             <div className="mt-4 space-y-3 border-t border-gray-200 pt-4 dark:border-gray-700">
-              {review.replies.map((reply, idx) => (
+              {review.replies.map((reply, idx) => {
+                const replyOwnerId = reply.ownerId;
+                const canDeleteReply = Boolean(onDeleteReply) && String(replyOwnerId) === String(currentUserId);
+
+                return (
                 <div key={idx} className="rounded-2xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900">
-                  <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-3">
+                  <div className="flex items-start gap-3 mb-3">
                     <img
                       src={reply.avatar || 'https://i.pravatar.cc/150?img=47'}
                       alt={reply.author || 'Member'}
-                      className="h-10 w-10 rounded-full object-cover"
+                      className="h-10 w-10 rounded-full object-cover flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 dark:text-white truncate">{reply.author || 'Member'}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{reply.date}</p>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-900 dark:text-white truncate">{reply.author || 'Member'}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{reply.date}</p>
+                        </div>
+                        {canDeleteReply && (
+                          <div className="relative flex-shrink-0">
+                            <button
+                              onClick={() => setReplyDropdownOpen(replyDropdownOpen === idx ? null : idx)}
+                              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition"
+                            >
+                              <MoreVertical size={16} className="text-gray-600 dark:text-gray-400" />
+                            </button>
+                            {replyDropdownOpen === idx && (
+                              <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                                <button
+                                  onClick={() => {
+                                    setEditingReplyIdx(idx);
+                                    setEditingReplyText(reply.content);
+                                    setReplyDropdownOpen(null);
+                                  }}
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 rounded-t-lg"
+                                >
+                                  <PencilLine size={16} />
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    console.log('Deleting reply:', { reviewId: review.id, replyIndex: idx });
+                                    onDeleteReply(review.id, idx);
+                                    setReplyDropdownOpen(null);
+                                  }}
+                                  className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2 rounded-b-lg"
+                                >
+                                  <Trash2 size={16} />
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <p className="text-sm text-gray-700 dark:text-gray-300">{reply.content}</p>
                 </div>
-              ))}
+                );
+              })}
+            </div>
+          )}
+
+          {editingReplyIdx !== null && (
+            <div className="mt-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 p-4">
+              <p className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Edit Reply</p>
+              <textarea
+                value={editingReplyText}
+                onChange={(e) => setEditingReplyText(e.target.value)}
+                placeholder="Edit your reply"
+                className="w-full min-h-[80px] resize-none rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-[#FF5B00] focus:ring-2 focus:ring-orange-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:focus:border-[#FF5B00] dark:focus:ring-orange-500/20"
+              />
+              <div className="mt-3 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingReplyIdx(null);
+                    setEditingReplyText('');
+                  }}
+                  className="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={!editingReplyText.trim() || replyLoading}
+                  onClick={() => handleEditReplySubmit(editingReplyIdx)}
+                  className="rounded-full bg-[#FF5B00] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#D64D00] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {replyLoading ? 'Saving...' : 'Save Edit'}
+                </button>
+              </div>
             </div>
           )}
         </div>
