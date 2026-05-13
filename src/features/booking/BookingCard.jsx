@@ -29,6 +29,9 @@ const BookingCard = ({ item, onCancel }) => {
 
   // Calculate total passengers from real data fields
   const totalPassengers = (item.numAdults || 0) + (item.numChildren || 0);
+  
+  // Check if has refund
+  const hasRefund = isCancelled && item.refundAmount > 0;
 
   const formatDateRange = (dep, ret) => {
     if (!dep || dep === "TBA") return "TBA";
@@ -120,6 +123,28 @@ const BookingCard = ({ item, onCancel }) => {
             text={`Method: ${item.paymentStatus === "paid" ? "Digital Payment" : "To be confirmed"}`}
           />
         </div>
+
+        {/* REFUND INFO */}
+        {hasRefund && (
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 mb-4 flex items-center gap-3">
+            <CreditCard size={18} className="text-orange-500 shrink-0" />
+            <div>
+              <p className="text-[11px] font-black text-orange-700 uppercase tracking-wider">
+                Refund Amount
+              </p>
+              <p className="text-lg font-black text-orange-600">
+                {item.refundAmount?.toLocaleString("en-US")} $
+              </p>
+            </div>
+            <span className={`ml-auto text-[9px] font-black px-3 py-1 rounded-xl ${
+              item.paymentStatus === 'refunded' 
+                ? 'bg-green-100 text-green-600' 
+                : 'bg-yellow-100 text-yellow-600'
+            }`}>
+              {item.paymentStatus === 'refunded' ? 'REFUNDED' : 'PENDING'}
+            </span>
+          </div>
+        )}
 
         {/* ACTION BUTTONS */}
         <div className="mt-6 flex justify-between items-center">

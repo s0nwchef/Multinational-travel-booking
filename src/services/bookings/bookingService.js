@@ -33,29 +33,30 @@ const bookingService = {
         : null;
 
       return {
-        id: booking._id,
-        bookingCode: booking.ma_dat_tour,
-        tourImage:
-          tourData.anh_dai_dien ||
-          "https://placehold.co/600x400/e2e8f0/64748b?text=No+Image",
-        tourTitle: tourData.ten_tour || "Unnamed Tour",
-        departureDate: scheduleData.ngay_khoi_hanh
-          ? new Date(scheduleData.ngay_khoi_hanh).toLocaleDateString("en-GB")
-          : "TBA",
-        returnDate,
-        totalPrice: booking.tong_tien_cuoi,
-        numAdults: booking.so_nguoi_lon,
-        numChildren: booking.so_tre_em,
-        bookingDate: new Date(booking.ngay_tao).toLocaleDateString("en-US"),
-        status: booking.trang_thai,
-        paymentStatus: booking.trang_thai_thanh_toan,
-        tabGroup: this._mapStatusToTab(booking.trang_thai, returnDate),
-        city:
-          destinationData.thanh_pho ||
-          destinationData.quoc_gia ||
-          "",
-        soNgay: tourData.so_ngay || 0,
-      };
+              id: booking._id,
+              bookingCode: booking.ma_dat_tour,
+              tourImage:
+                tourData.anh_dai_dien ||
+                "https://placehold.co/600x400/e2e8f0/64748b?text=No+Image",
+              tourTitle: tourData.ten_tour || "Unnamed Tour",
+              departureDate: scheduleData.ngay_khoi_hanh
+                ? new Date(scheduleData.ngay_khoi_hanh).toLocaleDateString("en-GB")
+                : "TBA",
+              returnDate,
+              totalPrice: booking.tong_tien_cuoi,
+              numAdults: booking.so_nguoi_lon,
+              numChildren: booking.so_tre_em,
+              bookingDate: new Date(booking.ngay_tao).toLocaleDateString("en-US"),
+              status: booking.trang_thai,
+              paymentStatus: booking.trang_thai_thanh_toan,
+              tabGroup: this._mapStatusToTab(booking.trang_thai, returnDate),
+              city:
+                destinationData.thanh_pho ||
+                destinationData.quoc_gia ||
+                "",
+              soNgay: tourData.so_ngay || 0,
+              refundAmount: booking.tien_hoan || 0,
+            };
     });
   },
 

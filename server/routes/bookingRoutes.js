@@ -284,11 +284,33 @@ router.post("/:id/cancel", requireAuth(), async (req, res) => {
       throw new Error("Đơn đặt tour này đã được hủy trước đó.");
     }
 
+    // Kiểm tra booking có thể hủy
+    if (!['pending', 'confirmed'].includes(booking.trang_thai)) {
+      throw new Error("Đơn đặt tour không thể hủy.");
+    }
+
     // Cập nhật trạng thái booking
     booking.trang_thai = "cancelled";
     booking.ly_do_huy =
       req.body.ly_do_huy || "Khách hàng chủ động hủy trên hệ thống";
     booking.ngay_huy = new Date();
+
+    // === TÍNH TOÁN TIỀN HOÀN ===
+    let refundAmount = 0;
+    let penaltyFee = 0;
+    let refundStatus = 'none';
+
+    // Chỉ hoàn tiền nếu đã thanh toán
+    if (booking.trang_thai_thanh_toan === 'paid') {
+      // Phí hủy 10%
+      penaltyFee = Math.round(booking.tong_tien_cuoi * 0.1);
+      refundAmount = booking.tong_tien_cuoi - penaltyFee;
+      refundStatus = 'pending';
+      booking.tien_hoan = refundAmount;
+    } else {
+      booking.tien_hoan = 0;
+    }
+
     await booking.save({ session });
 
     // Trả lại chỗ trống cho lịch khởi hành
@@ -308,7 +330,25 @@ router.post("/:id/cancel", requireAuth(), async (req, res) => {
       session.endSession();
     }
 
-    res.json({ message: "Hủy tour thành công", booking });
+    // Gửi thông báo
+    await sendNotification(req.user._id, {
+      title: refundAmount > 0 ? 'Hủy tour thành công - Chờ hoàn tiền' : 'Hủy tour thành công',
+      message: refundAmount > 0 
+        ? `Booking ${booking.ma_dat_tour} đã hủy. Số tiền hoàn: ${refundAmount.toLocaleString()}đ (đang xử lý)`
+        : `Booking ${booking.ma_dat_tour} đã hủy thành công.`,
+      type: 'refund',
+      link: `/my-bookings/${booking._id}`,
+    }).catch(() => {});
+
+    res.json({ 
+      message: "Hủy tour thành công", 
+      booking,
+      refund: refundAmount > 0 ? {
+        refundAmount,
+        penaltyFee,
+        status: refundStatus
+      } : null
+    });
   } catch (error) {
     try {
       await session.abortTransaction();
