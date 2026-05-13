@@ -10,6 +10,119 @@ import { sendNotification } from "../utils/notificationHelper.js";
 
 const router = express.Router();
 
+// Get user's transactions with filtering and pagination
+router.get("/user", requireAuth(), async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { page = 1, limit = 5, status, startDate, endDate } = req.query;
+
+    const query = { id_nguoi_dung: userId };
+
+    // Filter by payment status
+    if (status && status !== 'all') {
+      query.trang_thai_thanh_toan = status;
+    }
+
+    // Filter by date range
+    if (startDate || endDate) {
+      query.ngay_tao = {};
+      if (startDate) query.ngay_tao.$gte = new Date(startDate);
+      if (endDate) query.ngay_tao.$lte = new Date(endDate + 'T23:59:59');
+    }
+
+    const totalItems = await DatTour.countDocuments(query);
+    const totalPages = Math.ceil(totalItems / parseInt(limit));
+
+    const bookings = await DatTour.find(query)
+      .populate("id_nguoi_dung", "ho_ten email")
+      .populate({
+        path: "id_tour",
+        select: "ten_tour anh_dai_dien gia_nguoi_lon id_diem_den so_ngay",
+        populate: { path: "id_diem_den", select: "thanh_pho quoc_gia" },
+      })
+      .populate("id_lich_khoi_hanh")
+      .sort({ ngay_tao: -1 })
+      .skip((parseInt(page) - 1) * parseInt(limit))
+      .limit(parseInt(limit))
+      .lean();
+
+    res.json({
+      bookings,
+      currentPage: parseInt(page),
+      totalPages,
+      totalItems
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Lỗi khi lấy danh sách giao dịch",
+      error: error.message,
+    });
+  }
+});
+
+// Export transactions to CSV
+router.get("/user/export", requireAuth(), async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { status, startDate, endDate } = req.query;
+
+    const query = { id_nguoi_dung: userId };
+
+    // Filter by payment status
+    if (status && status !== 'all') {
+      query.trang_thai_thanh_toan = status;
+    }
+
+    // Filter by date range
+    if (startDate || endDate) {
+      query.ngay_tao = {};
+      if (startDate) query.ngay_tao.$gte = new Date(startDate);
+      if (endDate) query.ngay_tao.$lte = new Date(endDate + 'T23:59:59');
+    }
+
+    const bookings = await DatTour.find(query)
+      .populate({
+        path: "id_tour",
+        select: "ten_tour",
+      })
+      .sort({ ngay_tao: -1 })
+      .lean();
+
+    // Generate CSV
+    const statusMap = {
+      'paid': 'Successful',
+      'unpaid': 'Processing',
+      'refunded': 'Refunded'
+    };
+
+    const csvRows = [
+      ['Date', 'Order ID', 'Service', 'Payment Method', 'Amount', 'Status'].join(',')
+    ];
+
+    bookings.forEach(booking => {
+      const date = booking.ngay_tao ? new Date(booking.ngay_tao).toLocaleDateString('en-GB') : 'N/A';
+      const orderId = booking.ma_dat_tour || booking._id;
+      const service = 'Tour';
+      const paymentMethod = booking.phuong_thuc_thanh_toan || 'Mastercard';
+      const amount = booking.tong_tien_cuoi || 0;
+      const status = statusMap[booking.trang_thai_thanh_toan] || 'Processing';
+
+      csvRows.push([date, orderId, service, paymentMethod, amount, status].join(','));
+    });
+
+    const csvContent = csvRows.join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="transactions_${new Date().toISOString().split('T')[0]}.csv"`);
+    res.send(csvContent);
+  } catch (error) {
+    res.status(500).json({
+      message: "Lỗi khi xuất dữ liệu",
+      error: error.message,
+    });
+  }
+});
+
 router.get("/", requireAuth(), async (req, res) => {
   try {
     const userId = req.user._id;

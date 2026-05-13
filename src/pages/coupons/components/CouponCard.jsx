@@ -1,14 +1,21 @@
 import React from 'react';
 import CouponStatusBadge from './CouponStatusBadge';
+import { useNotification } from '../../../contexts/NotificationContext.jsx';
 import copy from "../img/copy.png"
 import "../css/CouponCss.css"
-const CouponCard = ({ title, subtitle, expires, code, status, icon, usable, disabledReason }) => {
 
+const CouponCard = ({ title, subtitle, expires, code, status, icon, usable, disabledReason }) => {
+    const { success } = useNotification();
     const isInactive = !usable;
 
     const handleCopy = async () => {
         if (isInactive) return;
-        await navigator.clipboard.writeText(code);
+        try {
+            await navigator.clipboard.writeText(code);
+            success(`Đã sao chép mã: ${code}`);
+        } catch (err) {
+            console.error('Failed to copy:', err);
+        }
     };
 
 

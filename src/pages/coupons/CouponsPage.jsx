@@ -102,10 +102,10 @@ const CouponsPage = () => {
             : couponItems.filter(c => c.tabStatus === activeTab);
   return (
       <div className="flex bg-[#F8F9FA]">
-      {/*<div className="fixed inset-y-0 left-0 z-50">*/}
-        <Sidebar />
-      {/*</div>*/}
-          <main className="flex-1 ml-64 p-8 pt-[100px]">
+        <div className="shrink-0">
+          <Sidebar />
+        </div>
+          <main className="flex-1 p-8 pt-[100px]">
         <div className="max-w-[1400px] mx-auto">
           <LoyaltyStatus user={userStatus}/>
           <CouponTabs activeTab={activeTab} setActiveTab={setActiveTab} />

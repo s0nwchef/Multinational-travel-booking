@@ -1,19 +1,10 @@
 import React from 'react';
-import plane from '../img/plane.png'
-import hotel from '../img/bed.png'
-import train from '../img/train.png'
+import bed from '../img/bed.png';
 
-const ServiceBadge = ({ service }) => {
-  const icons = {
-    Flight: plane,
-    Tour: hotel,
-    Train: train,
-  };
-  const Icon = icons[service];
-
+const ServiceBadge = ({ service, image }) => {
   return (
     <div className="flex items-center gap-2 text-black">
-      <img src={Icon} alt="service" />
+      <img src={image || bed} alt="service" className="w-5 h-5 object-contain" />
       <span>{service}</span>
     </div>
   );
