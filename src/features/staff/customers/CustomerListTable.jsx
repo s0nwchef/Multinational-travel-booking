@@ -7,9 +7,9 @@ const CustomerListTable = ({ customers }) => {
   const [selectedFilter, setSelectedFilter] = useState('all');
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
+    return new Intl.NumberFormat('en', {
       style: 'currency',
-      currency: 'VND',
+      currency: 'USD',
       minimumFractionDigits: 0
     }).format(amount * 1000);
   };
@@ -41,9 +41,11 @@ const CustomerListTable = ({ customers }) => {
 
   // Filter customers based on search and filter
   const filteredCustomers = customers.filter(customer => {
+    const customerName = customer.fullName || customer.name || '';
+    const customerEmail = customer.email || '';
     const matchesSearch = searchTerm === '' || 
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchTerm.toLowerCase());
+      customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customerEmail.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesFilter = selectedFilter === 'all' || 
       (selectedFilter === 'regular' && customer.customerType === 'regular') ||
@@ -123,7 +125,7 @@ const CustomerListTable = ({ customers }) => {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <User className="w-4 h-4 text-gray-400" />
-                      <p className="font-medium text-gray-900">{customer.name}</p>
+                      <p className="font-medium text-gray-900">{customer.fullName || customer.name}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Mail className="w-3 h-3 text-gray-400" />

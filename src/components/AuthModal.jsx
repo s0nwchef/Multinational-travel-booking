@@ -189,7 +189,7 @@ export default function AuthModal({ isOpen, onClose }) {
       // Redirect based on user role with delay to show toast
       const userRole = result.user.role;
       setTimeout(() => {
-        if (userRole === 'tour_operator' || userRole === 'admin') {
+        if (userRole === 'staff' || userRole === 'admin') {
           window.location.href = '/staff/dashboard';
         } else if (userRole === 'user') {
           window.location.href = '/dashboard';

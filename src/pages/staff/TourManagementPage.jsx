@@ -89,8 +89,8 @@ const TourManagementPage = () => {
   const statusOptions = [
     { value: 'all', label: 'Tất cả', count: pagination.total },
     { value: 'active', label: 'Đang hoạt động', count: tours.filter(t => t.status === 'active').length },
-    { value: 'draft', label: 'Bản nháp', count: tours.filter(t => t.status === 'draft').length },
-    { value: 'archived', label: 'Đã lưu trữ', count: tours.filter(t => t.status === 'archived').length }
+    { value: 'inactive', label: 'Không hoạt động', count: tours.filter(t => t.status === 'inactive').length },
+    { value: 'soldout', label: 'Đã bán hết', count: tours.filter(t => t.status === 'soldout').length }
   ];
 
   const handlePageChange = (newPage) => {

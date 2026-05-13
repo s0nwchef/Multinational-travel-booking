@@ -16,7 +16,7 @@ router.get('/status/:bookingId', requireAuth(), getRefundStatus);
 router.post('/cancel', requireAuth(), cancelBooking);
 
 // Admin routes
-router.get('/all', requireAuth(['admin', 'tour_operator']), getAllRefundRequests);
-router.put('/process/:bookingId', requireAuth(['admin', 'tour_operator']), processRefund);
+router.get('/all', requireAuth(['admin', 'staff']), getAllRefundRequests);
+router.put('/process/:bookingId', requireAuth(['admin', 'staff']), processRefund);
 
 export default router;

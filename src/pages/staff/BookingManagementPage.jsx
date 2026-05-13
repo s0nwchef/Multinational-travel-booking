@@ -73,10 +73,10 @@ const BookingManagementPage = () => {
   };
 
   const formatCurrency = (amount) => {
-    if (!amount) return '0 ₫';
-    return new Intl.NumberFormat('vi-VN', {
+    if (!amount) return '0 $';
+    return new Intl.NumberFormat('en', {
       style: 'currency',
-      currency: 'VND',
+      currency: 'USD',
       minimumFractionDigits: 0
     }).format(amount);
   };

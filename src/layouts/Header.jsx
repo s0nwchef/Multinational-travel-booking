@@ -222,7 +222,7 @@ export default function Header({
               {user ? (
                 <Link
                   to={
-                    user.role === "tour_operator" || user.role === "admin"
+                    user.role === "staff" || user.role === "admin"
                       ? "/staff/dashboard"
                       : "/dashboard"
                   }
@@ -233,7 +233,7 @@ export default function Header({
                       {user.name}
                     </span>
                     <span className="text-[10px] font-medium opacity-90">
-                      {user.role === "tour_operator" || user.role === "admin"
+                      {user.role === "staff" || user.role === "admin"
                         ? "Staff"
                         : user.membership}
                     </span>

@@ -20,8 +20,8 @@ import { requireAuth } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// All staff routes require tour_operator role
-router.use(requireAuth(['tour_operator', 'admin']));
+// All staff routes require staff role
+router.use(requireAuth(['staff', 'admin']));
 
 // Dashboard stats
 router.get('/dashboard/stats', getStaffDashboardStats);
