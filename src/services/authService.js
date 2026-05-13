@@ -197,7 +197,7 @@ export const authService = {
     
     // Check if user is tour operator
     isTourOperator() {
-        return this.hasRole('tour_operator') || this.hasRole('admin');
+        return this.hasRole('staff') || this.hasRole('admin');
     },
     
     // Get auth headers for API requests

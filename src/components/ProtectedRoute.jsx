@@ -72,7 +72,7 @@ const ProtectedRoute = ({ children, roles = [] }) => {
 
 export const StaffRoute = ({ children }) => {
     return (
-        <ProtectedRoute roles={['tour_operator', 'admin']}>
+        <ProtectedRoute roles={['staff', 'admin']}>
             {children}
         </ProtectedRoute>
     );

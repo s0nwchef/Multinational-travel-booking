@@ -113,7 +113,7 @@ export default function AppRoutes() {
         <Route
           path="/staff/dashboard"
           element={
-            <ProtectedRoute roles={["tour_operator", "admin"]}>
+            <ProtectedRoute roles={["staff", "admin"]}>
               <StaffDashboardPage />
             </ProtectedRoute>
           }
@@ -121,7 +121,7 @@ export default function AppRoutes() {
         <Route
           path="/staff/tours"
           element={
-            <ProtectedRoute roles={["tour_operator", "admin"]}>
+            <ProtectedRoute roles={["staff", "admin"]}>
               <TourManagementPage />
             </ProtectedRoute>
           }
@@ -129,7 +129,7 @@ export default function AppRoutes() {
         <Route
           path="/staff/bookings"
           element={
-            <ProtectedRoute roles={["tour_operator", "admin"]}>
+            <ProtectedRoute roles={["staff", "admin"]}>
               <BookingManagementPage />
             </ProtectedRoute>
           }
@@ -137,7 +137,7 @@ export default function AppRoutes() {
         <Route
           path="/staff/customers"
           element={
-            <ProtectedRoute roles={["tour_operator", "admin"]}>
+            <ProtectedRoute roles={["staff", "admin"]}>
               <CustomerManagementPage />
             </ProtectedRoute>
           }
@@ -145,7 +145,7 @@ export default function AppRoutes() {
         <Route
           path="/staff/analytics"
           element={
-            <ProtectedRoute roles={["tour_operator", "admin"]}>
+            <ProtectedRoute roles={["staff", "admin"]}>
               <AnalyticsPage />
             </ProtectedRoute>
           }
@@ -153,7 +153,7 @@ export default function AppRoutes() {
         <Route
           path="/staff/settings"
           element={
-            <ProtectedRoute roles={["tour_operator", "admin"]}>
+            <ProtectedRoute roles={["staff", "admin"]}>
               <StaffSettingsPage />
             </ProtectedRoute>
           }
@@ -161,7 +161,7 @@ export default function AppRoutes() {
         <Route
           path="/staff/tours/new"
           element={
-            <ProtectedRoute roles={["tour_operator", "admin"]}>
+            <ProtectedRoute roles={["staff", "admin"]}>
               <TourEditorPage />
             </ProtectedRoute>
           }
@@ -169,7 +169,7 @@ export default function AppRoutes() {
         <Route
           path="/staff/tours/:id/edit"
           element={
-            <ProtectedRoute roles={["tour_operator", "admin"]}>
+            <ProtectedRoute roles={["staff", "admin"]}>
               <TourEditorPage />
             </ProtectedRoute>
           }

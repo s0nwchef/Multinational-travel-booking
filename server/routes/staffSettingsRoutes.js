@@ -12,8 +12,8 @@ import { requireAuth } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// All routes require tour_operator or admin role
-router.use(requireAuth(['tour_operator', 'admin']));
+// All routes require staff or admin role
+router.use(requireAuth(['staff', 'admin']));
 
 // Profile
 router.get('/profile', getStaffProfile);

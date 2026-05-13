@@ -168,7 +168,7 @@ const StaffLayout = () => {
                 <div className="flex-1">
                   <h2 className="font-semibold text-gray-900 truncate">{user.fullName || user.name}</h2>
                   <p className="text-sm text-gray-500 truncate">
-                    {user.role === 'tour_operator' ? 'Tour Operator' : 
+                    {user.role === 'staff' ? 'Staff' : 
                      user.role === 'admin' ? 'Administrator' : user.role}
                   </p>
                   <p className="text-xs text-gray-400 truncate">{user.email}</p>

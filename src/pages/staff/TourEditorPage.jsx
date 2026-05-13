@@ -43,7 +43,7 @@ const TourEditorPage = () => {
     startDate: "",
     endDate: "",
     category: "city_tour",
-    status: "draft",
+    status: "inactive",
     images: [],
     itinerary: [{ day: 1, title: "", description: "" }],
     inclusions: ["", ""],
@@ -436,9 +436,9 @@ const TourEditorPage = () => {
                   onChange={(e) => handleInputChange('status', e.target.value)}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-colors"
                 >
-                  <option value="draft">Draft</option>
-                  <option value="active">Active</option>
-                  <option value="archived">Archived</option>
+                  <option value="inactive">Không hoạt động</option>
+                  <option value="active">Đang hoạt động</option>
+                  <option value="soldout">Đã bán hết</option>
                 </select>
               </div>
               <div>
@@ -621,24 +621,24 @@ const TourEditorPage = () => {
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Trạng thái</h3>
             <div className="flex items-center gap-4">
-              {['draft', 'active', 'archived'].map((status) => (
-                <label key={status} className="flex items-center gap-2 cursor-pointer">
+              {[{ value: 'inactive', label: 'Không hoạt động' }, { value: 'active', label: 'Đang hoạt động' }, { value: 'soldout', label: 'Đã bán hết' }].map((status) => (
+                <label key={status.value} className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="radio"
                     name="status"
-                    value={status}
-                    checked={tourData.status === status}
+                    value={status.value}
+                    checked={tourData.status === status.value}
                     onChange={(e) => handleInputChange('status', e.target.value)}
                     className="sr-only"
                   />
                   <div className={`w-4 h-4 border-2 rounded-full flex items-center justify-center ${
-                    tourData.status === status ? 'border-orange-500' : 'border-gray-300'
+                    tourData.status === status.value ? 'border-orange-500' : 'border-gray-300'
                   }`}>
-                    {tourData.status === status && (
+                    {tourData.status === status.value && (
                       <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                     )}
                   </div>
-                  <span className="font-medium text-gray-900 capitalize">{status}</span>
+                  <span className="font-medium text-gray-900">{status.label}</span>
                 </label>
               ))}
             </div>
