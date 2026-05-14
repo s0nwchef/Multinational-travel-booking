@@ -300,6 +300,50 @@ export const staffService = {
             console.error('Bulk update tour status error:', error);
             throw error;
         }
+    },
+    
+    // Refund Management APIs
+    async getRefundRequests(params = {}) {
+        try {
+            const queryParams = new URLSearchParams(params).toString();
+            const response = await fetch(`${API_BASE_URL}/refunds/all?${queryParams}`, {
+                headers: authService.getAuthHeaders(),
+            });
+            
+            // Try to parse JSON response first
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return data;
+        } catch (error) {
+            console.error('Get refund requests error:', error);
+            throw error;
+        }
+    },
+    
+    async processRefund(bookingId, action, notes = '') {
+        try {
+            const response = await fetch(`${API_BASE_URL}/refunds/process/${bookingId}`, {
+                method: 'PUT',
+                headers: authService.getAuthHeaders(),
+                body: JSON.stringify({ action, notes }),
+            });
+            
+            // Try to parse JSON response first
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return data;
+        } catch (error) {
+            console.error('Process refund error:', error);
+            throw error;
+        }
     }
 };
 

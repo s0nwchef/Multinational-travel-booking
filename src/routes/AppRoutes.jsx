@@ -33,6 +33,7 @@ import OAuthCallbackPage from "../pages/OAuthCallbackPage.jsx";
 import StaffDashboardPage from "../pages/staff/StaffDashboardPage.jsx";
 import TourManagementPage from "../pages/staff/TourManagementPage.jsx";
 import BookingManagementPage from "../pages/staff/BookingManagementPage.jsx";
+import RefundManagementPage from "../pages/staff/RefundManagementPage.jsx";
 import CustomerManagementPage from "../pages/staff/CustomerManagementPage.jsx";
 import AnalyticsPage from "../pages/staff/AnalyticsPage.jsx";
 import StaffSettingsPage from "../pages/staff/StaffSettingsPage.jsx";
@@ -155,6 +156,14 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute roles={["staff", "admin"]}>
               <StaffSettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/refunds"
+          element={
+            <ProtectedRoute roles={["staff", "admin"]}>
+              <RefundManagementPage />
             </ProtectedRoute>
           }
         />
