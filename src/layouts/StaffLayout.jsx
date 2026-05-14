@@ -13,7 +13,8 @@ import {
   ChevronRight,
   User,
   Bell,
-  Search
+  Search,
+  RotateCcw
 } from 'lucide-react';
 import authService from '../services/authService.js';
 import Header from './Header.jsx';
@@ -61,6 +62,12 @@ const StaffLayout = () => {
       icon: Calendar, 
       path: '/staff/bookings',
       color: 'text-green-500'
+    },
+    { 
+      name: 'Refunds', 
+      icon: RotateCcw, 
+      path: '/staff/refunds',
+      color: 'text-yellow-500'
     },
     { 
       name: 'Customers', 

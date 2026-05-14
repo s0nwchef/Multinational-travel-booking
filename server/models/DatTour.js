@@ -125,7 +125,7 @@ const datTourSchema = new mongoose.Schema({
   trang_thai_thanh_toan: {
     type: String,
     enum: {
-      values: ['unpaid', 'paid', 'refunded'],
+      values: ['unpaid', 'paid', 'refunded', 'reject'],
       message: 'Trạng thái thanh toán không hợp lệ: {VALUE}'
     },
     default: 'unpaid',
