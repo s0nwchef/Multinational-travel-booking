@@ -1,4 +1,6 @@
 import DatTour from '../models/DatTour.js';
+import NguoiDung from '../models/NguoiDung.js';
+import LichKhoiHanh from '../models/LichKhoiHanh.js';
 import { sendNotification } from '../utils/notificationHelper.js';
 
 export const requestRefund = async (req, res) => {
@@ -26,6 +28,16 @@ export const requestRefund = async (req, res) => {
         booking.ly_do_huy = reason;
         booking.tien_hoan = 0; // Pending refund: tien_hoan = 0, trang_thai_thanh_toan stays 'paid'
         await booking.save();
+
+        // Restore slot capacity in LichKhoiHanh (Bug 3 fix)
+        const totalPassengers = booking.so_nguoi_lon + (booking.so_tre_em || 0);
+        if (booking.id_lich_khoi_hanh && totalPassengers > 0) {
+            await LichKhoiHanh.findByIdAndUpdate(booking.id_lich_khoi_hanh, 
+                { $inc: { cho_da_dat: totalPassengers } }
+            );
+        }
+
+        // NOTE: Points are NOT deducted here - they will be deducted only when staff APPROVES the refund (Bug 1 fix)
 
         await sendNotification(userId, {
             title: 'Yêu cầu hủy và hoàn tiền đã được gửi',
@@ -97,6 +109,7 @@ export const getAllRefundRequests = async (req, res) => {
             filter.trang_thai_thanh_toan = 'reject';
         } else {
             // Tất cả: chỉ lấy những booking có refund request (trang_thai_thanh_toan = paid/refunded/reject)
+            // Include both tien_hoan = 0 and tien_hoan exists (to handle null values)
             filter.trang_thai_thanh_toan = { $in: ['paid', 'refunded', 'reject'] };
         }
 
@@ -128,11 +141,40 @@ export const getAllRefundRequests = async (req, res) => {
         });
 
         // Get counts for all status types (for stats summary)
+        // Fix Bug 2: Handle null tien_hoan values properly
+        // Use $exists:false or $gte:0 to include all valid tien_hoan values
         const [pendingCount, processedCount, rejectedCount, totalCount] = await Promise.all([
-            DatTour.countDocuments({ trang_thai: 'cancelled', tien_hoan: 0, trang_thai_thanh_toan: 'paid' }),
-            DatTour.countDocuments({ trang_thai: 'cancelled', tien_hoan: { $gt: 0 }, trang_thai_thanh_toan: 'refunded' }),
-            DatTour.countDocuments({ trang_thai: 'cancelled', tien_hoan: 0, trang_thai_thanh_toan: 'reject' }),
-            DatTour.countDocuments({ trang_thai: 'cancelled', trang_thai_thanh_toan: { $in: ['paid', 'refunded', 'reject'] } })
+            // Pending: tien_hoan = 0 and trang_thai_thanh_toan = 'paid' (including null tien_hoan)
+            DatTour.countDocuments({ 
+                trang_thai: 'cancelled', 
+                $or: [
+                    { tien_hoan: 0 },
+                    { tien_hoan: { $exists: false } },
+                    { tien_hoan: null }
+                ],
+                trang_thai_thanh_toan: 'paid' 
+            }),
+            // Processed: tien_hoan > 0 and trang_thai_thanh_toan = 'refunded'
+            DatTour.countDocuments({ 
+                trang_thai: 'cancelled', 
+                tien_hoan: { $gt: 0 }, 
+                trang_thai_thanh_toan: 'refunded' 
+            }),
+            // Rejected: tien_hoan = 0 or null and trang_thai_thanh_toan = 'reject'
+            DatTour.countDocuments({ 
+                trang_thai: 'cancelled', 
+                $or: [
+                    { tien_hoan: 0 },
+                    { tien_hoan: { $exists: false } },
+                    { tien_hoan: null }
+                ],
+                trang_thai_thanh_toan: 'reject' 
+            }),
+            // Total: All cancelled bookings with refund-related payment status (including null tien_hoan)
+            DatTour.countDocuments({ 
+                trang_thai: 'cancelled', 
+                trang_thai_thanh_toan: { $in: ['paid', 'refunded', 'reject'] }
+            })
         ]);
 
         res.json({ 
@@ -161,12 +203,18 @@ export const processRefund = async (req, res) => {
             const penaltyFee = Math.round(booking.tong_tien_cuoi * 0.1);
             booking.tien_hoan = booking.tong_tien_cuoi - penaltyFee;
             booking.trang_thai_thanh_toan = 'refunded';
+            
+            // Bug 1 fix: Deduct points ONLY when APPROVING the refund
+            const pointsToDeduct = -Math.floor(booking.tong_tien_cuoi / 10);
+            await NguoiDung.findByIdAndUpdate(booking.id_nguoi_dung._id, { $inc: { diem: pointsToDeduct } });
+            
             await sendNotification(booking.id_nguoi_dung._id, {
                 title: 'Hoàn tiền thành công',
                 message: `Hoàn tiền booking ${booking.ma_dat_tour} thành công. Số tiền: ${booking.tien_hoan.toLocaleString()}đ`,
                 type: 'refund', link: `/my-bookings/${booking._id}`
             });
         } else {
+            // When rejecting: do NOT deduct points (Bug 1 fix)
             booking.trang_thai_thanh_toan = 'reject'; // Set status to reject
             booking.tien_hoan = 0; // Rejected refund
             await sendNotification(booking.id_nguoi_dung._id, {
@@ -198,6 +246,16 @@ export const cancelBooking = async (req, res) => {
         }
         // If not paid, tien_hoan stays undefined/null (no refund request)
         await booking.save();
+
+        // Restore slot capacity in LichKhoiHanh (Bug 3 fix)
+        const totalPassengers = booking.so_nguoi_lon + (booking.so_tre_em || 0);
+        if (booking.id_lich_khoi_hanh && totalPassengers > 0) {
+            await LichKhoiHanh.findByIdAndUpdate(booking.id_lich_khoi_hanh, 
+                { $inc: { cho_da_dat: totalPassengers } }
+            );
+        }
+
+        // NOTE: Points are NOT deducted here - they will be deducted only when staff APPROVES the refund (Bug 1 fix)
 
         await sendNotification(req.user.id, {
             title: 'Đặt tour đã bị hủy', message: `Booking ${booking.ma_dat_tour} đã hủy thành công`,

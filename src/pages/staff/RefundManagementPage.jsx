@@ -103,11 +103,12 @@ const RefundManagementPage = () => {
   };
 
   const formatCurrency = (amount) => {
-    if (!amount) return '0 đ';
-    return new Intl.NumberFormat('vi-VN', {
+    if (!amount) return '$0';
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'VND',
-      minimumFractionDigits: 0
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
     }).format(amount);
   };
 

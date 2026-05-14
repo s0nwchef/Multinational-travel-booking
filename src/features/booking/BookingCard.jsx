@@ -30,8 +30,8 @@ const BookingCard = ({ item, onCancel }) => {
   // Calculate total passengers from real data fields
   const totalPassengers = (item.numAdults || 0) + (item.numChildren || 0);
   
-  // Check if has refund
-  const hasRefund = isCancelled && item.refundAmount > 0;
+  // Check if has refund request (paid, refunded, or rejected)
+  const hasRefund = isCancelled && ['paid', 'refunded', 'reject'].includes(item.paymentStatus);
 
   const formatDateRange = (dep, ret) => {
     if (!dep || dep === "TBA") return "TBA";
@@ -126,22 +126,43 @@ const BookingCard = ({ item, onCancel }) => {
 
         {/* REFUND INFO */}
         {hasRefund && (
-          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 mb-4 flex items-center gap-3">
-            <CreditCard size={18} className="text-orange-500 shrink-0" />
+          <div className={`rounded-2xl p-4 mb-4 flex items-center gap-3 ${
+            item.paymentStatus === 'reject' 
+              ? 'bg-red-50 border border-red-200' 
+              : 'bg-orange-50 border border-orange-200'
+          }`}>
+            <CreditCard size={18} className={`shrink-0 ${
+              item.paymentStatus === 'reject' ? 'text-red-500' : 'text-orange-500'
+            }`} />
             <div>
-              <p className="text-[11px] font-black text-orange-700 uppercase tracking-wider">
-                Refund Amount
+              <p className={`text-[11px] font-black uppercase tracking-wider ${
+                item.paymentStatus === 'reject' ? 'text-red-700' : 'text-orange-700'
+              }`}>
+                {item.paymentStatus === 'reject' ? 'Refund Rejected' : 'Refund Amount'}
               </p>
-              <p className="text-lg font-black text-orange-600">
-                {item.refundAmount?.toLocaleString("en-US")} $
-              </p>
+              {item.paymentStatus !== 'reject' && (
+                <p className="text-lg font-black text-orange-600">
+                  {item.refundAmount?.toLocaleString("en-US")} $
+                </p>
+              )}
+              {item.paymentStatus === 'reject' && (
+                <p className="text-sm font-bold text-red-600">
+                  Your refund request has been rejected
+                </p>
+              )}
             </div>
             <span className={`ml-auto text-[9px] font-black px-3 py-1 rounded-xl ${
               item.paymentStatus === 'refunded' 
                 ? 'bg-green-100 text-green-600' 
-                : 'bg-yellow-100 text-yellow-600'
+                : item.paymentStatus === 'reject'
+                  ? 'bg-red-100 text-red-600'
+                  : 'bg-yellow-100 text-yellow-600'
             }`}>
-              {item.paymentStatus === 'refunded' ? 'REFUNDED' : 'PENDING'}
+              {item.paymentStatus === 'refunded' 
+                ? 'REFUNDED' 
+                : item.paymentStatus === 'reject' 
+                  ? 'REJECTED' 
+                  : 'PENDING'}
             </span>
           </div>
         )}
