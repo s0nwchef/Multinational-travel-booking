@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, Download, Filter, Loader2 } from 'lucide-react';
+import { Users, Plus, Download, Loader2 } from 'lucide-react';
 import CustomerListTable from '../../features/staff/customers/CustomerListTable';
 import CustomerDetailModal from '../../features/staff/customers/CustomerDetailModal';
 import staffService from '../../services/staffService.js';
+import { formatUsd } from '../../utils/currency.js';
 
 const CustomerManagementPage = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -23,14 +24,14 @@ const CustomerManagementPage = () => {
       const params = {
         page: pagination.page,
         limit: 10,
-        ...(searchQuery && { search: searchQuery })
+        ...(searchQuery && { search: searchQuery }),
       };
-      
+
       const response = await staffService.getCustomers(params);
       setCustomers(response.customers || []);
-      setPagination(prev => ({
+      setPagination((prev) => ({
         ...prev,
-        ...response.pagination
+        ...response.pagination,
       }));
       setError(null);
     } catch (err) {
@@ -42,7 +43,7 @@ const CustomerManagementPage = () => {
   };
 
   const handleViewCustomerDetails = (customerId) => {
-    const customer = customers.find(c => c._id === customerId || c.id === customerId);
+    const customer = customers.find((c) => c._id === customerId || c.id === customerId);
     setSelectedCustomer(customer);
     setShowDetailModal(true);
   };
@@ -51,7 +52,7 @@ const CustomerManagementPage = () => {
     try {
       await staffService.exportData('customers');
       alert('Xuất dữ liệu khách hàng thành công!');
-    } catch (err) {
+    } catch {
       alert('Xuất dữ liệu thất bại');
     }
   };
@@ -61,37 +62,31 @@ const CustomerManagementPage = () => {
   };
 
   const handlePageChange = (newPage) => {
-    setPagination(prev => ({ ...prev, page: newPage }));
+    setPagination((prev) => ({ ...prev, page: newPage }));
   };
 
-  const formatCurrency = (amount) => {
-  if (!amount) return '0 ₫';
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-    minimumFractionDigits: 0
-  }).format(amount);
-};
+  const totalSpent = customers.reduce((sum, customer) => sum + (customer.totalSpent || 0), 0);
+  const topCustomer =
+    customers.length > 0
+      ? [...customers].sort((a, b) => (b.totalSpent || 0) - (a.totalSpent || 0))[0]
+      : null;
 
-const totalSpent = customers.reduce((sum, c) => sum + (c.totalSpent || 0), 0);
-
-return (
+  return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Quản lý khách hàng</h1>
           <p className="text-gray-500 mt-2">Quản lý thông tin và lịch sử booking của khách hàng</p>
         </div>
         <div className="flex items-center gap-3">
-          <button 
+          <button
             onClick={handleExportCustomers}
             className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-2xl hover:bg-gray-50 transition-colors"
           >
             <Download className="w-4 h-4" />
             Xuất dữ liệu
           </button>
-          <button 
+          <button
             onClick={handleAddCustomer}
             className="flex items-center gap-2 px-4 py-2.5 bg-orange-500 text-white rounded-2xl hover:bg-orange-600 transition-colors"
           >
@@ -101,7 +96,6 @@ return (
         </div>
       </div>
 
-      {/* Loading State */}
       {loading && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
@@ -109,7 +103,6 @@ return (
         </div>
       )}
 
-      {/* Error State */}
       {error && !loading && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
           <p className="text-red-600">{error}</p>
@@ -121,7 +114,6 @@ return (
 
       {!loading && !error && (
         <>
-          {/* Stats Overview */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between">
@@ -133,73 +125,65 @@ return (
                   <Users className="w-6 h-6 text-blue-600" />
                 </div>
               </div>
-              <div className="mt-4">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-green-600 font-medium">+12%</span>
-                  <span className="text-gray-500">so với tháng trước</span>
-                </div>
+              <div className="mt-4 flex items-center gap-2 text-sm">
+                <span className="text-green-600 font-medium">+12%</span>
+                <span className="text-gray-500">so với tháng trước</span>
               </div>
             </div>
+
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500">Khách hàng thường xuyên</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {customers.filter(c => c.customerType === 'regular').length}
+                    {customers.filter((c) => c.customerType === 'regular').length}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center">
                   <span className="text-2xl">⭐</span>
                 </div>
               </div>
-              <div className="mt-4">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-green-600 font-medium">+8%</span>
-                  <span className="text-gray-500">tỷ lệ giữ chân</span>
-                </div>
+              <div className="mt-4 flex items-center gap-2 text-sm">
+                <span className="text-green-600 font-medium">+8%</span>
+                <span className="text-gray-500">tỷ lệ giữ chân</span>
               </div>
             </div>
+
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500">Khách hàng tiềm năng</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {customers.filter(c => c.customerType === 'prospect').length}
+                    {customers.filter((c) => c.customerType === 'prospect').length}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-yellow-50 rounded-2xl flex items-center justify-center">
                   <span className="text-2xl">🔍</span>
                 </div>
               </div>
-              <div className="mt-4">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-green-600 font-medium">+15%</span>
-                  <span className="text-gray-500">tăng trưởng</span>
-                </div>
+              <div className="mt-4 flex items-center gap-2 text-sm">
+                <span className="text-green-600 font-medium">+15%</span>
+                <span className="text-gray-500">tăng trưởng</span>
               </div>
             </div>
+
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500">Tổng doanh thu</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {formatCurrency(totalSpent)}
-                  </p>
+                  <p className="text-2xl font-bold text-gray-900">{formatUsd(totalSpent, '$0')}</p>
                 </div>
                 <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center">
                   <span className="text-2xl">💰</span>
                 </div>
               </div>
-              <div className="mt-4">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-green-600 font-medium">+18%</span>
-                  <span className="text-gray-500">so với tháng trước</span>
-                </div>
+              <div className="mt-4 flex items-center gap-2 text-sm">
+                <span className="text-green-600 font-medium">+18%</span>
+                <span className="text-gray-500">so với tháng trước</span>
               </div>
             </div>
           </div>
 
-          {/* Search */}
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <div className="flex items-center gap-4 mb-6">
               <div className="flex-1 max-w-md">
@@ -212,16 +196,14 @@ return (
                 />
               </div>
             </div>
-        
-            {/* Customer Table */}
-            <CustomerListTable 
-              customers={customers.map(customer => ({
+
+            <CustomerListTable
+              customers={customers.map((customer) => ({
                 ...customer,
-                onViewDetails: () => handleViewCustomerDetails(customer._id || customer.id)
+                onViewDetails: () => handleViewCustomerDetails(customer._id || customer.id),
               }))}
             />
 
-            {/* Pagination */}
             {pagination.pages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-6">
                 <button
@@ -245,26 +227,17 @@ return (
             )}
           </div>
 
-          {/* Customer Detail Modal */}
           {showDetailModal && (
-            <CustomerDetailModal
-              customer={selectedCustomer}
-              onClose={() => setShowDetailModal(false)}
-            />
+            <CustomerDetailModal customer={selectedCustomer} onClose={() => setShowDetailModal(false)} />
           )}
 
-          {/* Insights Section */}
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Insights về khách hàng</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white rounded-xl p-4">
                 <p className="text-sm text-gray-500">Khách hàng có giá trị cao nhất</p>
-                <p className="font-semibold text-gray-900">
-                  {customers.length > 0 ? customers.sort((a, b) => (b.totalSpent || 0) - (a.totalSpent || 0))[0]?.fullName || 'N/A' : '-'}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {customers.length > 0 ? formatCurrency(customers.sort((a, b) => (b.totalSpent || 0) - (a.totalSpent || 0))[0]?.totalSpent || 0) : '0 ₫'}
-                </p>
+                <p className="font-semibold text-gray-900">{topCustomer?.fullName || 'N/A'}</p>
+                <p className="text-sm text-gray-600">{formatUsd(topCustomer?.totalSpent || 0, '$0')}</p>
               </div>
               <div className="bg-white rounded-xl p-4">
                 <p className="text-sm text-gray-500">Tỷ lệ chuyển đổi tiềm năng</p>

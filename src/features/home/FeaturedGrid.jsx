@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowRight, Heart, ChevronRight, MapPin, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import tourService from '../../services/tourService.js';
+import { formatUsd } from '../../utils/currency.js';
 
 export default function FeaturedGrid() {
   const [featuredDeals, setFeaturedDeals] = useState(null);
@@ -9,6 +10,23 @@ export default function FeaturedGrid() {
   const [popularDestinations, setPopularDestinations] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  const getStartingPrice = (tour) => {
+    const availableSchedules = Array.isArray(tour?.lich_khoi_hanh)
+      ? tour.lich_khoi_hanh.filter(
+          (schedule) =>
+            schedule?.trang_thai === 'available' &&
+            Number(schedule?.gia_nguoi_lon) > 0
+        )
+      : [];
+
+    if (availableSchedules.length > 0) {
+      return Math.min(...availableSchedules.map((schedule) => Number(schedule.gia_nguoi_lon)));
+    }
+
+    const fallbackPrice = Number(tour?.gia_nguoi_lon);
+    return fallbackPrice > 0 ? fallbackPrice : null;
+  };
 
   useEffect(() => {
     const fetchFeaturedData = async () => {
@@ -50,7 +68,7 @@ export default function FeaturedGrid() {
               id: randomStay._id,
               image: randomStay.anh_dai_dien || randomStay.danh_sach_anh?.[0],
               title: randomStay.ten_tour,
-              price: randomStay.gia_nguoi_lon
+              price: getStartingPrice(randomStay)
             });
           } else if (toursWithImages.length > 1) {
             // Fallback to any tour
@@ -59,7 +77,7 @@ export default function FeaturedGrid() {
               id: fallbackTour._id,
               image: fallbackTour.anh_dai_dien || fallbackTour.danh_sach_anh?.[0],
               title: fallbackTour.ten_tour,
-              price: fallbackTour.gia_nguoi_lon
+              price: getStartingPrice(fallbackTour)
             });
           }
           
@@ -97,7 +115,7 @@ export default function FeaturedGrid() {
   };
 
   const handleViewPopular = () => {
-    navigate('/tours');
+    navigate('/destination');
   };
 
   const fallbackImage = 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=800&auto=format&fit=crop';
@@ -115,7 +133,10 @@ export default function FeaturedGrid() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-auto lg:h-[320px]">
       {/* Large Card - Featured Deals */}
-      <div className="lg:col-span-6 relative rounded-3xl overflow-hidden group cursor-pointer h-80 lg:h-full">
+      <div
+        onClick={handleViewOffers}
+        className="lg:col-span-6 relative rounded-3xl overflow-hidden group cursor-pointer h-80 lg:h-full"
+      >
         <img
           alt={featuredDeals?.title || "Featured travel destination"}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -135,7 +156,10 @@ export default function FeaturedGrid() {
             {featuredDeals?.location ? `Explore amazing tours in ${featuredDeals.location}` : 'Discover amazing destinations at unbeatable prices'}
           </p>
           <button
-            onClick={handleViewOffers}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewOffers();
+            }}
             className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-bold hover:bg-gray-100 transition-colors flex items-center gap-2"
           >
             View Offers <ArrowRight className="w-4 h-4" />
@@ -144,7 +168,10 @@ export default function FeaturedGrid() {
       </div>
 
       {/* Medium Card 1 - Recommended Stay */}
-      <div className="lg:col-span-3 relative rounded-3xl overflow-hidden group cursor-pointer h-80 lg:h-full bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 flex flex-col">
+      <div
+        onClick={handleViewStay}
+        className="lg:col-span-3 relative rounded-3xl overflow-hidden group cursor-pointer h-80 lg:h-full bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 flex flex-col"
+      >
         <div className="h-1/2 relative overflow-hidden">
           <img
             alt={recommendedStay?.title || "Luxury accommodation"}
@@ -154,7 +181,10 @@ export default function FeaturedGrid() {
             onError={(e) => { e.target.src = fallbackImage; }}
           />
           <button 
-            onClick={handleViewStay}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewStay();
+            }}
             className="absolute top-4 right-4 bg-white/90 backdrop-blur rounded-full p-2 shadow-sm hover:bg-white transition-colors"
           >
             <Heart className="text-primary w-4 h-4" />
@@ -171,12 +201,13 @@ export default function FeaturedGrid() {
           </div>
           <div className="flex items-center justify-between mt-4">
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              {recommendedStay?.price 
-                ? `$${Math.round(recommendedStay.price / 24000).toLocaleString('en-US')}`
-                : 'View Details'}
+              {recommendedStay?.price ? formatUsd(recommendedStay.price) : 'View Details'}
             </span>
             <button
-              onClick={handleViewStay}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleViewStay();
+              }}
               className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
@@ -186,7 +217,10 @@ export default function FeaturedGrid() {
       </div>
 
       {/* Medium Card 2 - Popular Destinations */}
-      <div className="lg:col-span-3 relative rounded-3xl overflow-hidden group cursor-pointer h-80 lg:h-full">
+      <div
+        onClick={handleViewPopular}
+        className="lg:col-span-3 relative rounded-3xl overflow-hidden group cursor-pointer h-80 lg:h-full"
+      >
         <img
           alt="Popular destinations"
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -210,7 +244,10 @@ export default function FeaturedGrid() {
                 ))}
                 {popularDestinations.length > 2 && (
                   <span
-                    onClick={handleViewPopular}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewPopular();
+                    }}
                     className="bg-primary/80 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full border border-white/10 cursor-pointer hover:bg-primary transition-colors"
                   >
                     +{popularDestinations.length - 2} more
@@ -226,7 +263,10 @@ export default function FeaturedGrid() {
                   Tokyo
                 </span>
                 <span
-                  onClick={handleViewPopular}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewPopular();
+                  }}
                   className="bg-primary/80 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full border border-white/10 cursor-pointer hover:bg-primary transition-colors"
                 >
                   +5 more
