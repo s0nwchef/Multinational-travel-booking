@@ -11,6 +11,9 @@
     "preview": "vite preview",
     "seed:tour-operators": "node seed-tour-operators.mjs",
     "seed:tours": "node server/seedTours.js",
+    "seed:demo": "node server/seedDemoData.js --mode=append-safe --snapshot",
+    "seed:demo:refresh": "node server/seedDemoData.js --mode=refresh-demo --snapshot",
+    "snapshot:demo": "node server/seedDemoData.js --mode=append-safe --snapshot",
     "cleanup:tours": "node test/cleanupInvalidTours.js",
     "vercel-build": "vite build",
     "start": "node server.js"

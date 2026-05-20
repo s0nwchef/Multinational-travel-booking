@@ -1,17 +1,20 @@
 import React from 'react';
-import { X, Mail, Phone, Calendar, DollarSign, MapPin, User, CreditCard, Star } from 'lucide-react';
+import {
+  X,
+  Mail,
+  Phone,
+  Calendar,
+  DollarSign,
+  MapPin,
+  User,
+  CreditCard,
+  Star,
+} from 'lucide-react';
 import CustomerBadge from './CustomerBadge';
+import { formatUsd } from '../../../utils/currency.js';
 
 const CustomerDetailModal = ({ customer, onClose }) => {
   if (!customer) return null;
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-      minimumFractionDigits: 0
-    }).format(amount * 1000);
-  };
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Chưa có';
@@ -21,11 +24,10 @@ const CustomerDetailModal = ({ customer, onClose }) => {
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
-  // Sample booking history data
   const bookingHistory = [
     {
       id: 'BK001',
@@ -33,7 +35,7 @@ const CustomerDetailModal = ({ customer, onClose }) => {
       bookingDate: '2024-03-15',
       travelDate: '2024-04-10',
       amount: 450,
-      status: 'completed'
+      status: 'completed',
     },
     {
       id: 'BK002',
@@ -41,7 +43,7 @@ const CustomerDetailModal = ({ customer, onClose }) => {
       bookingDate: '2024-02-20',
       travelDate: '2024-03-15',
       amount: 320,
-      status: 'completed'
+      status: 'completed',
     },
     {
       id: 'BK003',
@@ -49,33 +51,26 @@ const CustomerDetailModal = ({ customer, onClose }) => {
       bookingDate: '2024-01-10',
       travelDate: '2024-02-05',
       amount: 680,
-      status: 'completed'
-    }
+      status: 'completed',
+    },
   ];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Chi tiết khách hàng</h2>
             <p className="text-gray-500">Thông tin đầy đủ và lịch sử booking</p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-2xl transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-2xl transition-colors">
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Customer Info */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Customer Header */}
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
@@ -93,7 +88,6 @@ const CustomerDetailModal = ({ customer, onClose }) => {
                 </div>
               </div>
 
-              {/* Contact Info */}
               <div className="bg-gray-50 rounded-2xl p-6">
                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Thông tin liên hệ</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -120,12 +114,14 @@ const CustomerDetailModal = ({ customer, onClose }) => {
                 </div>
               </div>
 
-              {/* Booking History */}
               <div>
                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Lịch sử booking</h4>
                 <div className="space-y-3">
                   {bookingHistory.map((booking) => (
-                    <div key={booking.id} className="bg-white border border-gray-200 rounded-2xl p-4 hover:border-orange-300 transition-colors">
+                    <div
+                      key={booking.id}
+                      className="bg-white border border-gray-200 rounded-2xl p-4 hover:border-orange-300 transition-colors"
+                    >
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-medium text-gray-900">{booking.tourName}</p>
@@ -141,10 +137,14 @@ const CustomerDetailModal = ({ customer, onClose }) => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-gray-900">{formatCurrency(booking.amount)}</p>
-                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                            booking.status === 'completed' ? 'bg-green-50 text-green-600' : 'bg-yellow-50 text-yellow-600'
-                          }`}>
+                          <p className="font-bold text-gray-900">{formatUsd(booking.amount, '$0')}</p>
+                          <span
+                            className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                              booking.status === 'completed'
+                                ? 'bg-green-50 text-green-600'
+                                : 'bg-yellow-50 text-yellow-600'
+                            }`}
+                          >
                             {booking.status === 'completed' ? 'Hoàn thành' : 'Đang xử lý'}
                           </span>
                         </div>
@@ -155,9 +155,7 @@ const CustomerDetailModal = ({ customer, onClose }) => {
               </div>
             </div>
 
-            {/* Stats Sidebar */}
             <div className="space-y-6">
-              {/* Stats Card */}
               <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-6">
                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Thống kê</h4>
                 <div className="space-y-4">
@@ -179,7 +177,9 @@ const CustomerDetailModal = ({ customer, onClose }) => {
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Tổng chi tiêu</p>
-                        <p className="text-xl font-bold text-gray-900">{formatCurrency(customer.totalSpent)}</p>
+                        <p className="text-xl font-bold text-gray-900">
+                          {formatUsd(customer.totalSpent, '$0')}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -197,7 +197,6 @@ const CustomerDetailModal = ({ customer, onClose }) => {
                 </div>
               </div>
 
-              {/* Customer Notes */}
               <div className="bg-white border border-gray-200 rounded-2xl p-6">
                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Ghi chú</h4>
                 <textarea
@@ -210,7 +209,6 @@ const CustomerDetailModal = ({ customer, onClose }) => {
                 </button>
               </div>
 
-              {/* Actions */}
               <div className="space-y-3">
                 <button className="w-full bg-blue-500 text-white py-2.5 rounded-xl font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2">
                   <Mail className="w-4 h-4" />

@@ -1,5 +1,6 @@
 import React from 'react';
 import { CheckCircle, Clock, XCircle, CheckCheck } from 'lucide-react';
+import { formatUsd } from '../../../utils/currency.js';
 
 const RecentBookingsTable = ({ bookings, onViewBooking }) => {
   const statusConfig = {
@@ -7,26 +8,26 @@ const RecentBookingsTable = ({ bookings, onViewBooking }) => {
       icon: CheckCircle,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
-      text: 'Đã xác nhận'
+      text: 'Đã xác nhận',
     },
     pending: {
       icon: Clock,
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-50',
-      text: 'Chờ xác nhận'
+      text: 'Chờ xác nhận',
     },
     cancelled: {
       icon: XCircle,
       color: 'text-red-600',
       bgColor: 'bg-red-50',
-      text: 'Đã hủy'
+      text: 'Đã hủy',
     },
     completed: {
       icon: CheckCheck,
       color: 'text-gray-600',
       bgColor: 'bg-gray-50',
-      text: 'Hoàn thành'
-    }
+      text: 'Hoàn thành',
+    },
   };
 
   const formatDate = (dateString) => {
@@ -35,27 +36,17 @@ const RecentBookingsTable = ({ bookings, onViewBooking }) => {
     return date.toLocaleDateString('vi-VN', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
-  const formatCurrency = (amount) => {
-    if (!amount) return '0 ₫';
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
-
-  // Map API data
-  const mappedBookings = bookings.map(booking => ({
+  const mappedBookings = bookings.map((booking) => ({
     id: booking._id || booking.id || booking.bookingReference || 'N/A',
     customerName: booking.userId?.fullName || booking.customerName || 'Khách hàng',
     tourName: booking.tourId?.title || booking.tourName || '-',
     bookingDate: booking.bookingDate || booking.createdAt,
     status: booking.status,
-    amount: booking.totalAmount || booking.amount || 0
+    amount: booking.totalAmount || booking.amount || 0,
   }));
 
   return (
@@ -76,21 +67,17 @@ const RecentBookingsTable = ({ bookings, onViewBooking }) => {
           {mappedBookings.map((booking) => {
             const status = statusConfig[booking.status] || statusConfig.pending;
             const StatusIcon = status.icon;
-            
+
             return (
-              <tr 
+              <tr
                 key={booking.id}
                 className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
               >
                 <td className="py-3 px-4">
-                  <span className="font-mono text-sm font-semibold text-gray-900">
-                    {booking.id}
-                  </span>
+                  <span className="font-mono text-sm font-semibold text-gray-900">{booking.id}</span>
                 </td>
                 <td className="py-3 px-4">
-                  <div>
-                    <p className="font-medium text-gray-900">{booking.customerName}</p>
-                  </div>
+                  <p className="font-medium text-gray-900">{booking.customerName}</p>
                 </td>
                 <td className="py-3 px-4">
                   <p className="text-gray-900">{booking.tourName}</p>
@@ -101,17 +88,15 @@ const RecentBookingsTable = ({ bookings, onViewBooking }) => {
                 <td className="py-3 px-4">
                   <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${status.bgColor}`}>
                     <StatusIcon className={`w-4 h-4 ${status.color}`} />
-                    <span className={`text-xs font-semibold ${status.color}`}>
-                      {status.text}
-                    </span>
+                    <span className={`text-xs font-semibold ${status.color}`}>{status.text}</span>
                   </div>
                 </td>
                 <td className="py-3 px-4">
-                  <p className="font-semibold text-gray-900">{formatCurrency(booking.amount)}</p>
+                  <p className="font-semibold text-gray-900">{formatUsd(booking.amount, '$0')}</p>
                 </td>
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-2">
-                    <button 
+                    <button
                       onClick={() => onViewBooking?.(booking.id)}
                       className="p-2 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
                     >
@@ -126,9 +111,7 @@ const RecentBookingsTable = ({ bookings, onViewBooking }) => {
       </table>
 
       {mappedBookings.length === 0 && (
-        <div className="py-8 text-center text-gray-500">
-          Chưa có booking nào
-        </div>
+        <div className="py-8 text-center text-gray-500">Chưa có booking nào</div>
       )}
     </div>
   );
