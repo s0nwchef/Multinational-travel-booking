@@ -4,7 +4,7 @@ Nền tảng đặt tour du lịch và chuyến bay quốc tế.
 
 ## 🌐 Truy cập
 
-**Live Demo**: https://multinational-travel-booking-web.vercel.app
+**Live Demo**: https://multinational-travel-booking.vercel.app
 
 ## ✨ Tính năng
 
