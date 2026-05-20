@@ -26,6 +26,9 @@ function RegionCard({ region, className, style }) {
             <div className="card-text">
                 <div className="card-region">{region.region}</div>
                 <div className="card-title">{region.name}</div>
+                {region.country && region.country !== region.name ? (
+                    <div className="card-subtitle">{region.country}</div>
+                ) : null}
             </div>
         </div>
     );
